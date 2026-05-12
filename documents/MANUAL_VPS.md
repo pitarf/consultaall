@@ -80,3 +80,24 @@ sudo certbot --nginx -d seu-dominio.com
 - **Ver logs:** `docker-compose logs -f`
 - **Parar sistema:** `docker-compose down`
 - **Atualizar código:** `git pull && docker-compose up -d --build`
+
+## 7. Backups Automáticos Diários
+Para garantir que você nunca perca dados, configure o backup automático:
+
+1. Dê permissão de execução ao script:
+```bash
+chmod +x scripts/backup-db.sh
+```
+
+2. Abra o agendador de tarefas (Cron):
+```bash
+crontab -e
+```
+
+3. Adicione esta linha ao final do arquivo para rodar todo dia às 03:00 da manhã:
+```bash
+00 03 * * * /path/to/consultaall/scripts/backup-db.sh
+```
+*(Substitua `/path/to/` pelo caminho real da pasta na sua VPS)*
+
+Os backups ficarão salvos na pasta `./backups/` dentro do projeto.
