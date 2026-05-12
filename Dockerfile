@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 # Precisamos copiar a pasta prisma antes do install para o postinstall funcionar
 COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
 RUN npm install
 
