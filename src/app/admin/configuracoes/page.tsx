@@ -19,6 +19,10 @@ export default function AdminSettingsPage() {
     supportWhatsapp: '',
     logoUrl: '',
     faviconUrl: '',
+    companyName: '',
+    companyCnpj: '',
+    companyAddress: '',
+    companyEmail: '',
   });
 
   useEffect(() => {
@@ -32,6 +36,10 @@ export default function AdminSettingsPage() {
           supportWhatsapp: data.supportWhatsapp || '',
           logoUrl: data.logoUrl || '',
           faviconUrl: data.faviconUrl || '',
+          companyName: data.companyName || '',
+          companyCnpj: data.companyCnpj || '',
+          companyAddress: data.companyAddress || '',
+          companyEmail: data.companyEmail || '',
         });
       } catch {
         toast.error('Erro ao carregar configurações');
@@ -220,31 +228,76 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        {/* ====== SUPORTE ====== */}
+        {/* ====== INFORMAÇÕES LEGAIS (PARA TERMOS DE USO) ====== */}
         <section className="glass-panel p-8 rounded-3xl border border-white/5 space-y-6">
           <div className="flex items-center gap-3 border-b border-white/5 pb-4 mb-6">
-            <div className="p-2 bg-green-500/20 rounded-lg text-green-500">
-              <MessageSquare className="w-5 h-5" />
+            <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+              <Scale className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-bold text-white">Canais de Suporte</h2>
+            <div>
+              <h2 className="text-xl font-bold text-white">Informações Legais</h2>
+              <p className="text-gray-500 text-sm">Dados que aparecerão automaticamente na página de Termos de Uso.</p>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-400">WhatsApp (Com DDD, sem símbolos)</label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">+</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-400">Razão Social / Nome da Empresa</label>
               <input
                 type="text"
-                value={settings.supportWhatsapp}
-                onChange={(e) => setSettings({ ...settings, supportWhatsapp: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white focus:border-primary/50 outline-none transition-all"
-                placeholder="5511999999999"
+                value={settings.companyName}
+                onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 outline-none transition-all text-sm"
+                placeholder="Ex: Minha Empresa de Dados LTDA"
               />
             </div>
-            <p className="text-[11px] text-gray-500 flex items-center gap-1 mt-1">
-              <Info className="w-3 h-3" />
-              Este número gera os links de suporte em todo o site.
-            </p>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-400">CNPJ</label>
+              <input
+                type="text"
+                value={settings.companyCnpj}
+                onChange={(e) => setSettings({ ...settings, companyCnpj: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 outline-none transition-all text-sm"
+                placeholder="00.000.000/0001-00"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-400">E-mail de Contato Legal</label>
+              <input
+                type="email"
+                value={settings.companyEmail}
+                onChange={(e) => setSettings({ ...settings, companyEmail: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 outline-none transition-all text-sm"
+                placeholder="contato@seusite.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-400">WhatsApp de Suporte</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">+</span>
+                <input
+                  type="text"
+                  value={settings.supportWhatsapp}
+                  onChange={(e) => setSettings({ ...settings, supportWhatsapp: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white focus:border-primary/50 outline-none transition-all text-sm"
+                  placeholder="5511999999999"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-bold text-gray-400">Endereço Completo</label>
+              <input
+                type="text"
+                value={settings.companyAddress}
+                onChange={(e) => setSettings({ ...settings, companyAddress: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 outline-none transition-all text-sm"
+                placeholder="Rua, Número, Bairro, Cidade - UF, CEP"
+              />
+            </div>
           </div>
         </section>
 

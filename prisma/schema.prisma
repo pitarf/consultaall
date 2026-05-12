@@ -60,6 +60,10 @@ model SystemSetting {
   siteKeywords    String   @default("consultas, cpf, cnpj, veículos, investigação")
   faviconUrl      String?
   logoUrl         String?
+  companyName     String?  @default("NOME DA EMPRESA LTDA")
+  companyCnpj     String?  @default("00.000.000/0001-00")
+  companyAddress  String?  @default("Endereço Completo, Cidade - UF")
+  companyEmail    String?  @default("contato@seusite.com")
   supportWhatsapp String?  @default("5511999999999")
   updatedAt       DateTime @updatedAt
 }

@@ -347,6 +347,7 @@ export default async function Home() {
             <div className="flex gap-6 text-sm text-gray-500">
               <Link href="/login" className="hover:text-white transition-colors">Entrar</Link>
               <Link href="/cadastro" className="hover:text-white transition-colors">Cadastro</Link>
+              <Link href="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
             </div>
             <p className="text-gray-600 text-sm text-center md:text-right">
               © {new Date().getFullYear()} {settings?.siteTitle?.split(' - ')[0] || "Detetive Buscas"}. Todos os direitos reservados.

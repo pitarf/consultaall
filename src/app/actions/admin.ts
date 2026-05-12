@@ -176,6 +176,10 @@ export async function updateSystemSettings(data: {
   supportWhatsapp?: string;
   logoUrl?: string;
   faviconUrl?: string;
+  companyName?: string;
+  companyCnpj?: string;
+  companyAddress?: string;
+  companyEmail?: string;
 }) {
   await checkAdmin();
   
