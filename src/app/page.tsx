@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SearchTeaser from "@/components/SearchTeaser";
 import {
   Search,
   ShieldCheck,
@@ -77,29 +78,13 @@ export default function Home() {
         </div>
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-indigo-300 mb-6 max-w-5xl mx-auto leading-tight">
-          Acesse Informações que Ninguém Consegue Encontrar
+          Painel Completo de <br className="hidden md:block" /> Consultas Online
         </h1>
         <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-          Consulte dados cadastrais, localização, vínculos e muito mais com
-          precisão profissional. O poder da investigação nas suas mãos.
+          Pesquise nomes, CPFs, telefones e muito mais em nossa <br className="hidden md:block" /> plataforma completa de investigação profissional.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link
-            href="/cadastro"
-            className="btn-premium px-10 py-4 text-lg w-full sm:w-auto flex items-center justify-center gap-2"
-          >
-            <Search className="w-5 h-5" />
-            Começar a Investigar
-          </Link>
-          <Link
-            href="/login"
-            className="px-10 py-4 text-lg rounded-md border border-white/20 hover:bg-white/5 transition-all w-full sm:w-auto flex items-center justify-center gap-2 text-gray-300"
-          >
-            Já tenho conta
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <SearchTeaser />
 
         {/* Trust strip abaixo dos botões */}
         <div className="mt-16 flex flex-wrap justify-center gap-6 text-sm text-gray-500">
