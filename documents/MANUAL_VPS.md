@@ -48,7 +48,7 @@ docker compose up -d --build
 docker compose exec app npm exec prisma db push
 
 # Popular o banco com dados iniciais (Preços, Categorias)
-docker compose exec app npm exec prisma db seed
+docker compose exec app npx tsx prisma/seed.ts
 ```
 O sistema estará rodando internamente na porta **3000**.
 
