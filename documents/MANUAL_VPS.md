@@ -54,7 +54,7 @@ sudo nano /etc/nginx/sites-available/consultaall
 **Cole este conteúdo (ajustando seu domínio):**
 ```nginx
 server {
-    server_name seu-dominio.com;
+    server_name detetivebuscas.com;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -73,7 +73,7 @@ sudo nginx -t
 sudo systemctl restart nginx
 
 # Gerar SSL Grátis
-sudo certbot --nginx -d seu-dominio.com
+sudo certbot --nginx -d detetivebuscas.com
 ```
 
 ## 6. Comandos Úteis
