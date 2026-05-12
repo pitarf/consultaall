@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { realizarConsulta, getPricing } from '@/app/actions/consultas';
 import { getUserProfile } from '@/app/actions/perfil';
+import { validarChave } from '@/lib/validators';
 import { toast } from 'sonner';
 import { Search, Loader2, HelpCircle, FlaskConical, Zap } from 'lucide-react';
 import { DataViewer } from '@/components/DataViewer';
@@ -114,10 +115,13 @@ export default function DashboardPage() {
   };
 
   const handleSearch = async () => {
-    if (!chaveValor) {
-      toast.warning('Por favor, informe a chave de busca.');
+    // Validação preventiva no Frontend
+    const validation = validarChave(chaveTipo, chaveValor);
+    if (!validation.valid) {
+      toast.error(validation.message);
       return;
     }
+
     if (selectedModules.length === 0) {
       toast.warning('Selecione ao menos um conjunto de dados para consultar.');
       return;

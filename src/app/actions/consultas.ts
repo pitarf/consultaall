@@ -3,6 +3,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { fazerConsultaAPI } from '@/services/api-consulta';
+import { validarChave } from '@/lib/validators';
 
 export async function getPricing() {
   return prisma.modulePricing.findMany();
@@ -12,7 +13,13 @@ export async function realizarConsulta(target: string, query: string, selectedMo
   const session = await verifySession();
 
   if (!session) {
-    return { error: 'Usuário não autenticado.' };
+    return { error: 'Sessão expirada. Faça login novamente.' };
+  }
+
+  // Validação de Segurança (Backend)
+  const validation = validarChave(target, query);
+  if (!validation.valid) {
+    return { error: validation.message };
   }
 
   if (!selectedModules || selectedModules.length === 0) {
