@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SearchTeaser from "@/components/SearchTeaser";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../lib/prisma";
 import {
   Search,
   ShieldCheck,
@@ -46,7 +46,7 @@ export default async function Home() {
               </div>
             )}
             <span className="text-xl font-bold tracking-wider text-white">
-              {settings?.siteTitle?.split(' - ')[0] || "Detetive"}<span className="text-primary"> {settings?.siteTitle?.split(' - ')[1] || "Buscas"}</span>
+              {settings?.siteTitle ? settings.siteTitle.split(' - ')[0] : "Detetive"}<span className="text-primary"> {settings?.siteTitle ? settings.siteTitle.split(' - ')[1] : "Buscas"}</span>
             </span>
           </div>
 

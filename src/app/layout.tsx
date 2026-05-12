@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../lib/prisma";
 import "./globals.css";
 
 export const revalidate = 0;
