@@ -3,6 +3,35 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+
+/**
+ * Verifica a senha secundária do painel administrativo.
+ * Define um cookie de acesso se a senha estiver correta.
+ */
+export async function verifyAdminPassword(password: string) {
+  const session = await verifySession();
+  if (!session) return { error: 'Sessão expirada.' };
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || user.role !== 'ADMIN') return { error: 'Acesso negado.' };
+
+  const correctPassword = process.env.ADMIN_PANEL_PASSWORD || '@212121@';
+
+  if (password === correctPassword) {
+    const cookieStore = await cookies();
+    cookieStore.set('admin_verified', 'true', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 4, // 4 horas de acesso
+      sameSite: 'lax',
+      path: '/admin',
+    });
+    return { success: true };
+  }
+
+  return { error: 'Senha incorreta.' };
+}
 
 // Middleware de verificação de permissão
 async function checkAdmin() {

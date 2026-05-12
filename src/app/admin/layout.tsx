@@ -4,11 +4,15 @@ import { redirect } from 'next/navigation';
 import { ShieldCheck, LayoutDashboard, Users, Activity, LogOut, ArrowLeft, Settings, DollarSign, Tag } from 'lucide-react';
 import Link from 'next/link';
 
+import { cookies } from 'next/headers';
+
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const isAdminVerified = cookieStore.get('admin_verified')?.value === 'true';
   const session = await verifySession();
 
   if (!session) {
@@ -22,6 +26,11 @@ export default async function AdminLayout({
 
   if (!user || user.role !== 'ADMIN') {
     redirect('/dashboard'); // Redireciona usuários normais para fora do admin
+  }
+
+  // Checkpoint de segurança secundária
+  if (!isAdminVerified) {
+    redirect('/admin-login');
   }
 
   return (
