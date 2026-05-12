@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SearchTeaser from "@/components/SearchTeaser";
+import { prisma } from "@/lib/prisma";
 import {
   Search,
   ShieldCheck,
