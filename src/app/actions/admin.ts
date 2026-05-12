@@ -16,9 +16,21 @@ export async function verifyAdminPassword(password: string) {
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
   if (!user || user.role !== 'ADMIN') return { error: 'Acesso negado.' };
 
+  // Verifica se está em período de bloqueio
+  if (user.adminLockoutUntil && user.adminLockoutUntil > new Date()) {
+    const espera = Math.ceil((user.adminLockoutUntil.getTime() - Date.now()) / 1000 / 60);
+    return { error: `Muitas tentativas. Tente novamente em ${espera} minutos.` };
+  }
+
   const correctPassword = process.env.ADMIN_PANEL_PASSWORD || '@212121@';
 
   if (password === correctPassword) {
+    // Sucesso: Reseta tentativas e define cookie
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { adminAttempts: 0, adminLockoutUntil: null }
+    });
+
     const cookieStore = await cookies();
     cookieStore.set('admin_verified', 'true', {
       httpOnly: true,
@@ -30,7 +42,30 @@ export async function verifyAdminPassword(password: string) {
     return { success: true };
   }
 
-  return { error: 'Senha incorreta.' };
+  // Falha: Incrementa tentativas
+  const novasTentativas = user.adminAttempts + 1;
+  const maxTentativas = 3;
+  
+  const updateData: any = { adminAttempts: novasTentativas };
+  
+  if (novasTentativas >= maxTentativas) {
+    // Bloqueia por 1 hora
+    const lockout = new Date(Date.now() + 60 * 60 * 1000);
+    updateData.adminLockoutUntil = lockout;
+    updateData.adminAttempts = 0; // Opcional: resetar após configurar o bloqueio
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: updateData
+  });
+
+  const restantes = maxTentativas - novasTentativas;
+  return { 
+    error: novasTentativas >= maxTentativas 
+      ? 'Acesso bloqueado por 1 hora devido a múltiplas tentativas incorretas.' 
+      : `Senha incorreta. Você tem mais ${restantes} tentativas.` 
+  };
 }
 
 // Middleware de verificação de permissão
