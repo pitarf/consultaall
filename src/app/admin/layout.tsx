@@ -1,7 +1,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { ShieldCheck, LayoutDashboard, Users, Activity, LogOut, ArrowLeft, Settings, DollarSign } from 'lucide-react';
+import { ShieldCheck, LayoutDashboard, Users, Activity, LogOut, ArrowLeft, Settings, DollarSign, Tag } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function AdminLayout({
@@ -48,6 +48,10 @@ export default async function AdminLayout({
           <Link href="/admin/vendas" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <DollarSign className="w-5 h-5" />
             Vendas e Receita
+          </Link>
+          <Link href="/admin/precos" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+            <Tag className="w-5 h-5" />
+            Tabela de Preços
           </Link>
           <Link href="/admin/configuracoes" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <Settings className="w-5 h-5" />
