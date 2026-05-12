@@ -4,7 +4,9 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-# Usamos install em vez de ci para evitar erros de sincronia no primeiro build
+# Precisamos copiar a pasta prisma antes do install para o postinstall funcionar
+COPY prisma ./prisma/
+
 RUN npm install
 
 # Estágio 2: Build
@@ -13,7 +15,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Gerar o cliente do Prisma e fazer o build do Next.js
+# Gerar o cliente do Prisma novamente para garantir sincronia e fazer o build
 RUN npx prisma generate
 RUN npm run build
 
