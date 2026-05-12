@@ -16,7 +16,8 @@ export async function fazerConsultaAPI(params: ConsultaParams) {
 
   // Se NÃO for teste, chama a API Real
   if (!params.isTest) {
-    const response = await fetch('https://services.apiconsultabrasil.com/', {
+    const apiUrl = process.env.API_CONSULTA_URL || 'https://services.apiconsultabrasil.com/';
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
