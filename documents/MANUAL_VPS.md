@@ -42,10 +42,13 @@ nano .env
 ## 4. Deploy com Docker
 ```bash
 # Iniciar os containers
-docker-compose up -d --build
+docker compose up -d --build
 
 # Criar as tabelas no banco de dados (Apenas na primeira vez)
-docker-compose exec app npx prisma db push
+docker compose exec app npm exec prisma db push
+
+# Popular o banco com dados iniciais (Preços, Categorias)
+docker compose exec app npm exec prisma db seed
 ```
 O sistema estará rodando internamente na porta **3000**.
 
