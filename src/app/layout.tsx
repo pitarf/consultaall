@@ -4,6 +4,9 @@ import { Toaster } from "sonner";
 import { prisma } from "@/lib/prisma";
 import "./globals.css";
 
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

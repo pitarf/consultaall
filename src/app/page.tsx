@@ -22,7 +22,9 @@ import {
  * Design inspirado em plataformas modernas de investigação de dados.
  * Dark mode com glassmorphism, gradientes azul/roxo e identidade investigativa.
  */
-export default function Home() {
+export default async function Home() {
+  const settings = await prisma.systemSetting.findFirst();
+
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden">
 
@@ -31,11 +33,19 @@ export default function Home() {
         <div className="container-premium py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.4)]">
-              <Search className="w-5 h-5 text-white" />
-            </div>
+            {settings?.logoUrl ? (
+              <img 
+                src={settings.logoUrl} 
+                alt="Logo" 
+                className="h-9 w-auto object-contain"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.4)]">
+                <Search className="w-5 h-5 text-white" />
+              </div>
+            )}
             <span className="text-xl font-bold tracking-wider text-white">
-              Detetive<span className="text-primary"> Buscas</span>
+              {settings?.siteTitle?.split(' - ')[0] || "Detetive"}<span className="text-primary"> {settings?.siteTitle?.split(' - ')[1] || "Buscas"}</span>
             </span>
           </div>
 
@@ -318,11 +328,19 @@ export default function Home() {
         <div className="container-premium">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center">
-                <Search className="w-4 h-4 text-white" />
-              </div>
+              {settings?.logoUrl ? (
+                <img 
+                  src={settings.logoUrl} 
+                  alt="Logo" 
+                  className="h-7 w-auto object-contain"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center">
+                  <Search className="w-4 h-4 text-white" />
+                </div>
+              )}
               <span className="text-lg font-bold text-white">
-                Detetive<span className="text-primary"> Buscas</span>
+                {settings?.siteTitle?.split(' - ')[0] || "Detetive"}<span className="text-primary"> {settings?.siteTitle?.split(' - ')[1] || "Buscas"}</span>
               </span>
             </div>
             <div className="flex gap-6 text-sm text-gray-500">
@@ -330,7 +348,7 @@ export default function Home() {
               <Link href="/cadastro" className="hover:text-white transition-colors">Cadastro</Link>
             </div>
             <p className="text-gray-600 text-sm text-center md:text-right">
-              © {new Date().getFullYear()} Detetive Buscas. Todos os direitos reservados.
+              © {new Date().getFullYear()} {settings?.siteTitle?.split(' - ')[0] || "Detetive Buscas"}. Todos os direitos reservados.
             </p>
           </div>
         </div>

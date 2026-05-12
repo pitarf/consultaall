@@ -52,11 +52,19 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-background flex">
       {/* Sidebar - Inspirado na referência DeskData */}
       <aside className="w-64 border-r border-white/10 bg-[#0f172a] hidden md:flex flex-col">
-        <div className="h-20 flex items-center justify-center border-b border-white/5">
+        <div className="h-20 flex items-center justify-center border-b border-white/5 p-4">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <Database className="text-primary w-6 h-6" />
-            <span className="text-xl font-bold tracking-wider text-white">
-              Consulta<span className="text-primary">ALL</span>
+            {settings?.logoUrl ? (
+              <img 
+                src={settings.logoUrl} 
+                alt="Logo" 
+                className="h-8 w-auto object-contain"
+              />
+            ) : (
+              <Database className="text-primary w-6 h-6" />
+            )}
+            <span className="text-lg font-bold tracking-tight text-white whitespace-nowrap">
+              {settings?.siteTitle?.split(' - ')[0] || "Consulta"}<span className="text-primary">{settings?.siteTitle?.split(' - ')[1] || "ALL"}</span>
             </span>
           </Link>
         </div>
