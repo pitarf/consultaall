@@ -3,6 +3,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { fazerConsultaAPI } from '@/services/api-consulta';
+import { performSmartSearch } from '@/services/direct-data';
 import { validarChave } from '@/lib/validators';
 
 export async function getPricing() {
@@ -104,13 +105,25 @@ export async function realizarConsulta(target: string, query: string, selectedMo
       }
     }
 
-    // 1. Chama a API (Passando o flag de teste e o target mapeado)
-    const apiResult = await fazerConsultaAPI({ 
-      target: apiTarget, 
-      pacote: 'teste', // Conforme seu exemplo
-      query: cleanQuery, 
-      isTest: effectiveIsTest 
-    });
+    // 1. Chama a API correspondente (Roteamento entre Provedores)
+    let apiResult: any;
+
+    if (['email', 'telefone', 'nome'].includes(target)) {
+      // Usa a Nova API de Pesquisa Avançada (Direct Data)
+      apiResult = await performSmartSearch(
+        target as 'email' | 'phone' | 'name', 
+        cleanQuery,
+        selectedModules
+      );
+    } else {
+      // Mantém a API Anterior para CPF e outros casos
+      apiResult = await fazerConsultaAPI({ 
+        target: apiTarget, 
+        pacote: 'teste', 
+        query: cleanQuery, 
+        isTest: effectiveIsTest 
+      });
+    }
 
     if (!apiResult.success) {
       // Log de erro da API
