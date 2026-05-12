@@ -8,7 +8,7 @@ COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
 
-RUN npm install
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npm install
 
 # Estágio 2: Build
 FROM node:20-alpine AS builder
@@ -18,7 +18,7 @@ COPY . .
 
 # Gerar o cliente do Prisma novamente para garantir sincronia e fazer o build
 RUN npx prisma generate
-RUN npm run build
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npm run build
 
 # Estágio 3: Runner (Produção)
 FROM node:20-alpine AS runner
