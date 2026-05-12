@@ -3,8 +3,9 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+# Usamos install em vez de ci para evitar erros de sincronia no primeiro build
+RUN npm install
 
 # Estágio 2: Build
 FROM node:20-alpine AS builder
@@ -20,7 +21,7 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 # Copiar arquivos necessários do builder
 COPY --from=builder /app/public ./public
@@ -30,8 +31,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # O Next.js standalone gera um server.js para rodar sem dependências de dev
 CMD ["node", "server.js"]
