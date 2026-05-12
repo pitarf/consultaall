@@ -43,6 +43,9 @@ nano .env
 ```bash
 # Iniciar os containers
 docker-compose up -d --build
+
+# Criar as tabelas no banco de dados (Apenas na primeira vez)
+docker-compose exec app npx prisma db push
 ```
 O sistema estará rodando internamente na porta **3000**.
 
