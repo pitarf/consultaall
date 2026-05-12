@@ -18,35 +18,43 @@
 - [x] **Integração Real (CPF):** Conexão oficial com o provedor de consultas e Modo Demo para Admin.
 - [x] **Migração Cloud:** Banco de dados migrado para Neon PostgreSQL e pronto para Vercel.
 
-## SPLIT 3: Expansão de Módulos e Deploy Final em Docker (⏳ PENDENTE)
-*Este split foca na escala final do produto para lançamento oficial.*
+## SPLIT 3: Expansão de Módulos, Deploy Docker e Segurança Admin (🚀 EM ANDAMENTO)
+*Este split foca na escala final, infraestrutura de produção e blindagem do sistema.*
 
 ### 🛠️ Implementação de Novos Módulos de Consulta
 - [ ] **Módulo Empresas (CNPJ):**
     - Consulta detalhada de QSA (Quadro de Sócios e Administradores).
     - Histórico financeiro, capital social e situação cadastral ativa/inativa.
-    - Mapeamento de filiais e vínculos econômicos.
 - [ ] **Módulo Veículos (Placas/Chassi):**
     - Busca detalhada por placa para identificação de multas e débitos.
     - Histórico de proprietários anteriores e restrições administrativas.
-    - Alertas de furto/roubo e histórico de leilão/sinistro.
 - [ ] **Módulo Endereços:**
     - Localização precisa via CEP ou logradouro.
-    - Identificação de moradores no mesmo endereço (vizinhança técnica).
-    - Validação de dados postais e geolocalização.
 
-### 🚀 Deploy e Infraestrutura Profissional
-- [ ] **Containerização com Docker:**
-    - Criação de `Dockerfile` e `docker-compose.yml` otimizados para Next.js.
-    - Isolamento de ambiente para garantir estabilidade e segurança.
-- [ ] **Deploy em VPS Hostinger:**
-    - Configuração de servidor Linux com Docker Engine.
-    - Orquestração de containers para máxima disponibilidade (Uptime).
-- [ ] **Certificados e Segurança:**
-    - Implementação de Proxy Reverso (Nginx/Traefik).
-    - Certificados SSL automáticos (HTTPS) e Firewall avançado.
+### 🚀 Deploy e Infraestrutura Profissional (✅ 90% CONCLUÍDO)
+- [x] **Containerização com Docker:**
+    - `Dockerfile` e `docker-compose.yml` otimizados para modo standalone.
+    - Persistência de volumes e isolamento de banco de dados.
+- [x] **Deploy em VPS:**
+    - Deploy realizado com sucesso na VPS Hostinger (srv1664973).
+    - Automação de backup diário às 03:00 AM.
+- [ ] **Certificados e Proxy (PENDENTE):**
+    - Configuração de Nginx para Proxy Reverso.
+    - Certificados SSL (HTTPS) via Certbot.
 
-### 💎 Recursos de Valor Agregado
-- [ ] **Exportação Profissional:** Botão para download de relatórios em PDF/Excel.
-- [ ] **Login Social:** Implementação do botão "Entrar com Google" (OAuth2).
-- [ ] **Plataforma de API:** Documentação e acesso para desenvolvedores externos.
+### 💎 Identidade e Conversão (✅ CONCLUÍDO)
+- [x] **Landing Page "WolfBuscas":** Nova interface premium em Dark Mode com foco em conversão.
+- [x] **Mecanismo de Isca (SearchTeaser):** Simulação de busca com animação e loading para atrair cadastros.
+- [x] **Branding Dinâmico:** Gerenciamento de Logo e Favicon via Painel Admin com URL externa.
+- [x] **Metadata Inteligente:** SEO Dinâmico gerado automaticamente a partir do banco de dados.
+
+### 🔐 Segurança e Gestão Admin (✅ CONCLUÍDO)
+- [x] **Gestão de Preços:** Aba administrativa para alterar valores de cada módulo em tempo real.
+- [x] **Checkpoint de Segurança Admin:** Senha secundária mestra (@212121@) no ambiente (.env).
+- [x] **Proteção Anti-Brute Force:** Limite de 3 tentativas na senha admin com bloqueio automático de 1h.
+
+### 🛠️ Próximas Tarefas Prioritárias
+- [ ] Configuração final do SSL/Nginx no domínio oficial.
+- [ ] Teste de ponta a ponta do Webhook da PushinPay em ambiente de produção.
+- [ ] Mapeamento dos campos JSON para os módulos de Veículos e Empresas.
+- [ ] Implementação de Login Social (Google OAuth2).
