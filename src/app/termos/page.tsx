@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../../lib/prisma";
 import { ArrowLeft, Search, Shield, Lock, Scale, FileText } from "lucide-react";
 
 export const revalidate = 0;
