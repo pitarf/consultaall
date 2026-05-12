@@ -102,7 +102,7 @@ crontab -e
 
 3. Adicione esta linha ao final do arquivo para rodar todo dia às 03:00 da manhã:
 ```bash
-00 03 * * * /path/to/consultaall/scripts/backup-db.sh
+00 03 * * * /root/consultaall/scripts/backup-db.sh
 ```
 *(Substitua `/path/to/` pelo caminho real da pasta na sua VPS)*
 
