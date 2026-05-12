@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String?
+  balance       Float     @default(0)      // Saldo em R$
+  role          String    @default("USER") // USER ou ADMIN
+  active        Boolean   @default(true)   // Para banir ou desativar
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  transactions  Transaction[]
+  searches      SearchHistory[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Float    // Valor em R$ movimentado (positivo para recarga, negativo para gasto)
+  type        String   // "DEPOSIT", "USAGE", "REFUND", "ADJUSTMENT"
+  description String?
+  status      String   @default("COMPLETED") // PENDING, COMPLETED, FAILED
+  externalId  String?  @unique // ID na PushinPay ou gateway externo
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SearchHistory {
+  id          String   @id @default(uuid())
+  userId      String
+  query       String   // e.g., CPF, CNPJ, Plate
+  target      String   // Type of search: "cpf-basico-pessoa-fisica"
+  cost        Float    // Custo da consulta em R$
+  status      String   // "SUCCESS", "FAILED"
+  result      Json?    // Stored result or partial data
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SystemSetting {
+  id              String   @id @default("default")
+  siteTitle       String   @default("ConsultaALL - Dados Premium")
+  siteDescription String   @default("Consultas veiculares, processos e muito mais.")
+  siteKeywords    String   @default("consultas, cpf, cnpj, veículos")
+  faviconUrl      String?
+  supportWhatsapp String?  @default("5511999999999")
+  updatedAt       DateTime @updatedAt
+}
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  level     String   // "INFO", "WARNING", "ERROR"
+  message   String
+  context   Json?    // Detalhes extras, ex: { userId, endpoint, error }
+  createdAt DateTime @default(now())
+}
+
+model ModulePricing {
+  id          String   @id // e.g., "dados_basicos"
+  name        String       // e.g., "Dados básicos"
+  category    String       // e.g., "Dados pessoais"
+  price       Float        // e.g., 0.25 (em R$)
+  updatedAt   DateTime @updatedAt
+}

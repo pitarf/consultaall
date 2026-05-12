@@ -1,0 +1,158 @@
+import { getDashboardMetrics, getAdvancedMetrics } from '@/app/actions/admin';
+import { DollarSign, Search, Users, Activity, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import DashboardClient from './DashboardClient';
+
+export const dynamic = 'force-dynamic';
+
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
+  const { month } = await searchParams;
+  const currentMonth = month ? parseInt(month) : new Date().getMonth();
+  
+  const metrics = await getDashboardMetrics();
+  const advanced = await getAdvancedMetrics(currentMonth);
+
+  return (
+    <div className="max-w-6xl mx-auto pb-20">
+      <div className="mb-8 border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <TrendingUp className="text-primary w-8 h-8" />
+            Painel de Inteligência
+          </h1>
+          <p className="text-gray-400 mt-2">Visão consolidada de faturamento, lucro e performance.</p>
+        </div>
+        
+        <DashboardClient currentMonth={currentMonth} />
+      </div>
+
+      {/* KPI Principais */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-green-500/5 to-transparent relative overflow-hidden group hover:border-green-500/20 transition-all">
+          <div className="flex justify-between items-start relative z-10">
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Faturamento (Mês)</p>
+              <h3 className="text-2xl font-bold text-white mt-1">
+                R$ {advanced.monthlyRevenue.toFixed(2).replace('.', ',')}
+              </h3>
+              <div className="flex items-center gap-1 mt-2 text-green-500 text-[10px] font-bold">
+                <ArrowUpRight className="w-3 h-3" />
+                EM TEMPO REAL
+              </div>
+            </div>
+            <div className="p-3 bg-green-500/10 rounded-2xl text-green-500 group-hover:scale-110 transition-transform">
+              <DollarSign className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-primary/5 to-transparent relative overflow-hidden group hover:border-primary/20 transition-all">
+          <div className="flex justify-between items-start relative z-10">
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Consultas (Mês)</p>
+              <h3 className="text-2xl font-bold text-white mt-1">{advanced.monthlyQueries}</h3>
+              <div className="flex items-center gap-1 mt-2 text-primary text-[10px] font-bold">
+                <Activity className="w-3 h-3" />
+                ATIVIDADE ALTA
+              </div>
+            </div>
+            <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform">
+              <Search className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-blue-500/5 to-transparent relative overflow-hidden group hover:border-blue-500/20 transition-all">
+          <div className="flex justify-between items-start relative z-10">
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Total Geral</p>
+              <h3 className="text-2xl font-bold text-white mt-1">R$ {metrics.totalRevenue.toFixed(2).replace('.', ',')}</h3>
+              <p className="text-[10px] text-gray-500 mt-2 font-medium italic">Acumulado histórico</p>
+            </div>
+            <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500 group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-purple-500/5 to-transparent relative overflow-hidden group hover:border-purple-500/20 transition-all">
+          <div className="flex justify-between items-start relative z-10">
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Usuários Ativos</p>
+              <h3 className="text-2xl font-bold text-white mt-1">{metrics.totalUsers}</h3>
+              <p className="text-[10px] text-gray-500 mt-2 font-medium italic">Base de clientes</p>
+            </div>
+            <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-500 group-hover:scale-110 transition-transform">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Gráfico de Faturamento Diário (Simulado com Mini-Barras) */}
+        <div className="lg:col-span-2 glass-panel rounded-3xl border border-white/5 p-8">
+          <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-green-400" />
+            Desempenho Diário (Últimos 30 dias)
+          </h2>
+          
+          <div className="h-64 flex items-end justify-between gap-1 mt-10">
+            {Object.entries(advanced.statsByDay).slice(-15).map(([day, amount]: any, i) => (
+              <div key={day} className="flex flex-col items-center gap-2 group relative flex-1">
+                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black text-[10px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap z-20">
+                  R$ {amount.toFixed(2)}
+                </div>
+                <div 
+                  className="w-full bg-primary/20 group-hover:bg-primary transition-all rounded-t-lg relative"
+                  style={{ height: `${Math.max((amount / 500) * 100, 5)}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-50"></div>
+                </div>
+                <span className="text-[8px] text-gray-600 font-bold rotate-45 mt-2 origin-left truncate w-full">
+                  {day.split('/')[0]}/{day.split('/')[1]}
+                </span>
+              </div>
+            ))}
+            {Object.keys(advanced.statsByDay).length === 0 && (
+              <div className="w-full h-full flex items-center justify-center text-gray-600 italic text-sm">
+                Aguardando primeiras vendas do período...
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Top Serviços */}
+        <div className="glass-panel rounded-3xl border border-white/5 p-8">
+          <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-primary" />
+            Módulos mais Rentáveis
+          </h2>
+
+          <div className="space-y-6">
+            {metrics.topQueries.map((q, idx) => (
+              <div key={idx} className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-gray-300 uppercase tracking-tighter">{q.target.split('-')[0]}</span>
+                  <span className="text-xs font-mono text-primary">{q._count.target} pedidos</span>
+                </div>
+                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                    style={{ width: `${(q._count.target / metrics.totalQueries) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+            {metrics.topQueries.length === 0 && (
+              <p className="text-sm text-gray-600 italic text-center py-10">Nenhuma consulta realizada.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
