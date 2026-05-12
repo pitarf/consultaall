@@ -16,8 +16,9 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     return { error: 'Sessão expirada. Faça login novamente.' };
   }
 
-  // Validação de Segurança (Backend)
-  const validation = validarChave(target, query);
+  // Validação de Segurança e Sanitização (Remoção de espaços)
+  const cleanQuery = query.trim();
+  const validation = validarChave(target, cleanQuery);
   if (!validation.valid) {
     return { error: validation.message };
   }
@@ -53,9 +54,24 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     // Só permite isTest se o usuário for ADMIN
     const effectiveIsTest = isTest && user.role === 'ADMIN';
 
-    // Mapeamento de Target Técnico da API
-    let apiTarget = target;
-    if (target === 'cpf') apiTarget = 'cpf-detalhada-pessoa-fisica';
+    // Mapeamento Técnico de Alvos da API
+    let apiTarget = '';
+    switch (target) {
+      case 'cpf':
+        apiTarget = 'cpf-detalhada-pessoa-fisica';
+        break;
+      case 'nome':
+        apiTarget = 'busca-por-nome';
+        break;
+      case 'telefone':
+        apiTarget = 'busca-por-telefone';
+        break;
+      case 'email':
+        apiTarget = 'busca-por-email';
+        break;
+      default:
+        apiTarget = target;
+    }
 
     // SISTEMA DE CACHE (48 HORAS)
     // Verifica se já existe uma consulta idêntica e bem-sucedida nas últimas 48h
@@ -63,7 +79,7 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     const cache = await prisma.searchHistory.findFirst({
       where: {
         target: apiTarget,
-        query: query,
+        query: cleanQuery,
         status: 'SUCCESS',
         createdAt: { gte: quarentaEOitoHorasAtras }
       },
@@ -92,7 +108,7 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     const apiResult = await fazerConsultaAPI({ 
       target: apiTarget, 
       pacote: 'teste', // Conforme seu exemplo
-      query, 
+      query: cleanQuery, 
       isTest: effectiveIsTest 
     });
 
@@ -102,7 +118,7 @@ export async function realizarConsulta(target: string, query: string, selectedMo
         data: {
           level: 'ERROR',
           message: `Falha na API de Consulta: ${apiResult.message || 'Erro desconhecido'}`,
-          context: { userId: user.id, target, query, apiResult }
+          context: { userId: user.id, target, query: cleanQuery, apiResult }
         }
       });
       return { error: apiResult.message || 'Erro na consulta na API.' };
@@ -135,7 +151,7 @@ export async function realizarConsulta(target: string, query: string, selectedMo
       const history = await tx.searchHistory.create({
         data: {
           userId: user.id,
-          query,
+          query: cleanQuery,
           target,
           cost: totalCost,
           status: 'SUCCESS',
@@ -155,7 +171,7 @@ export async function realizarConsulta(target: string, query: string, selectedMo
       data: {
         level: 'ERROR',
         message: `Erro crítico no servidor de consultas: ${error.message}`,
-        context: { userId: session.userId, target, query, error: error.stack }
+        context: { userId: session.userId, target, query: cleanQuery, error: error.stack }
       }
     });
 

@@ -84,9 +84,17 @@ export async function gerarPixRecarga(amount: number) {
  * Consulta o status de uma transação específica (Polling ou manual)
  */
 export async function checkTransactionStatus(externalId: string) {
+  const session = await verifySession();
+  if (!session) {
+    return { error: 'Não autorizado.' };
+  }
+
   try {
-    const transaction = await prisma.transaction.findUnique({
-      where: { externalId },
+    const transaction = await prisma.transaction.findFirst({
+      where: { 
+        externalId,
+        userId: session.userId 
+      },
       select: { status: true }
     });
     return { status: transaction?.status || 'NOT_FOUND' };

@@ -50,13 +50,25 @@ export async function POST(req: Request) {
           });
 
           // Incrementa o saldo do usuário
-          // O valor no banco é Float (R$), PushinPay envia em centavos
+          // SEGURANÇA: Validamos se o valor pago é o mesmo que o valor registrado no banco
           const amountInReais = value / 100;
           
+          if (Math.abs(amountInReais - transaction.amount) > 0.01) {
+            console.error(`🚨 ALERTA DE FRAUDE: Divergência de valores na transação ${id}. Pago: ${amountInReais} | Esperado: ${transaction.amount}`);
+            await tx.systemLog.create({
+              data: {
+                level: "ERROR",
+                message: `TENTATIVA DE FRAUDE DETECTADA: Divergência de valores no Webhook. ID: ${id}`,
+                context: { paid: amountInReais, expected: transaction.amount, userId: transaction.userId }
+              }
+            });
+            return { error: "Value mismatch" };
+          }
+
           await tx.user.update({
             where: { id: transaction.userId },
             data: { 
-              balance: { increment: amountInReais } 
+              balance: { increment: transaction.amount } // Usamos o valor do BANCO por segurança
             }
           });
 
