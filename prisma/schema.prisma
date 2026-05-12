@@ -51,10 +51,11 @@ model SearchHistory {
 
 model SystemSetting {
   id              String   @id @default("default")
-  siteTitle       String   @default("ConsultaALL - Dados Premium")
-  siteDescription String   @default("Consultas veiculares, processos e muito mais.")
-  siteKeywords    String   @default("consultas, cpf, cnpj, veículos")
+  siteTitle       String   @default("Detetive Buscas")
+  siteDescription String   @default("Investigação de dados profissional. Consulte CPF, CNPJ, Veículos e muito mais.")
+  siteKeywords    String   @default("consultas, cpf, cnpj, veículos, investigação")
   faviconUrl      String?
+  logoUrl         String?
   supportWhatsapp String?  @default("5511999999999")
   updatedAt       DateTime @updatedAt
 }

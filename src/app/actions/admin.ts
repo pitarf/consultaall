@@ -110,6 +110,8 @@ export async function updateSystemSettings(data: {
   siteDescription?: string;
   siteKeywords?: string;
   supportWhatsapp?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
 }) {
   await checkAdmin();
   
@@ -120,7 +122,8 @@ export async function updateSystemSettings(data: {
   });
 
   revalidatePath('/admin/configuracoes');
-  revalidatePath('/dashboard'); // Para atualizar o link de suporte se necessário
+  revalidatePath('/');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 
