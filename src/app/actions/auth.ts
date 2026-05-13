@@ -88,3 +88,18 @@ export async function logout() {
   await deleteSession();
   redirect('/login');
 }
+
+export async function loginWithGoogle() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const redirectUri = `${appUrl}/api/auth/google/callback`;
+
+  if (!clientId) {
+    console.error('Google OAuth não configurado no .env');
+    redirect('/login?error=O_Login_com_Google_nao_esta_configurado');
+  }
+
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid email profile&prompt=select_account`;
+  
+  redirect(url);
+}

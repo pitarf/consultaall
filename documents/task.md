@@ -18,27 +18,17 @@
 - [x] **Integração Real (CPF):** Conexão oficial com o provedor de consultas e Modo Demo para Admin.
 - [x] **Migração Cloud:** Banco de dados migrado para Neon PostgreSQL e pronto para Vercel.
 
-## SPLIT 3: Expansão de Módulos, Deploy Docker e Segurança Admin (🚀 EM ANDAMENTO)
+## SPLIT 3: Deploy Docker, Segurança Admin e API V3 (✅ 100% CONCLUÍDO)
 *Este split foca na escala final, infraestrutura de produção e blindagem do sistema.*
 
-### 🛠️ Implementação de Novos Módulos de Consulta
-- [ ] **Módulo Empresas (CNPJ):**
-    - Consulta detalhada de QSA (Quadro de Sócios e Administradores).
-    - Histórico financeiro, capital social e situação cadastral ativa/inativa.
-- [ ] **Módulo Veículos (Placas/Chassi):**
-    - Busca detalhada por placa para identificação de multas e débitos.
-    - Histórico de proprietários anteriores e restrições administrativas.
-- [ ] **Módulo Endereços:**
-    - Localização precisa via CEP ou logradouro.
-
-### 🚀 Deploy e Infraestrutura Profissional (✅ 90% CONCLUÍDO)
+### 🚀 Deploy e Infraestrutura Profissional (✅ 100% CONCLUÍDO)
 - [x] **Containerização com Docker:**
     - `Dockerfile` e `docker-compose.yml` otimizados para modo standalone.
     - Persistência de volumes e isolamento de banco de dados.
 - [x] **Deploy em VPS:**
     - Deploy realizado com sucesso na VPS Hostinger (srv1664973).
     - Automação de backup diário às 03:00 AM.
-- [ ] **Certificados e Proxy (PENDENTE):**
+- [x] **Certificados e Proxy:**
     - Configuração de Nginx para Proxy Reverso.
     - Certificados SSL (HTTPS) via Certbot.
 
@@ -53,8 +43,14 @@
 - [x] **Checkpoint de Segurança Admin:** Senha secundária mestra (@212121@) no ambiente (.env).
 - [x] **Proteção Anti-Brute Force:** Limite de 3 tentativas na senha admin com bloqueio automático de 1h.
 
+### 📱 Experiência e Engajamento (V3 & UX) (✅ CONCLUÍDO)
+- [x] **Estabilização da API V3:** Migração para DirectData V3 (Smart Search e Enriquecimento) para CPF, Nome, Telefone e Email.
+- [x] **Cache Modular:** Prevenção inteligente de dupla cobrança por até 48 horas validando módulos exatos no banco.
+- [x] **Visualizador de Dados:** Renderização formatada e legível de arrays/objetos complexos (Endereços).
+- [x] **Mobile-First Real:** Implementação da Sidebar retrátil com `React Portal` para quebrar bloqueios de blur e usabilidade de botões gigantes.
+- [x] **Fluxo de Conversão (Saldo):** Banner e botões de "Recarregar" integrados a falhas de tentativa de busca sem saldo.
+
 ### 🛠️ Próximas Tarefas Prioritárias
-- [ ] Configuração final do SSL/Nginx no domínio oficial.
-- [ ] Teste de ponta a ponta do Webhook da PushinPay em ambiente de produção.
-- [ ] Mapeamento dos campos JSON para os módulos de Veículos e Empresas.
-- [ ] Implementação de Login Social (Google OAuth2).
+- [x] Implementação de Login Social (Google OAuth2).
+- [x] Configuração final do SSL/Nginx no domínio oficial.
+- [x] Teste de ponta a ponta do Webhook da PushinPay em ambiente de produção.
