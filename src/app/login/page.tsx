@@ -71,7 +71,7 @@ function LoginContent() {
               />
             </div>
             <div className="flex justify-end mt-2">
-              <Link href="#" className="text-xs text-primary hover:text-blue-400 transition-colors">
+              <Link href="/esqueceu-senha" className="text-xs text-primary hover:text-blue-400 transition-colors">
                 Esqueceu a senha?
               </Link>
             </div>

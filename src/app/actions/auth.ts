@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createSession, deleteSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
+import { z } from 'zod';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'E-mail inválido.' }),
@@ -102,4 +103,138 @@ export async function loginWithGoogle() {
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid email profile&prompt=select_account`;
   
   redirect(url);
+}
+
+// ============================================================================
+// RECUPERAÇÃO DE SENHA
+// ============================================================================
+
+export async function requestPasswordReset(prevState: any, formData: FormData) {
+  const email = formData.get('email') as string;
+
+  if (!email) {
+    return { error: 'O e-mail é obrigatório.' };
+  }
+
+  // Verifica se o usuário existe
+  const user = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (!user) {
+    // Retornamos sucesso mesmo se não existir para evitar roubo de dados (email enumeration)
+    return { success: true };
+  }
+
+  // Se o usuário loga via Google (sem senha)
+  if (!user.passwordHash) {
+    return { error: 'Esta conta foi criada com o Google. Utilize a opção "Entrar com Google".' };
+  }
+
+  // Gera um token aleatório e limpa tokens antigos
+  const crypto = require('crypto');
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hora
+
+  await prisma.passwordResetToken.deleteMany({
+    where: { email }
+  });
+
+  await prisma.passwordResetToken.create({
+    data: {
+      email,
+      token,
+      expiresAt
+    }
+  });
+
+  // Enviar e-mail via Brevo (Sendinblue) nativamente
+  const brevoApiKey = process.env.BREVO_API_KEY;
+  if (!brevoApiKey) {
+    console.error('Brevo API key não configurada.');
+    return { error: 'Ocorreu um erro no servidor de e-mail. Contate o suporte.' };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const resetLink = `${appUrl}/resetar-senha?token=${token}`;
+
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': brevoApiKey
+      },
+      body: JSON.stringify({
+        sender: { name: 'Detetive Buscas', email: 'contato@detetivebuscas.com' },
+        to: [{ email, name: user.name || 'Cliente' }],
+        subject: 'Recuperação de Senha - Detetive Buscas',
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #0b2545;">Recuperação de Senha</h2>
+            <p>Olá${user.name ? ' ' + user.name : ''},</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <b>Detetive Buscas</b>.</p>
+            <p>Se você não fez essa solicitação, pode ignorar este e-mail.</p>
+            <p>Para criar uma nova senha, clique no botão abaixo:</p>
+            <a href="${resetLink}" style="display: inline-block; padding: 12px 24px; margin-top: 10px; background-color: #0ea5e9; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Redefinir Minha Senha</a>
+            <p style="margin-top: 20px; font-size: 12px; color: #888;">Este link é válido por 1 hora.</p>
+          </div>
+        `
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.text();
+      console.error('Brevo error:', errData);
+      return { error: 'Não foi possível enviar o e-mail no momento.' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error enviando e-mail:', error);
+    return { error: 'Erro de comunicação com o servidor de e-mail.' };
+  }
+}
+
+export async function resetPassword(prevState: any, formData: FormData) {
+  const token = formData.get('token') as string;
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!token || !password || !confirmPassword) {
+    return { error: 'Dados inválidos.' };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: 'As senhas não coincidem.' };
+  }
+
+  if (password.length < 6) {
+    return { error: 'A senha deve ter pelo menos 6 caracteres.' };
+  }
+
+  // Busca o token e verifica se é válido
+  const resetToken = await prisma.passwordResetToken.findUnique({
+    where: { token }
+  });
+
+  if (!resetToken || resetToken.expiresAt < new Date()) {
+    return { error: 'Link de redefinição inválido ou expirado. Solicite novamente.' };
+  }
+
+  // Atualiza a senha
+  const passwordHash = await bcrypt.hash(password, 10);
+  
+  await prisma.user.update({
+    where: { email: resetToken.email },
+    data: { passwordHash }
+  });
+
+  // Deleta o token usado
+  await prisma.passwordResetToken.delete({
+    where: { id: resetToken.id }
+  });
+
+  return { success: true };
 }
