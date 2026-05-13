@@ -1,25 +1,16 @@
 /**
- * SERVIÇO DE INTEGRAÇÃO - DIRECT DATA (PESQUISA AVANÇADA)
- * Implementa o fluxo de duas etapas: Filtro (Gratuito) e Processamento (Pago).
- * Manual Versão 2.0
+ * SERVIÇO DE INTEGRAÇÃO - DIRECT DATA
+ * Implementa V2 (Advanced Search) e V3 (Pessoa Física Plus)
  */
 
 const BASE_URL = process.env.DIRECT_DATA_BASE_URL || 'https://api.directd.com.br';
+const V3_URL = process.env.DIRECT_DATA_V3_URL || 'https://apiv3.directd.com.br';
 const TOKEN = process.env.DIRECT_DATA_TOKEN;
 
-interface DirectDataResponse<T> {
-  success: boolean;
-  status: string;
-  elapsedTimeMs: number;
-  dateTimeExecution: string;
-  error: { fieldName: string | null; message: string } | null;
-  data?: T; // Payload específico
-}
+// -----------------------------------------------------------------------------
+// SEÇÃO: PESQUISA AVANÇADA (V2) - NOME, TELEFONE, EMAIL
+// -----------------------------------------------------------------------------
 
-/**
- * Endpoint: /api/AdvancedSearch/FilterNaturalPerson
- * Realiza a busca filtrada de Pessoas Físicas (Gratuito).
- */
 export async function filterNaturalPerson(filters: {
   fullName?: string;
   email?: string;
@@ -28,81 +19,42 @@ export async function filterNaturalPerson(filters: {
   city?: string;
 }) {
   if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
-
   const response = await fetch(`${BASE_URL}/api/AdvancedSearch/FilterNaturalPerson`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Token': TOKEN,
-    },
+    headers: { 'Content-Type': 'application/json', 'Token': TOKEN },
     body: JSON.stringify(filters),
   });
-
-  const data = await response.json();
-  return data;
+  return await response.json();
 }
 
-/**
- * Endpoint: /api/AdvancedSearch/ProcessingIds
- * Dispara o processamento (enriquecimento) dos IDs selecionados (Consome Saldo).
- */
 export async function processingIds(listIds: string[], searchName: string = 'Consulta ALL') {
   if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
-
   const response = await fetch(`${BASE_URL}/api/AdvancedSearch/ProcessingIds`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Token': TOKEN,
-    },
+    headers: { 'Content-Type': 'application/json', 'Token': TOKEN },
     body: JSON.stringify({ listIds, searchName }),
   });
-
-  const data = await response.json();
-  return data;
+  return await response.json();
 }
 
-/**
- * Endpoint: /api/AdvancedSearch/ViewSearch
- * Consulta o resultado do processamento.
- */
 export async function viewSearch(searchUid: string) {
   if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
-
   const response = await fetch(`${BASE_URL}/api/AdvancedSearch/ViewSearch`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Token': TOKEN,
-    },
+    headers: { 'Content-Type': 'application/json', 'Token': TOKEN },
     body: JSON.stringify({ searchUid }),
   });
-
-  const data = await response.json();
-  return data;
+  return await response.json();
 }
 
-/**
- * Lógica de Smart Selection (Heurística)
- * Escolhe o melhor candidato da lista de filtros.
- */
 function pickBestCandidate(candidates: any[]) {
   if (!candidates || candidates.length === 0) return null;
-  
-  // 1. Tenta encontrar um com nome da mãe e data de nascimento (mais completo)
   const complete = candidates.find(c => c.motherName && c.dateOfBirth);
-  if (complete) return complete;
-
-  // 2. Fallback: Primeiro da lista (relevância da API)
-  return candidates[0];
+  return complete || candidates[0];
 }
 
-/**
- * Tradutor de Dados: Mapeia o JSON da DirectData para os blocos da UI
- */
-function transformDirectData(raw: any, selectedModules: string[]) {
+function transformDirectDataAdvanced(raw: any, selectedModules: string[]) {
   const result: any = {};
-
   if (selectedModules.includes('dados_basicos') || selectedModules.includes('documentos')) {
     result['Dados_Pessoais'] = {
       nome: raw.nome,
@@ -116,19 +68,16 @@ function transformDirectData(raw: any, selectedModules: string[]) {
       signo: raw.signo
     };
   }
-
   if (selectedModules.includes('telefones')) {
     result['Telefones'] = {
       lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => `${t.ddd}${t.numero} (${t.tipo || 'N/I'})`) : []
     };
   }
-
   if (selectedModules.includes('emails')) {
     result['Emails'] = {
       lista: Array.isArray(raw.emails) ? raw.emails.map((e: any) => e.email || e) : []
     };
   }
-
   if (selectedModules.includes('enderecos')) {
     result['Localizacao'] = {
       enderecos: Array.isArray(raw.enderecos) ? raw.enderecos.map((end: any) => ({
@@ -141,34 +90,22 @@ function transformDirectData(raw: any, selectedModules: string[]) {
       })) : []
     };
   }
-
   if (selectedModules.includes('parentes') || selectedModules.includes('vizinhos')) {
     result['Vinculos'] = {
       parentes: Array.isArray(raw.parentes) ? raw.parentes.map((p: any) => `${p.nome} (${p.vinculo})`) : [],
       vizinhos: Array.isArray(raw.vizinhos) ? raw.vizinhos.map((v: any) => v.nome) : []
     };
   }
-
   if (selectedModules.includes('socio_empresa')) {
     result['Participacoes_Societarias'] = {
       empresas: Array.isArray(raw.sociedades) ? raw.sociedades.map((s: any) => `${s.razao_social} - CNPJ: ${s.cnpj}`) : []
     };
   }
-
   return result;
 }
 
-/**
- * SMART SEARCH - Fluxo Automatizado
- */
-export async function performSmartSearch(
-  type: 'email' | 'phone' | 'name', 
-  query: string, 
-  selectedModules: string[] = [],
-  state?: string
-) {
+export async function performSmartSearch(type: 'email' | 'phone' | 'name', query: string, selectedModules: string[] = [], state?: string) {
   try {
-    // 1. FILTRAR
     const filterParams: any = {};
     if (type === 'email') filterParams.email = query;
     if (type === 'phone') filterParams.phoneNumber = query.replace(/\D/g, '');
@@ -176,53 +113,130 @@ export async function performSmartSearch(
     if (state) filterParams.state = state;
 
     const filterRes = await filterNaturalPerson(filterParams);
-    
     if (!filterRes.success || !filterRes.listFilters || filterRes.listFilters.length === 0) {
-      return { success: false, message: 'Nenhum registro encontrado para este critério.' };
+      return { success: false, message: 'Nenhum registro encontrado.' };
     }
 
-    // 2. SELECIONAR
     const bestMatch = pickBestCandidate(filterRes.listFilters);
-    if (!bestMatch) return { success: false, message: 'Não foi possível identificar um candidato válido.' };
+    if (!bestMatch) return { success: false, message: 'Candidato inválido.' };
 
-    // 3. PROCESSAR
     const procRes = await processingIds([bestMatch.id], `Busca por ${type}: ${query}`);
-    if (!procRes.success || !procRes.searchUid) {
-      return { success: false, message: 'Falha ao iniciar o processamento dos dados.' };
-    }
+    if (!procRes.success || !procRes.searchUid) return { success: false, message: 'Falha no processamento.' };
 
     const searchUid = procRes.searchUid;
-
-    // 4. POLLING
     let attempts = 0;
-    const maxAttempts = 15; // Aumentado para 30s aprox.
-    
-    while (attempts < maxAttempts) {
+    while (attempts < 15) {
       attempts++;
       await new Promise(r => setTimeout(r, 2000));
-      
       const viewRes = await viewSearch(searchUid);
       if (viewRes.success && viewRes.viewSearch) {
         const item = viewRes.viewSearch.searchItems?.[0];
-        
         if ([4, 5, 6, 7].includes(item.resultId)) {
-          // 5. TRANSFORMAR E FILTRAR
-          const transformedData = transformDirectData(item.returnJson || {}, selectedModules);
-
           return {
             success: item.resultId === 4 || item.resultId === 5,
-            data: transformedData,
-            message: item.result,
-            consumption: viewRes.viewSearch.consumptionTotal
+            data: transformDirectDataAdvanced(item.returnJson || {}, selectedModules),
+            message: item.result
           };
         }
       }
     }
-
-    return { success: false, message: 'O processamento está levando mais tempo que o esperado. Verifique o histórico em instantes.' };
-
+    return { success: false, message: 'Tempo esgotado.' };
   } catch (error: any) {
-    console.error('Error in DirectData SmartSearch:', error);
-    return { success: false, message: error.message || 'Erro interno na integração com DirectData.' };
+    return { success: false, message: error.message };
   }
+}
+
+// -----------------------------------------------------------------------------
+// SEÇÃO: PESSOA FÍSICA PLUS (V3) - CPF
+// -----------------------------------------------------------------------------
+
+export async function consultaCpfPlus(cpf: string, selectedModules: string[] = []) {
+  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const cleanCpf = cpf.replace(/\D/g, '');
+  const url = `${V3_URL}/api/CadastroPessoaFisicaPlus?TOKEN=${TOKEN}&CPF=${cleanCpf}`;
+  const response = await fetch(url, { method: 'GET' });
+  const res = await response.json();
+
+  if (response.status === 201 || response.status === 202) {
+    const searchUid = res.metaDados?.consultaUid;
+    return searchUid ? await pollV3Result(searchUid, selectedModules) : { success: false, message: 'Falha no UID assíncrono.' };
+  }
+
+  if (response.status === 200 && res.retorno) {
+    return { success: true, data: transformDirectDataPlus(res.retorno, selectedModules) };
+  }
+  return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
+}
+
+async function pollV3Result(uid: string, selectedModules: string[]) {
+  let attempts = 0;
+  while (attempts < 10) {
+    attempts++;
+    await new Promise(r => setTimeout(r, 3000));
+    const url = `${V3_URL}/api/CadastroPessoaFisicaPlus?TOKEN=${TOKEN}&UID=${uid}`;
+    const response = await fetch(url, { method: 'GET' });
+    const res = await response.json();
+    if (response.status === 200 && res.retorno) {
+      return { success: true, data: transformDirectDataPlus(res.retorno, selectedModules) };
+    }
+    if (response.status !== 202) break;
+  }
+  return { success: false, message: 'Tempo esgotado para consulta CPF.' };
+}
+
+function transformDirectDataPlus(raw: any, selectedModules: string[]) {
+  const result: any = {};
+  if (selectedModules.includes('dados_basicos') || selectedModules.includes('documentos')) {
+    result['Dados_Pessoais'] = {
+      nome: raw.nome,
+      cpf: raw.cpf,
+      sexo: raw.sexo,
+      data_nascimento: raw.dataNascimento,
+      idade: raw.idade,
+      signo: raw.signo,
+      nome_mae: raw.nomeMae,
+      nome_pai: raw.nomePai,
+      situacao_cadastral: raw.situacaoCadastral,
+      data_situacao: raw.dataSituacaoCadastral,
+      obito: raw.obito
+    };
+  }
+  if (selectedModules.includes('telefones')) {
+    result['Telefones'] = {
+      lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => `${t.telefoneComDDD} (${t.operadora || ''}${t.whatsApp ? ' - Whats' : ''})`) : []
+    };
+  }
+  if (selectedModules.includes('emails')) {
+    result['Emails'] = {
+      lista: Array.isArray(raw.emails) ? raw.emails.map((e: any) => e.enderecoEmail) : []
+    };
+  }
+  if (selectedModules.includes('enderecos')) {
+    result['Localizacao'] = {
+      enderecos: Array.isArray(raw.enderecos) ? raw.enderecos.map((end: any) => ({
+        logradouro: end.logradouro,
+        numero: end.numero,
+        complemento: end.complemento,
+        bairro: end.bairro,
+        cidade: end.cidade,
+        uf: end.uf,
+        cep: end.cep
+      })) : []
+    };
+  }
+  if (selectedModules.includes('parentes')) {
+    result['Vinculos_Familiares'] = {
+      lista: Array.isArray(raw.parentescos) ? raw.parentescos.map((p: any) => `${p.nome} (${p.grauParentesco})`) : []
+    };
+  }
+  if (selectedModules.includes('poder_aquisitivo') || selectedModules.includes('dados_trabalhistas')) {
+    result['Renda_e_Trabalho'] = {
+      renda_estimada: raw.rendaEstimada,
+      faixa_salarial: raw.rendaFaixaSalarial,
+      classe_social: raw.classeSocial,
+      ocupacao_cbo: raw.cbo,
+      codigo_cbo: raw.codigoCBO
+    };
+  }
+  return result;
 }

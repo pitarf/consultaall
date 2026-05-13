@@ -90,16 +90,26 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // Filtra os módulos baseados no tipo de busca selecionado
+  // Filtra os módulos baseados no tipo de busca selecionado e nas capacidades das APIs
   const availableModules = modules.map(category => {
-    // Se não for CPF, filtramos o que a Direct Data Advanced não costuma entregar
-    if (chaveTipo !== 'cpf') {
+    // Se for CPF (API V3 Plus)
+    if (chaveTipo === 'cpf') {
+      const filteredItems = category.items.filter(item => 
+        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'poder_aquisitivo', 'dados_trabalhistas'].includes(item.id)
+      );
+      if (filteredItems.length === 0) return null;
+      return { ...category, items: filteredItems };
+    }
+    
+    // Se for Telefone, E-mail ou Nome (API V2 Advanced Search)
+    if (['telefone', 'email', 'nome'].includes(chaveTipo)) {
       const filteredItems = category.items.filter(item => 
         ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'vizinhos', 'socio_empresa'].includes(item.id)
       );
       if (filteredItems.length === 0) return null;
       return { ...category, items: filteredItems };
     }
+
     return category;
   }).filter(Boolean) as typeof INITIAL_DATA_MODULES;
 

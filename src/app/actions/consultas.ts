@@ -3,7 +3,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { fazerConsultaAPI } from '@/services/api-consulta';
-import { performSmartSearch } from '@/services/direct-data';
+import { performSmartSearch, consultaCpfPlus } from '@/services/direct-data';
 import { validarChave } from '@/lib/validators';
 
 export async function getPricing() {
@@ -108,15 +108,18 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     // 1. Chama a API correspondente (Roteamento entre Provedores)
     let apiResult: any;
 
-    if (['email', 'telefone', 'nome'].includes(target)) {
-      // Usa a Nova API de Pesquisa Avançada (Direct Data)
+    if (target === 'cpf') {
+      // Nova API V3 Plus para CPF
+      apiResult = await consultaCpfPlus(cleanQuery, selectedModules);
+    } else if (['email', 'telefone', 'nome'].includes(target)) {
+      // API V2 Advanced para Nome, Telefone e E-mail
       apiResult = await performSmartSearch(
         target as 'email' | 'phone' | 'name', 
         cleanQuery,
         selectedModules
       );
     } else {
-      // Mantém a API Anterior para CPF e outros casos
+      // Fallback para outras chaves (se houver)
       apiResult = await fazerConsultaAPI({ 
         target: apiTarget, 
         pacote: 'teste', 
