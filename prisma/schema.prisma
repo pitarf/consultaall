@@ -48,6 +48,7 @@ model SearchHistory {
   cost        Float    // Custo da consulta em R$
   status      String   // "SUCCESS", "FAILED"
   result      Json?    // Stored result or partial data
+  modules     String?  // IDs dos módulos selecionados (JSON ou lista separada por vírgula)
   createdAt   DateTime @default(now())
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)

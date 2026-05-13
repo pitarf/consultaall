@@ -69,6 +69,31 @@ export function DataViewer({ data, title }: DataViewerProps) {
     const complexFields = Object.entries(content).filter(([_, v]) => typeof v === 'object' && v !== null && !Array.isArray(v));
     const arrayFields = Object.entries(content).filter(([_, v]) => Array.isArray(v));
 
+    const formatObjectItem = (item: any) => {
+      if (typeof item !== 'object' || item === null) return String(item);
+
+      // Se for um endereço (tem logradouro ou cidade)
+      if (item.logradouro || item.cidade) {
+        const parts = [
+          item.logradouro,
+          item.numero ? `nº ${item.numero}` : null,
+          item.complemento ? `(${item.complemento})` : null,
+          item.bairro ? `- ${item.bairro}` : null,
+          item.cidade ? `- ${item.cidade}` : null,
+          item.uf ? `/${item.uf}` : null,
+          item.cep ? `(CEP: ${item.cep})` : null
+        ].filter(Boolean);
+        return parts.join(' ');
+      }
+
+      // Se for veículo (tem placa ou modelo)
+      if (item.placa || item.modelo) {
+        return `${item.marca || ''} ${item.modelo || ''} (${item.placa || 'Sem Placa'})`.trim();
+      }
+
+      return JSON.stringify(item);
+    };
+
     return (
       <div key={title} className="bg-[#0f172a] rounded-xl border border-white/5 shadow-xl overflow-hidden flex flex-col h-full hover:border-primary/30 transition-colors duration-300">
         {/* Cabeçalho do Card */}
@@ -98,13 +123,13 @@ export function DataViewer({ data, title }: DataViewerProps) {
               {arrayFields.map(([k, v]: [string, any]) => (
                 <div key={k} className="bg-black/20 rounded-lg p-3 border border-white/5">
                   <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 block">{k.replace(/_/g, ' ')}</span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-col gap-2">
                     {v.length === 0 ? (
                       <span className="text-slate-500 italic text-xs">Nenhum registro encontrado</span>
                     ) : (
                       v.map((item: any, i: number) => (
-                        <div key={i} className="bg-primary/10 border border-primary/20 px-2 py-1 rounded text-xs text-slate-300">
-                          {typeof item === 'object' ? JSON.stringify(item) : String(item)}
+                        <div key={i} className="bg-primary/10 border border-primary/20 px-3 py-2 rounded text-xs text-slate-300 leading-relaxed">
+                          {formatObjectItem(item)}
                         </div>
                       ))
                     )}

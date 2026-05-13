@@ -78,65 +78,65 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     }
 
     // SISTEMA DE CACHE (48 HORAS)
-    // ... (restante do código de cache mantido)
+    const sortedModules = [...selectedModules].sort().join(',');
     const quarentaEOitoHorasAtras = new Date(Date.now() - 48 * 60 * 60 * 1000);
     const cache = await prisma.searchHistory.findFirst({
       where: {
-        target: apiTarget,
-        query: cleanQuery.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
+        target: target,
+        query: cleanQuery,
+        modules: sortedModules, // Garante que o cache tenha os mesmos módulos
         status: 'SUCCESS',
         createdAt: { gte: quarentaEOitoHorasAtras }
       },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (cache && !effectiveIsTest) {
-      return { 
-        success: true, 
-        data: cache.result, 
-        newBalance: user.balance, 
-        isCached: true 
-      };
-    }
+    // 1. Define se vai usar API ou Cache (Economia interna)
+    let apiResult: any;
 
-    // Se NÃO for teste e NÃO houver cache, verifica saldo
-    if (!effectiveIsTest) {
-      if (user.balance < totalCost) {
-        return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
+    if (cache && !effectiveIsTest) {
+      // Se houver cache, preparamos o resultado sem chamar a API
+      apiResult = { success: true, data: cache.result };
+    } else {
+      // Se NÃO houver cache (ou for teste), verifica saldo antes de chamar API
+      if (!effectiveIsTest) {
+        if (user.balance < totalCost) {
+          return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
+        }
+      }
+
+      // Chama a API correspondente
+      if (target === 'cpf') {
+        apiResult = await consultaCpfPlus(cleanQuery, selectedModules);
+      } else if (target === 'placa') {
+        apiResult = await consultaVeicular(cleanQuery, selectedModules);
+      } else if (['email', 'telefone', 'nome'].includes(target)) {
+        apiResult = await performSmartSearch(
+          target as 'email' | 'phone' | 'name', 
+          cleanQuery,
+          selectedModules
+        );
+      } else {
+        apiResult = await fazerConsultaAPI({ 
+          target: apiTarget, 
+          pacote: 'teste', 
+          query: cleanQuery, 
+          isTest: effectiveIsTest 
+        });
       }
     }
 
-    // 1. Chama a API correspondente (Roteamento entre Provedores)
-    let apiResult: any;
-
-    if (target === 'cpf') {
-      apiResult = await consultaCpfPlus(cleanQuery, selectedModules);
-    } else if (target === 'placa') {
-      apiResult = await consultaVeicular(cleanQuery, selectedModules);
-    } else if (['email', 'telefone', 'nome'].includes(target)) {
-      apiResult = await performSmartSearch(
-        target as 'email' | 'phone' | 'name', 
-        cleanQuery,
-        selectedModules
-      );
-    } else {
-      apiResult = await fazerConsultaAPI({ 
-        target: apiTarget, 
-        pacote: 'teste', 
-        query: cleanQuery, 
-        isTest: effectiveIsTest 
-      });
-    }
-
     if (!apiResult.success) {
-      // Log de erro da API
-      await prisma.systemLog.create({
-        data: {
-          level: 'ERROR',
-          message: `Falha na API de Consulta: ${apiResult.message || 'Erro desconhecido'}`,
-          context: { userId: user.id, target, query: cleanQuery, apiResult }
-        }
-      });
+      // Log de erro da API (se falhou e não era cache)
+      if (!cache) {
+        await prisma.systemLog.create({
+          data: {
+            level: 'ERROR',
+            message: `Falha na API de Consulta: ${apiResult.message || 'Erro desconhecido'}`,
+            context: { userId: user.id, target, query: cleanQuery, apiResult }
+          }
+        });
+      }
       return { error: apiResult.message || 'Erro na consulta na API.' };
     }
 
@@ -169,6 +169,7 @@ export async function realizarConsulta(target: string, query: string, selectedMo
           userId: user.id,
           query: cleanQuery,
           target,
+          modules: sortedModules,
           cost: totalCost,
           status: 'SUCCESS',
           result: apiResult.data, 

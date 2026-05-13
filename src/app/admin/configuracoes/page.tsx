@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSystemSettings, updateSystemSettings } from '@/app/actions/admin';
-import { Save, Globe, MessageSquare, Loader2, Info, Image, ExternalLink } from 'lucide-react';
+import { Save, Globe, MessageSquare, Loader2, Info, Image, ExternalLink, Scale } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**

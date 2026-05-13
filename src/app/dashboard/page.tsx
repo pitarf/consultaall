@@ -101,10 +101,10 @@ export default function DashboardPage() {
       return { ...category, items: filteredItems };
     }
     
-    // Se for Telefone, E-mail ou Nome (API V2 Advanced Search)
+    // Se for Telefone, E-mail ou Nome (API V3 Smart Search)
     if (['telefone', 'email', 'nome'].includes(chaveTipo)) {
       const filteredItems = category.items.filter(item => 
-        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'vizinhos', 'socio_empresa'].includes(item.id)
+        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'poder_aquisitivo', 'dados_trabalhistas'].includes(item.id)
       );
       if (filteredItems.length === 0) return null;
       return { ...category, items: filteredItems };

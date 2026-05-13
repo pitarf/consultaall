@@ -28,7 +28,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-6">
             <Database className="text-primary w-8 h-8" />
-            <span className="text-2xl font-bold text-white">Consulta<span className="text-primary">ALL</span></span>
+            <span className="text-2xl font-bold text-white">Detetive<span className="text-primary">Buscas</span></span>
           </Link>
           <h2 className="text-2xl font-semibold text-white">Bem-vindo de volta</h2>
           <p className="text-gray-400 text-sm mt-2">Acesse sua conta para realizar consultas.</p>

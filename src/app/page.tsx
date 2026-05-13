@@ -46,7 +46,7 @@ export default async function Home() {
               </div>
             )}
             <span className="text-xl font-bold tracking-wider text-white">
-              {settings?.siteTitle ? settings.siteTitle.split(' - ')[0] : "Detetive"}<span className="text-primary"> {settings?.siteTitle ? settings.siteTitle.split(' - ')[1] : "Buscas"}</span>
+              Detetive<span className="text-primary">Buscas</span>
             </span>
           </div>
 
@@ -341,7 +341,7 @@ export default async function Home() {
                 </div>
               )}
               <span className="text-lg font-bold text-white">
-                {settings?.siteTitle?.split(' - ')[0] || "Detetive"}<span className="text-primary"> {settings?.siteTitle?.split(' - ')[1] || "Buscas"}</span>
+                Detetive<span className="text-primary">Buscas</span>
               </span>
             </div>
             <div className="flex gap-6 text-sm text-gray-500">
