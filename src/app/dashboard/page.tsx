@@ -90,9 +90,22 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // Calcula o custo total dinâmico
+  // Filtra os módulos baseados no tipo de busca selecionado
+  const availableModules = modules.map(category => {
+    // Se não for CPF, filtramos o que a Direct Data Advanced não costuma entregar
+    if (chaveTipo !== 'cpf') {
+      const filteredItems = category.items.filter(item => 
+        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'vizinhos', 'socio_empresa'].includes(item.id)
+      );
+      if (filteredItems.length === 0) return null;
+      return { ...category, items: filteredItems };
+    }
+    return category;
+  }).filter(Boolean) as typeof INITIAL_DATA_MODULES;
+
+  // Calcula o custo total dinâmico baseado nos módulos DISPONÍVEIS e selecionados
   const totalCost = selectedModules.reduce((total, moduleId) => {
-    for (const category of modules) {
+    for (const category of availableModules) {
       const found = category.items.find(item => item.id === moduleId);
       if (found) return total + found.cost;
     }
@@ -221,7 +234,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {modules.map((category, idx) => {
+          {availableModules.map((category, idx) => {
             const allChecked = category.items.every(i => selectedModules.includes(i.id));
             
             return (
