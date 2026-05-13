@@ -5,7 +5,6 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createSession, deleteSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
-import { z } from 'zod';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'E-mail inválido.' }),

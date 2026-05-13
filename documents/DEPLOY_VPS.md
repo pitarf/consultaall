@@ -4,18 +4,20 @@ Este documento lista os comandos fundamentais que você deve usar na VPS sempre 
 
 ---
 
-## 1. Atualização Básica (Alterações visuais, textos ou lógicas no frontend)
-Sempre que você alterar um botão, uma cor, arrumar um bug no Next.js ou alterar variáveis de ambiente, utilize este fluxo:
+## 1. O Jeito Fácil (Atualização Completa Automática)
+Sempre que você alterar um botão, o banco de dados ou a lógica do backend, basta executar nosso script de automação de 1-clique:
 
 ```bash
-git pull origin main
-docker compose up -d --build
+./update.sh
 ```
-* **Por que usar?** O `git pull` baixa as novidades do repositório. O `docker compose up -d --build` destrói a versão antiga do site e reconstrói (build) o Next.js com as peças novas, colocando no ar sem desligar o banco de dados. A flag `-d` garante que o painel continue rodando em segundo plano.
+* **Por que usar?** Esse arquivo junta o `git pull` (baixa novidades), o `npx prisma db push` (sincroniza o banco) e o `docker compose up -d --build` (recria a interface). É a forma mais segura e rápida de jogar qualquer coisa para o ar.
+
+> **Atenção:** Na PRIMEIRA vez que for usar o script, você precisa liberar a permissão rodando: `chmod +x update.sh`.
 
 ---
 
-## 2. Atualização de Banco de Dados (Novas tabelas ou colunas)
+## 2. Atualização Manual de Banco de Dados (Legado)
+Se por algum motivo o `./update.sh` não estiver disponível:
 Sempre que você alterar o arquivo `prisma/schema.prisma` (ex: adicionar uma tabela nova ou mudar um tipo de dado), você precisa atualizar o esquema do banco de produção.
 
 ```bash

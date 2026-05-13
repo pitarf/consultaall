@@ -6,10 +6,9 @@ O sistema utiliza o arquivo `src/services/direct-data.ts` como ponte de comunica
 - **Roteamento Inteligente:** O método `performSmartSearch` decide dinamicamente a rota dependendo do tipo da chave (`telefone`, `nome`, `email`, `cpf`).
 - **Modo Demo:** Retorna dados de fallback (mock) sem acionar custos. Disponível apenas via painel UI se o usuário tiver `role: 'ADMIN'`.
 
-## Autenticação Social (Google OAuth2)
-A autenticação com o Google foi construída do zero, garantindo máxima performance e zero dependências de bibliotecas de terceiros (como NextAuth).
-- **Callback Nativo:** Todo o fluxo de token e dados do usuário é tratado em `/api/auth/google/callback/route.ts`.
-- **Tratamento de Exceções:** Erros de credenciais faltantes ou cancelamento do lado do Google são devolvidos de volta para a tela de `/login` na forma de Query Parameters, que são capturados por `useSearchParams` com fallback de `Suspense`.
+## Autenticação e Segurança
+- **Login Social (Google):** Fluxo OAuth2 puro (sem NextAuth) usando `/api/auth/google/callback/route.ts`. Trata erros invisíveis via `useSearchParams` encapsulados em `<Suspense>`.
+- **Recuperação de Senha:** O fluxo "Esqueceu a Senha" salva chaves únicas na tabela `PasswordResetToken` (expiram em 1h). Os e-mails são disparados nativamente via API V3 do **Brevo** (`fetch`), economizando memória no container (sem precisar do pacote `nodemailer`).
 
 ## Sistema de Cache Modular (48 Horas)
 Implementado na Server Action `realizarConsulta` (`src/app/actions/consultas.ts`).
@@ -25,6 +24,9 @@ DIRECT_DATA_V3_URL=https://apiv3.directd.com.br
 # Google OAuth2
 GOOGLE_CLIENT_ID=seu_google_client_id
 GOOGLE_CLIENT_SECRET=seu_google_client_secret
+
+# E-mail e Recuperação (Brevo)
+BREVO_API_KEY=sua_chave_api_v3_do_brevo
 
 # Pagamentos PushinPay
 PUSHINPAY_TOKEN=token_do_gateway_pagamentos
