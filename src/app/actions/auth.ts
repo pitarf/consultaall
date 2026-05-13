@@ -166,7 +166,7 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
         'api-key': brevoApiKey
       },
       body: JSON.stringify({
-        sender: { name: 'Detetive Buscas', email: 'contato@detetivebuscas.com' },
+        sender: { name: 'Detetive Buscas', email: 'brasiltda2012@gmail.com' },
         to: [{ email, name: user.name || 'Cliente' }],
         subject: 'Recuperação de Senha - Detetive Buscas',
         htmlContent: `
