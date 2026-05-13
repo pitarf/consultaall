@@ -54,6 +54,17 @@ export function validarEmail(email: string): boolean {
 }
 
 /**
+ * Valida Placa de Veículo (Brasil: Antiga e Mercosul)
+ */
+export function validarPlaca(placa: string): boolean {
+  const cleanPlaca = placa.replace(/[^a-zA-Z0-9]/g, '');
+  
+  // Formato Antigo (AAA9999) e Mercosul (AAA9A99)
+  const regex = /^[a-zA-Z]{3}[0-9]{1}[a-zA-Z0-9]{1}[0-9]{2}$/;
+  return regex.test(cleanPlaca);
+}
+
+/**
  * Validador genérico baseado no tipo de chave
  */
 export function validarChave(tipo: string, valor: string): { valid: boolean; message: string } {
@@ -79,6 +90,11 @@ export function validarChave(tipo: string, valor: string): { valid: boolean; mes
       return valor.trim().split(' ').length >= 2
         ? { valid: true, message: '' }
         : { valid: false, message: 'Informe o nome completo para uma busca precisa.' };
+
+    case 'placa':
+      return validarPlaca(valor)
+        ? { valid: true, message: '' }
+        : { valid: false, message: 'Placa inválida. Use o formato AAA-0000 ou AAA0A00.' };
 
     default:
       return { valid: true, message: '' };

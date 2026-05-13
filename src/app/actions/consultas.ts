@@ -3,7 +3,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { fazerConsultaAPI } from '@/services/api-consulta';
-import { performSmartSearch, consultaCpfPlus } from '@/services/direct-data';
+import { performSmartSearch, consultaCpfPlus, consultaVeicular } from '@/services/direct-data';
 import { validarChave } from '@/lib/validators';
 
 export async function getPricing() {
@@ -70,17 +70,20 @@ export async function realizarConsulta(target: string, query: string, selectedMo
       case 'email':
         apiTarget = 'busca-por-email';
         break;
+      case 'placa':
+        apiTarget = 'consulta-veicular';
+        break;
       default:
         apiTarget = target;
     }
 
     // SISTEMA DE CACHE (48 HORAS)
-    // Verifica se já existe uma consulta idêntica e bem-sucedida nas últimas 48h
+    // ... (restante do código de cache mantido)
     const quarentaEOitoHorasAtras = new Date(Date.now() - 48 * 60 * 60 * 1000);
     const cache = await prisma.searchHistory.findFirst({
       where: {
         target: apiTarget,
-        query: cleanQuery,
+        query: cleanQuery.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
         status: 'SUCCESS',
         createdAt: { gte: quarentaEOitoHorasAtras }
       },
@@ -88,8 +91,6 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     });
 
     if (cache && !effectiveIsTest) {
-      // Se houver cache, retornamos o resultado salvo sem cobrar o usuário novamente
-      // e sem gastar saldo da sua API real.
       return { 
         success: true, 
         data: cache.result, 
@@ -109,17 +110,16 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     let apiResult: any;
 
     if (target === 'cpf') {
-      // Nova API V3 Plus para CPF
       apiResult = await consultaCpfPlus(cleanQuery, selectedModules);
+    } else if (target === 'placa') {
+      apiResult = await consultaVeicular(cleanQuery, selectedModules);
     } else if (['email', 'telefone', 'nome'].includes(target)) {
-      // API V2 Advanced para Nome, Telefone e E-mail
       apiResult = await performSmartSearch(
         target as 'email' | 'phone' | 'name', 
         cleanQuery,
         selectedModules
       );
     } else {
-      // Fallback para outras chaves (se houver)
       apiResult = await fazerConsultaAPI({ 
         target: apiTarget, 
         pacote: 'teste', 

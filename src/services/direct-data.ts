@@ -8,6 +8,101 @@ const V3_URL = process.env.DIRECT_DATA_V3_URL || 'https://apiv3.directd.com.br';
 const TOKEN = process.env.DIRECT_DATA_TOKEN;
 
 // -----------------------------------------------------------------------------
+// SEÇÃO: CONSULTA VEICULAR (V3)
+// -----------------------------------------------------------------------------
+
+export async function consultaVeicular(placa: string, selectedModules: string[] = []) {
+  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  
+  const cleanPlaca = placa.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  const url = `${V3_URL}/api/ConsultaVeicular?TOKEN=${TOKEN}&PLACA=${cleanPlaca}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await response.json();
+
+    if (!res.retorno || res.metaDados?.resultadoId !== 1) {
+      return { 
+        success: false, 
+        message: res.metaDados?.mensagem || 'Veículo não encontrado ou erro na consulta.' 
+      };
+    }
+
+    const v = res.retorno.veiculo;
+    const data: Record<string, any> = {};
+    
+    // Módulo: Proprietário Atual
+    if (selectedModules.includes('veiculo_proprietario')) {
+      data['Proprietário_Atual'] = {
+        nome: res.retorno.proprietario,
+        documento: res.retorno.documento,
+      };
+    }
+
+    // Módulo: Dados Básicos e Técnicos
+    if (selectedModules.includes('veiculo_basico')) {
+      data['Dados_do_Veiculo'] = {
+        placa: v.placa,
+        renavam: v.renavam,
+        chassi: v.chassi,
+        marca_modelo: `${v.marca} / ${v.modelo}`,
+        ano_fabricacao: v.anoFabricacao,
+        ano_modelo: v.anoModelo,
+        cor: v.cor,
+        combustivel: v.combustivel,
+      };
+      data['Detalhes_Tecnicos'] = {
+        potencia: `${v.potencia} cv`,
+        cilindrada: v.cilindrada,
+        capacidade_passageiros: v.capacidadedePassageiros,
+        peso_bruto_total: v.pesoBrutoTotal,
+        tipo_veiculo: v.tipo,
+        especie: v.especie,
+        tipo_carroceria: v.tipoCarroceria,
+        categoria: v.categoria,
+      };
+    }
+
+    // Módulo: Situação e Documentação
+    if (selectedModules.includes('veiculo_documentacao')) {
+      data['Documentacao_e_Situacao'] = {
+        municipio: `${v.municipio} - ${v.uf}`,
+        situacao: v.situacaoVeiculo,
+        procedencia: v.procedenciaVeiculo,
+        emissao_crlv: v.dataEmissaoCrlv,
+        emissao_crv: v.dataEmissaoCrv,
+        ano_exercicio: res.retorno.anoExercicio,
+      };
+    }
+
+    // Módulo: Restrições, Leilão e Histórico
+    if (selectedModules.includes('veiculo_restricoes')) {
+      data['Restricoes_e_Alertas'] = {
+        lista_restricoes: Array.isArray(v.restricoes) ? v.restricoes : ['Nenhuma restrição encontrada'],
+        roubo_furto: v.indicadores?.rouboFurto ? '⚠️ SIM' : 'Nada consta',
+        leilao: v.indicadores?.leilao ? '⚠️ SIM' : 'Nada consta',
+        comunicado_venda: v.indicadores?.comunicadoVenda ? 'Sim' : 'Não',
+        recall: v.indicadores?.recall ? 'Sim' : 'Não',
+        renajud: v.indicadores?.renajud ? 'Sim' : 'Não',
+      };
+    }
+
+    // Fallback: se nenhum módulo for selecionado (teoricamente não deveria acontecer)
+    if (Object.keys(data).length === 0) {
+      data['Aviso'] = 'Nenhum dado selecionado para exibição.';
+    }
+
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+// -----------------------------------------------------------------------------
 // SEÇÃO: PESQUISA AVANÇADA (V2) - NOME, TELEFONE, EMAIL
 // -----------------------------------------------------------------------------
 
@@ -55,6 +150,7 @@ function pickBestCandidate(candidates: any[]) {
 
 function transformDirectDataAdvanced(raw: any, selectedModules: string[]) {
   const result: any = {};
+  
   if (selectedModules.includes('dados_basicos') || selectedModules.includes('documentos')) {
     result['Dados_Pessoais'] = {
       nome: raw.nome,
@@ -68,9 +164,10 @@ function transformDirectDataAdvanced(raw: any, selectedModules: string[]) {
       signo: raw.signo
     };
   }
+
   if (selectedModules.includes('telefones')) {
     result['Telefones'] = {
-      lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => `${t.ddd}${t.numero} (${t.tipo || 'N/I'})`) : []
+      lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => `${t.ddd || ''}${t.numero} (${t.tipo || 'N/I'})`) : []
     };
   }
   if (selectedModules.includes('emails')) {
@@ -113,6 +210,7 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
     if (state) filterParams.state = state;
 
     const filterRes = await filterNaturalPerson(filterParams);
+
     if (!filterRes.success || !filterRes.listFilters || filterRes.listFilters.length === 0) {
       return { success: false, message: 'Nenhum registro encontrado.' };
     }
@@ -125,7 +223,7 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
 
     const searchUid = procRes.searchUid;
     let attempts = 0;
-    while (attempts < 15) {
+    while (attempts < 20) {
       attempts++;
       await new Promise(r => setTimeout(r, 2000));
       const viewRes = await viewSearch(searchUid);
@@ -140,7 +238,7 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
         }
       }
     }
-    return { success: false, message: 'Tempo esgotado.' };
+    return { success: false, message: 'Tempo esgotado no processamento da DirectData.' };
   } catch (error: any) {
     return { success: false, message: error.message };
   }

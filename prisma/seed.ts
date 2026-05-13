@@ -33,11 +33,16 @@ async function main() {
     
     // Categoria: Patrimônio e Renda
     { id: 'poder_aquisitivo', name: 'Poder Aquisitivo', price: 1.5, category: 'Patrimônio e Renda' },
-    { id: 'veiculos', name: 'Veículos', price: 1.5, category: 'Patrimônio e Renda' },
     { id: 'dados_trabalhistas', name: 'Dados Trabalhistas', price: 1.0, category: 'Patrimônio e Renda' },
     { id: 'seguro_social', name: 'Seguro Social (INSS)', price: 1.0, category: 'Patrimônio e Renda' },
     { id: 'dados_universitarios', name: 'Dados Universitários', price: 0.5, category: 'Patrimônio e Renda' },
     
+    // Categoria: Veículos
+    { id: 'veiculo_basico', name: 'Dados Básicos e Técnicos', price: 1.0, category: 'Veículos' },
+    { id: 'veiculo_documentacao', name: 'Situação e Documentação', price: 1.0, category: 'Veículos' },
+    { id: 'veiculo_proprietario', name: 'Proprietário Atual', price: 1.5, category: 'Veículos' },
+    { id: 'veiculo_restricoes', name: 'Restrições, Leilão e Histórico', price: 2.0, category: 'Veículos' },
+
     // Categoria: Crédito e Histórico
     { id: 'analise_credito', name: 'Score de Crédito', price: 2.0, category: 'Crédito e Histórico' },
     { id: 'processos', name: 'Processos Judiciais', price: 1.0, category: 'Crédito e Histórico' },

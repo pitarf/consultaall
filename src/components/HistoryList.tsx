@@ -28,6 +28,18 @@ export function HistoryList({ history }: HistoryListProps) {
     setIsDrawerOpen(true);
   };
 
+  const targetMap: Record<string, string> = {
+    'cpf': 'CPF',
+    'nome': 'Nome',
+    'telefone': 'Telefone',
+    'email': 'E-mail',
+    'cpf-detalhada-pessoa-fisica': 'CPF Plus'
+  };
+
+  const getTargetLabel = (target: string) => {
+    return targetMap[target] || target.replace(/-/g, ' ').toUpperCase();
+  };
+
   if (history.length === 0) {
     return (
       <div className="bg-[#0f172a] p-16 flex flex-col items-center justify-center text-center rounded-3xl border border-white/5 shadow-2xl">
@@ -66,7 +78,7 @@ export function HistoryList({ history }: HistoryListProps) {
                 </span>
               </div>
               <h3 className="text-sm font-bold text-white group-hover:text-primary/90 transition-colors">
-                {item.target.replace(/-/g, ' ').toUpperCase()}
+                {getTargetLabel(item.target)}
               </h3>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Chave:</span>
@@ -101,7 +113,7 @@ export function HistoryList({ history }: HistoryListProps) {
       <Drawer 
         isOpen={isDrawerOpen} 
         onClose={() => setIsDrawerOpen(false)}
-        title={selectedItem?.target.replace(/-/g, ' ') || 'Detalhes da Consulta'}
+        title={selectedItem ? getTargetLabel(selectedItem.target) : 'Detalhes da Consulta'}
       >
         {selectedItem && (
           <div className="space-y-6">

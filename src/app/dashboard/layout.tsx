@@ -92,13 +92,10 @@ export default async function DashboardLayout({
             <Scale className="w-4 h-4" />
             <span className="text-sm">Consultar processos</span>
           </div>
-          <div 
-            title="Em desenvolvimento"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 cursor-not-allowed opacity-50 transition-colors"
-          >
+          <Link href="/dashboard/veiculos" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <Car className="w-4 h-4" />
             <span className="text-sm">Consultar veículos</span>
-          </div>
+          </Link>
           <div 
             title="Em desenvolvimento"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 cursor-not-allowed opacity-50 transition-colors"
