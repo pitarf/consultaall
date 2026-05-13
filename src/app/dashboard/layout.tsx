@@ -11,6 +11,7 @@ import { Suspense } from 'react';
 import { logout } from '@/app/actions/auth';
 import { BalanceHeader } from '@/components/BalanceHeader';
 import { SidebarNav } from '@/components/SidebarNav';
+import { MobileSidebar } from '@/components/MobileSidebar';
 
 export default async function DashboardLayout({
   children,
@@ -73,7 +74,13 @@ export default async function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col bg-[#f8fafc] dark:bg-background">
-        <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-card/30 backdrop-blur-md flex items-center justify-end px-6 shadow-sm sticky top-0 z-50">
+        <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-card/30 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shadow-sm sticky top-0 z-50">
+          <MobileSidebar 
+            isAdmin={user.role === 'ADMIN'} 
+            whatsappLink={whatsappLink} 
+            logoUrl={settings?.logoUrl} 
+          />
+          
           <Suspense fallback={<div className="h-8 w-32 bg-white/5 animate-pulse rounded-2xl" />}>
             <BalanceHeader initialBalance={user.balance} />
           </Suspense>

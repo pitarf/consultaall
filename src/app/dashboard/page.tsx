@@ -5,7 +5,7 @@ import { realizarConsulta, getPricing } from '@/app/actions/consultas';
 import { getUserProfile } from '@/app/actions/perfil';
 import { validarChave } from '@/lib/validators';
 import { toast } from 'sonner';
-import { Search, Loader2, HelpCircle, FlaskConical, Zap } from 'lucide-react';
+import { Search, Loader2, HelpCircle, FlaskConical, Zap, ChevronDown } from 'lucide-react';
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 
@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [resultado, setResultado] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Carrega preços reais e verifica se é admin
   useEffect(() => {
@@ -146,6 +147,7 @@ export default function DashboardPage() {
   };
 
   const handleSearch = async () => {
+    setError(null);
     // Validação preventiva no Frontend
     const validation = validarChave(chaveTipo, chaveValor);
     if (!validation.valid) {
@@ -171,7 +173,17 @@ export default function DashboardPage() {
       const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo);
       
       if (res.error) {
-        toast.error(res.error);
+        setError(res.error);
+        if (res.error.toLowerCase().includes('saldo')) {
+          toast.error(res.error, {
+            action: {
+              label: 'Recarregar',
+              onClick: () => handleOpenRecharge()
+            },
+          });
+        } else {
+          toast.error(res.error);
+        }
       } else if (res.success) {
         if (res.isDemo) {
           toast.success(`Consulta DEMO realizada com sucesso! Nenhum saldo foi debitado.`);
@@ -189,8 +201,35 @@ export default function DashboardPage() {
     }
   };
 
+  const handleOpenRecharge = () => {
+    window.location.search = '?recharge=true';
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
+      {/* Alerta de Erro / Saldo Insuficiente */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-500/20 rounded-lg text-red-500">
+              <Zap className="w-5 h-5 fill-current" />
+            </div>
+            <p className="text-sm font-medium text-red-600 dark:text-red-400">
+              {error}
+            </p>
+          </div>
+          
+          {error.toLowerCase().includes('saldo') && (
+            <button 
+              onClick={handleOpenRecharge}
+              className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-red-500/20 active:scale-95"
+            >
+              Recarregar Agora
+            </button>
+          )}
+        </div>
+      )}
+
       <div>
         <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Consultar pessoas</h1>
       </div>
@@ -200,20 +239,23 @@ export default function DashboardPage() {
         <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">1. Chaves de busca</h2>
         
         <div className="flex flex-col md:flex-row shadow-sm rounded-md border border-slate-300 dark:border-white/10">
-          <div className="md:w-1/4 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-300 dark:border-white/10">
+          <div className="md:w-1/4 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-300 dark:border-white/10 relative">
             <select 
               value={chaveTipo}
               onChange={(e) => {
                 setChaveTipo(e.target.value);
                 setChaveValor('');
               }}
-              className="w-full h-full p-3 bg-transparent text-slate-700 dark:text-gray-300 outline-none appearance-none cursor-pointer"
+              className="w-full h-full p-3 pr-12 bg-transparent text-slate-700 dark:text-gray-300 outline-none appearance-none cursor-pointer relative z-10 font-medium"
             >
               <option value="cpf">CPF</option>
               <option value="nome">Nome</option>
               <option value="telefone">Telefone</option>
               <option value="email">E-mail</option>
             </select>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary/10 text-primary p-1 rounded-md pointer-events-none z-0">
+              <ChevronDown className="w-4 h-4" />
+            </div>
           </div>
           <div className="md:w-3/4 flex items-center bg-white dark:bg-transparent relative">
             <input 
@@ -310,7 +352,7 @@ export default function DashboardPage() {
       </section>
 
       {/* Botão de Ação e Switch de Admin */}
-      <div className="flex flex-col md:flex-row items-center justify-end gap-6">
+      <div className="flex flex-col md:flex-row items-center justify-end gap-6 mb-16">
         {isAdmin && (
           <div className="flex items-center gap-3 bg-white/5 p-2 px-4 rounded-2xl border border-white/5 animate-in fade-in slide-in-from-right-4">
             <div className={`p-1.5 rounded-lg ${isDemo ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary'}`}>
@@ -335,13 +377,13 @@ export default function DashboardPage() {
         <button
           onClick={handleSearch}
           disabled={loading || totalCost === 0}
-          className={`px-8 py-3 rounded-xl flex items-center gap-2 font-bold shadow-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`w-full md:w-auto px-12 py-5 rounded-2xl flex items-center justify-center gap-3 font-black text-lg shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
             isDemo 
               ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-amber-500/20' 
               : 'btn-premium'
           }`}
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isDemo ? <FlaskConical className="w-5 h-5" /> : <Search className="w-5 h-5" />)}
+          {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isDemo ? <FlaskConical className="w-6 h-6" /> : <Search className="w-6 h-6" />)}
           {isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${totalCost.toFixed(2).replace('.', ',')})`}
         </button>
       </div>
