@@ -186,7 +186,7 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
     if (!response.ok) {
       const errData = await response.text();
       console.error('Brevo error:', errData);
-      return { error: `Erro Brevo: ${errData}` };
+      return { error: 'Não foi possível enviar o e-mail no momento. Tente novamente mais tarde.' };
     }
 
     return { success: true };
