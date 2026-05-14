@@ -65,6 +65,47 @@ export function validarPlaca(placa: string): boolean {
 }
 
 /**
+ * Valida CNPJ (Algoritmo de dígitos verificadores)
+ */
+export function validarCNPJ(cnpj: string): boolean {
+  const cleanCNPJ = cnpj.replace(/\D/g, '');
+
+  if (cleanCNPJ.length !== 14) return false;
+
+  // Impede CNPJs com todos os dígitos iguais
+  if (/^(\d)\1{13}$/.test(cleanCNPJ)) return false;
+
+  let tamanho = cleanCNPJ.length - 2;
+  let numeros = cleanCNPJ.substring(0, tamanho);
+  const digitos = cleanCNPJ.substring(tamanho);
+  let soma = 0;
+  let pos = tamanho - 7;
+  
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  
+  let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+  tamanho = tamanho + 1;
+  numeros = cleanCNPJ.substring(0, tamanho);
+  soma = 0;
+  pos = tamanho - 7;
+  
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  
+  resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  if (resultado !== parseInt(digitos.charAt(1))) return false;
+
+  return true;
+}
+
+/**
  * Validador genérico baseado no tipo de chave
  */
 export function validarChave(tipo: string, valor: string): { valid: boolean; message: string } {
@@ -75,6 +116,11 @@ export function validarChave(tipo: string, valor: string): { valid: boolean; mes
       return validarCPF(valor) 
         ? { valid: true, message: '' } 
         : { valid: false, message: 'CPF inválido. Verifique os números.' };
+        
+    case 'cnpj':
+      return validarCNPJ(valor)
+        ? { valid: true, message: '' }
+        : { valid: false, message: 'CNPJ inválido. Verifique os números.' };
     
     case 'telefone':
       return validarTelefone(valor)

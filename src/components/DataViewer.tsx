@@ -91,6 +91,16 @@ export function DataViewer({ data, title }: DataViewerProps) {
         return `${item.marca || ''} ${item.modelo || ''} (${item.placa || 'Sem Placa'})`.trim();
       }
 
+      // Se for um sócio (tem cargo ou percentual)
+      if (item.cargo || item.nome) {
+        return `${item.nome} (${item.documento || 'Sem Documento'}) - ${item.cargo || 'Sócio'}${item.participacao ? ` - ${item.participacao}%` : ''}`;
+      }
+
+      // Se for uma filial
+      if (item.cnpj && item.razao_social) {
+        return `${item.cnpj} - ${item.razao_social} - ${item.uf || ''}`;
+      }
+
       return JSON.stringify(item);
     };
 

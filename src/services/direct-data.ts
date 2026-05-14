@@ -235,3 +235,122 @@ function transformDirectDataPlus(raw: any, selectedModules: string[]) {
   }
   return result;
 }
+
+// -----------------------------------------------------------------------------
+// SEÇÃO: PESSOA JURÍDICA PLUS (V3) - CNPJ
+// -----------------------------------------------------------------------------
+
+export async function consultaCnpjPlus(cnpj: string, selectedModules: string[] = []) {
+  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const cleanCnpj = cnpj.replace(/\D/g, '');
+  const url = `${V3_URL}/api/CadastroPessoaJuridicaPlus?TOKEN=${TOKEN}&CNPJ=${cleanCnpj}`;
+
+  try {
+    const response = await axios.get(url);
+    const res = response.data;
+
+    // Se a requisição async estiver em processamento
+    if (response.status === 201 || response.status === 202) {
+      return { success: false, message: 'Consulta iniciada, tente novamente em alguns segundos.' };
+    }
+
+    if (res.retorno) {
+      return { success: true, data: transformDirectDataCnpj(res.retorno, selectedModules) };
+    }
+    
+    return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
+  } catch (error: any) {
+    return { success: false, message: error.response?.data?.metaDados?.mensagem || error.message };
+  }
+}
+
+function transformDirectDataCnpj(raw: any, selectedModules: string[]) {
+  const result: any = {};
+  
+  if (selectedModules.includes('cnpj_basico')) {
+    result['Dados_Basicos'] = {
+      cnpj: raw.cnpj,
+      razao_social: raw.razaoSocial,
+      nome_fantasia: raw.nomeFantasia,
+      data_fundacao: raw.dataFundacao,
+      matriz: raw.matriz ? 'Sim' : 'Não',
+      porte: raw.porte,
+      situacao_cadastral: raw.situacaoCadastral,
+      situacao_especial: raw.situacaoEspecial,
+      orgao_publico: raw.orgaoPublico || 'Não',
+      ultima_atualizacao: raw.ultimaAtualizacaoPJ
+    };
+    result['Natureza_e_Atividades'] = {
+      natureza_juridica: `${raw.naturezaJuridicaCodigo || ''} - ${raw.naturezaJuridicaDescricao || ''}`,
+      tipo_natureza_juridica: raw.naturezaJuridicaTipo,
+      tipo_empresa: raw.tipoEmpresa,
+      ramo: raw.ramo,
+      cnae_principal: `${raw.cnaeCodigo || ''} - ${raw.cnaeDescricao || ''}`,
+      cnaes_secundarios: Array.isArray(raw.cnaEsSecundarios) ? raw.cnaEsSecundarios.map((c: any) => `${c.cnaeCodigoSecundario} - ${c.cnaeDescricaoSecundario}`) : []
+    };
+  }
+
+  if (selectedModules.includes('cnpj_contato')) {
+    result['Contato_e_Localizacao'] = {
+      enderecos: Array.isArray(raw.enderecos) ? raw.enderecos.map((end: any) => ({
+        logradouro: end.logradouro,
+        numero: end.numero,
+        complemento: end.complemento,
+        bairro: end.bairro,
+        cidade: end.cidade,
+        uf: end.uf,
+        cep: end.cep
+      })) : [],
+      telefones: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => `${t.telefoneComDDD} (${t.operadora || ''}${t.whatsApp ? ' - Whats' : ''}${t.tipoTelefone ? ` - ${t.tipoTelefone}` : ''})`) : [],
+      emails: Array.isArray(raw.emails) ? raw.emails.map((e: any) => e.enderecoEmail) : []
+    };
+  }
+    
+  if (selectedModules.includes('cnpj_filiais')) {
+    if (raw.quantidadeFiliais && parseInt(raw.quantidadeFiliais) > 0) {
+      result['Filiais'] = {
+        quantidade: raw.quantidadeFiliais,
+        lista_filiais: Array.isArray(raw.filiais) ? raw.filiais.map((f: any) => ({
+          cnpj: f.cnpj,
+          razao_social: f.razaoSocial,
+          uf: f.uf
+        })) : []
+      };
+    } else {
+      result['Filiais'] = {
+        quantidade: 0,
+        aviso: "Não possui filiais."
+      };
+    }
+  }
+    
+  if (selectedModules.includes('cnpj_socios')) {
+    result['Socios'] = {
+      lista: Array.isArray(raw.socios) ? raw.socios.map((s: any) => ({
+        nome: s.nome,
+        documento: s.documento,
+        cargo: s.cargo,
+        participacao: s.percentualParticipacao,
+        data_entrada: s.dataEntrada
+      })) : []
+    };
+  }
+    
+  if (selectedModules.includes('cnpj_faturamento')) {
+    result['Faturamento'] = {
+      faixa_faturamento: raw.faixaFaturamento,
+      faturamento_medio_cnae: raw.faturamentoMedioCNAE,
+      faturamento_presumido: raw.faturamentoPresumido,
+      tributacao: raw.tributacao,
+      opcao_simples: raw.opcaoSimples,
+      opcao_mei: raw.opcaoMEI
+    };
+    
+    result['Funcionarios'] = {
+      quantidade: raw.quantidadeFuncionarios,
+      faixa: raw.faixaFuncionarios
+    };
+  }
+
+  return result;
+}

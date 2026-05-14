@@ -3,7 +3,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { fazerConsultaAPI } from '@/services/api-consulta';
-import { performSmartSearch, consultaCpfPlus, consultaVeicular } from '@/services/direct-data';
+import { performSmartSearch, consultaCpfPlus, consultaVeicular, consultaCnpjPlus } from '@/services/direct-data';
 import { validarChave } from '@/lib/validators';
 
 export async function getPricing() {
@@ -95,19 +95,54 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     let apiResult: any;
 
     if (cache && !effectiveIsTest) {
-      // Se houver cache, preparamos o resultado sem chamar a API
+      // Se houver cache, preparamos o resultado sem chamar a API. 
+      // O cliente CONTINUA SENDO COBRADO, mas nós poupamos a API (lucro!).
       apiResult = { success: true, data: cache.result };
-    } else {
-      // Se NÃO houver cache (ou for teste), verifica saldo antes de chamar API
-      if (!effectiveIsTest) {
-        if (user.balance < totalCost) {
-          return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
+    } else if (effectiveIsTest) {
+      // MOCK UNIFICADO PARA MODO DEMO
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      apiResult = {
+        success: true,
+        data: {
+          Aviso_Demo: "Estes são dados FALSOS de teste para o administrador.",
+          Dados_Basicos: { 
+            cnpj: "00.000.000/0001-00", 
+            razao_social: "EMPRESA DE TESTE S.A",
+            matriz: "Sim",
+            porte: "DEMAIS",
+            situacao_cadastral: "ATIVA"
+          },
+          Natureza_e_Atividades: {
+            natureza_juridica: "2062 - Sociedade Empresária Limitada",
+            cnae_principal: "6204-0/00 - Consultoria em tecnologia da informação",
+            cnaes_secundarios: ["6201-5/01 - Desenvolvimento de programas de computador"]
+          },
+          Contato_e_Localizacao: { 
+            emails: ["contato@empresateste.com.br"], 
+            telefones: ["11 99999-9999 (VIVO - Whats)", "11 3333-3333 (Fixo)"],
+            enderecos: [{ logradouro: "AVENIDA PAULISTA", numero: "1000", bairro: "BELA VISTA", cidade: "SAO PAULO", uf: "SP", cep: "01310-100" }]
+          },
+          Socios: {
+            lista: [ { nome: "JOÃO DA SILVA", documento: "***.111.222-**", cargo: "Sócio-Administrador" } ]
+          },
+          Faturamento: {
+            faixa_faturamento: "De R$ 1.2M a R$ 4.8M",
+            tributacao: "Lucro Presumido"
+          },
+          Dados_Pessoais: { nome: "JOÃO DA SILVA TESTE", cpf: "111.222.333-44" },
+          Dados_do_Veiculo: { placa: "ABC-1234", marca_modelo: "TESTE/MODELO" }
         }
+      };
+    } else {
+      // Se NÃO houver cache e não for teste, checa saldo e chama API REAL
+      if (user.balance < totalCost) {
+        return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
       }
 
-      // Chama a API correspondente
       if (target === 'cpf') {
         apiResult = await consultaCpfPlus(cleanQuery, selectedModules);
+      } else if (target === 'cnpj') {
+        apiResult = await consultaCnpjPlus(cleanQuery, selectedModules);
       } else if (target === 'placa') {
         apiResult = await consultaVeicular(cleanQuery, selectedModules);
       } else if (['email', 'telefone', 'nome'].includes(target)) {
@@ -121,7 +156,7 @@ export async function realizarConsulta(target: string, query: string, selectedMo
           target: apiTarget, 
           pacote: 'teste', 
           query: cleanQuery, 
-          isTest: effectiveIsTest 
+          isTest: false // Sempre false pois já tratamos o modo de teste acima
         });
       }
     }

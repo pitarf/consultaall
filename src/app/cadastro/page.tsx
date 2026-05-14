@@ -91,7 +91,7 @@ function RegisterContent() {
             disabled={isPending}
             className="w-full btn-premium py-3 rounded-lg font-medium mt-6 flex items-center justify-center"
           >
-            {isPending ? 'Criando...' : 'Cadastrar e Ganhar Créditos'}
+            {isPending ? 'Criando...' : 'Cadastrar'}
           </button>
         </form>
 

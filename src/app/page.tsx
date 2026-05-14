@@ -70,7 +70,7 @@ export default async function Home() {
           </nav>
 
           {/* Mobile CTA */}
-          <Link href="/cadastro" className="md:hidden btn-premium text-sm px-4 py-2">
+          <Link href="/login" className="md:hidden btn-premium text-sm px-4 py-2">
             Entrar
           </Link>
         </div>

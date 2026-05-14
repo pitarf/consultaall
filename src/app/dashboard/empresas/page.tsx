@@ -9,27 +9,28 @@ import { Search, Loader2, FlaskConical, HelpCircle } from 'lucide-react';
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 
-// Módulos veiculares separados
-const INITIAL_VEHICLE_MODULES = [
+// Módulos de CNPJ separados
+const INITIAL_CNPJ_MODULES = [
   {
-    title: 'Dados do Veículo',
+    title: 'Informações da Empresa',
     items: [
-      { id: 'veiculo_basico', label: 'Dados Básicos e Técnicos', cost: 1.0 },
-      { id: 'veiculo_documentacao', label: 'Situação e Documentação', cost: 1.0 },
+      { id: 'cnpj_basico', label: 'Dados Básicos e Natureza', cost: 1.0 },
+      { id: 'cnpj_contato', label: 'Contato e Localização', cost: 1.0 },
+      { id: 'cnpj_filiais', label: 'Lista de Filiais', cost: 1.0 },
     ]
   },
   {
-    title: 'Histórico e Posse',
+    title: 'Estrutura e Finanças',
     items: [
-      { id: 'veiculo_proprietario', label: 'Dados do Proprietário', cost: 1.5 },
-      { id: 'veiculo_restricoes', label: 'Restrições, Leilão e Histórico', cost: 2.0 },
+      { id: 'cnpj_socios', label: 'Quadro Societário (QSA)', cost: 1.5 },
+      { id: 'cnpj_faturamento', label: 'Faturamento e Porte', cost: 2.0 },
     ]
   }
 ];
 
-export default function VeiculosPage() {
+export default function EmpresasPage() {
   const [chaveValor, setChaveValor] = useState('');
-  const [modules, setModules] = useState(INITIAL_VEHICLE_MODULES);
+  const [modules, setModules] = useState(INITIAL_CNPJ_MODULES);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   
   const [loading, setLoading] = useState(false);
@@ -49,7 +50,7 @@ export default function VeiculosPage() {
           setIsAdmin(true);
         }
 
-        const updatedModules = INITIAL_VEHICLE_MODULES.map(cat => ({
+        const updatedModules = INITIAL_CNPJ_MODULES.map(cat => ({
           ...cat,
           items: cat.items.map(item => {
             const dbPrice = pricing.find(p => p.id === item.id);
@@ -88,14 +89,14 @@ export default function VeiculosPage() {
   };
 
   const handleSearch = async () => {
-    const validation = validarChave('placa', chaveValor);
+    const validation = validarChave('cnpj', chaveValor);
     if (!validation.valid) {
       toast.error(validation.message);
       return;
     }
 
     if (selectedModules.length === 0) {
-      toast.warning('Selecione ao menos um conjunto de dados veiculares para consultar.');
+      toast.warning('Selecione ao menos um conjunto de dados empresariais para consultar.');
       return;
     }
 
@@ -109,7 +110,7 @@ export default function VeiculosPage() {
     }
 
     try {
-      const res = await realizarConsulta('placa', chaveValor, selectedModules, isDemo);
+      const res = await realizarConsulta('cnpj', chaveValor, selectedModules, isDemo);
       
       if (res.error) {
         toast.error(res.error);
@@ -133,12 +134,12 @@ export default function VeiculosPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Consultar veículos</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Consultar empresas</h1>
       </div>
 
       {/* 1. Chaves de busca */}
       <section className="bg-white dark:bg-card rounded-lg shadow-sm border border-slate-200 dark:border-white/10 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">1. Informe a Placa do Veículo</h2>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">1. Informe o CNPJ da Empresa</h2>
         
         <div className="flex flex-col md:flex-row shadow-sm rounded-md border border-slate-300 dark:border-white/10">
           <div className="md:w-1/4 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-300 dark:border-white/10">
@@ -146,7 +147,7 @@ export default function VeiculosPage() {
               disabled
               className="w-full h-full p-3 bg-transparent text-slate-700 dark:text-gray-300 outline-none appearance-none cursor-not-allowed font-medium"
             >
-              <option value="placa">Placa Veicular</option>
+              <option value="cnpj">CNPJ</option>
             </select>
           </div>
           <div className="md:w-3/4 flex items-center bg-white dark:bg-transparent relative">
@@ -154,12 +155,12 @@ export default function VeiculosPage() {
               type="text" 
               value={chaveValor}
               onChange={(e) => setChaveValor(e.target.value.toUpperCase())}
-              placeholder="Ex: ABC-1234 ou ABC1D23"
+              placeholder="Ex: 00.000.000/0000-00 ou 00000000000000"
               className="w-full p-3 bg-transparent text-slate-800 dark:text-white outline-none uppercase placeholder:normal-case"
-              maxLength={8}
+              maxLength={18}
             />
               <div className="absolute right-4">
-                <Tooltip text="Insira a placa do veículo (Padrão Antigo ou Mercosul). Não é necessário digitar o traço.">
+                <Tooltip text="Insira o CNPJ da empresa. Não é necessário digitar os pontos e traços.">
                   <HelpCircle className="w-5 h-5 text-slate-400 cursor-help hover:text-primary transition-colors" />
                 </Tooltip>
               </div>
@@ -168,14 +169,14 @@ export default function VeiculosPage() {
         
         <p className="mt-3 text-sm text-slate-500 dark:text-gray-400 flex items-center gap-2">
           <span className="bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-300 w-5 h-5 rounded-full inline-flex items-center justify-center font-bold text-xs">i</span>
-          Selecione abaixo os módulos de dados que deseja obter para esta placa.
+          Selecione abaixo os módulos de dados que deseja obter para este CNPJ.
         </p>
       </section>
 
       {/* 2. Conjuntos de Dados Veiculares */}
       <section>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">2. Conjuntos de dados veiculares</h2>
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">2. Conjuntos de dados empresariais</h2>
           <div className="text-sm font-medium bg-green-500/10 text-green-500 px-3 py-1.5 rounded-md">
             Custo total: R$ {totalCost.toFixed(2).replace('.', ',')}
           </div>
@@ -269,7 +270,7 @@ export default function VeiculosPage() {
       {/* Resultado */}
       {resultado && (
         <div className="mt-8">
-          <DataViewer data={resultado} title="Relatório do Veículo" />
+          <DataViewer data={resultado} title="Relatório da Empresa" />
         </div>
       )}
     </div>

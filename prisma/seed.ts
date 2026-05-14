@@ -40,8 +40,15 @@ async function main() {
     // Categoria: Veículos
     { id: 'veiculo_basico', name: 'Dados Básicos e Técnicos', price: 1.0, category: 'Veículos' },
     { id: 'veiculo_documentacao', name: 'Situação e Documentação', price: 1.0, category: 'Veículos' },
-    { id: 'veiculo_proprietario', name: 'Proprietário Atual', price: 1.5, category: 'Veículos' },
+    { id: 'veiculo_proprietario', name: 'Dados do Proprietário', price: 1.5, category: 'Veículos' },
     { id: 'veiculo_restricoes', name: 'Restrições, Leilão e Histórico', price: 2.0, category: 'Veículos' },
+
+    // Categoria: Empresas
+    { id: 'cnpj_basico', name: 'Dados Básicos e Natureza', price: 1.0, category: 'Empresas' },
+    { id: 'cnpj_contato', name: 'Contato e Localização', price: 1.0, category: 'Empresas' },
+    { id: 'cnpj_filiais', name: 'Lista de Filiais', price: 1.0, category: 'Empresas' },
+    { id: 'cnpj_socios', name: 'Quadro Societário (QSA)', price: 1.5, category: 'Empresas' },
+    { id: 'cnpj_faturamento', name: 'Faturamento e Porte', price: 2.0, category: 'Empresas' },
 
     // Categoria: Crédito e Histórico
     { id: 'analise_credito', name: 'Score de Crédito', price: 2.0, category: 'Crédito e Histórico' },

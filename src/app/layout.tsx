@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { prisma } from "../lib/prisma";
@@ -68,6 +69,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
       >
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-W9LEXZJ5HG"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-W9LEXZJ5HG');
+          `}
+        </Script>
         <main className="flex-1 flex flex-col">
           {children}
         </main>
