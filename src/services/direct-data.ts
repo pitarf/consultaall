@@ -198,7 +198,15 @@ function transformDirectDataPlus(raw: any, selectedModules: string[]) {
   }
   if (selectedModules.includes('telefones')) {
     result['Telefones'] = {
-      lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => `${t.telefoneComDDD} (${t.operadora || ''}${t.whatsApp ? ' - Whats' : ''})`) : []
+      lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => {
+        const info = [
+          t.operadora,
+          t.whatsApp ? 'WhatsApp' : null,
+          t.tipoTelefone,
+          t.telemarketingBloqueado ? 'Telemarketing Bloqueado' : null
+        ].filter(Boolean).join(' - ');
+        return `${t.telefoneComDDD} (${info})`;
+      }) : []
     };
   }
   if (selectedModules.includes('emails')) {

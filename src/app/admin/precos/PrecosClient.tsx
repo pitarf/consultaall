@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { atualizarPrecoModulo } from '@/app/actions/precos';
 import { DollarSign, Save, Edit2, X, Tag } from 'lucide-react';
@@ -17,39 +18,44 @@ interface Props {
   modulos: Modulo[];
 }
 
-/**
- * Componente cliente para gerenciamento de preços dos módulos de consulta.
- * Permite edição inline com feedback visual via toast.
- */
-export default function PrecosClient({ modulos }: Props) {
-  // Estado de edição por módulo: armazena o id sendo editado e o novo valor
+export default function PrecosClient({ modulos: modulosIniciais }: Props) {
+  const router = useRouter();
+  
+  // Estado local para os módulos para garantir reatividade
+  const [listaModulos, setListaModulos] = useState<Modulo[]>(modulosIniciais);
+  
+  // Estado de edição
   const [editando, setEditando] = useState<string | null>(null);
   const [valores, setValores] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState<string | null>(null);
 
   /**
-   * Inicia a edição de um módulo, populando o campo com o valor atual.
+   * Inicia a edição de um módulo
    */
   function iniciarEdicao(modulo: Modulo) {
     setEditando(modulo.id);
-    setValores((prev) => ({ ...prev, [modulo.id]: modulo.price.toFixed(2) }));
+    setValores((prev) => ({ 
+      ...prev, 
+      [modulo.id]: modulo.price.toString().replace('.', ',') 
+    }));
   }
 
   /**
-   * Cancela a edição sem salvar.
+   * Cancela a edição
    */
   function cancelarEdicao() {
     setEditando(null);
   }
 
   /**
-   * Salva o novo preço chamando a server action.
+   * Salva o novo preço
    */
   async function salvarPreco(modulo: Modulo) {
-    const novoValor = parseFloat(valores[modulo.id]?.replace(',', '.'));
+    const valorDigitado = valores[modulo.id] || '0';
+    const novoValor = parseFloat(valorDigitado.replace(',', '.'));
 
     if (isNaN(novoValor) || novoValor < 0) {
-      toast.error('Valor inválido. Use um número positivo como 2.50');
+      toast.error('Valor inválido. Digite um número positivo (ex: 2,50)');
       return;
     }
 
@@ -60,15 +66,20 @@ export default function PrecosClient({ modulos }: Props) {
     if (result?.error) {
       toast.error(result.error);
     } else {
-      toast.success(`Preço de "${modulo.name}" atualizado para R$ ${novoValor.toFixed(2).replace('.', ',')}`);
+      toast.success(`Preço de "${modulo.name}" atualizado!`);
+      
+      // Atualiza o estado local para refletir na UI sem mutação direta
+      setListaModulos((prev) => 
+        prev.map((m) => (m.id === modulo.id ? { ...m, price: novoValor } : m))
+      );
+      
       setEditando(null);
-      // Atualiza localmente para refletir sem precisar recarregar
-      modulo.price = novoValor;
+      router.refresh();
     }
   }
 
-  // Agrupa os módulos por categoria
-  const modulosPorCategoria = modulos.reduce((acc, modulo) => {
+  // Agrupa os módulos por categoria usando a lista do estado
+  const modulosPorCategoria = listaModulos.reduce((acc, modulo) => {
     const cat = modulo.category || 'Outros';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(modulo);
@@ -138,9 +149,8 @@ export default function PrecosClient({ modulos }: Props) {
                       <div className="flex items-center justify-end gap-1">
                         <span className="text-gray-400 text-sm">R$</span>
                         <input
-                          type="number"
-                          step="0.01"
-                          min="0"
+                          type="text"
+                          inputMode="decimal"
                           className="w-24 bg-background border border-primary/50 rounded-lg px-2 py-1.5 text-sm text-right text-white focus:outline-none focus:border-primary"
                           value={valores[modulo.id] ?? ''}
                           onChange={(e) => setValores((prev) => ({ ...prev, [modulo.id]: e.target.value }))}
