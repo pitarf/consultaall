@@ -201,7 +201,7 @@ export default function PrecosClient({ modulos: modulosIniciais }: Props) {
         ))}
       </div>
 
-      {modulos.length === 0 && (
+      {listaModulos.length === 0 && (
         <div className="text-center py-16 text-gray-500">
           <Tag className="w-12 h-12 mx-auto mb-4 opacity-30" />
           <p>Nenhum módulo de preço cadastrado.</p>
