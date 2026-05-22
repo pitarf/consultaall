@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.2] - 2026-05-22
+### Adicionado / Modificado
+- **Alternador Dinâmico de Temas (Dark / Clean):** Criação do componente de estado client `ThemeToggle.tsx` com ícones dinâmicos do Lucide (`Sun` e `Moon`), encaixando-se no cabeçalho do painel de controle (/dashboard) e de forma flutuante absoluta no topo-direita das telas de **Login** e **Cadastro**.
+- **Adaptação Premium Light/Dark de Login/Cadastro:** Flexibilização total das classes de cores estáticas escuras das páginas de login e cadastro. Agora, os inputs, labels, botões de ação e divisores se adaptam instantaneamente ao tema selecionado (Clean / Dark) mantendo legibilidade perfeita e mantendo o design vívido em ambas as vertentes.
+- **Persistência e Evitação de Flicker:** Adição de script head bloqueante em `src/app/layout.tsx` para sincronizar e carregar imediatamente a preferência de tema do `localStorage` (ou do sistema operacional) no primeiro milissegundo de carregamento do DOM, evitando quaisquer piscadas ("flickering") visuais.
+- **Suporte Fluido nos Módulos de Busca:** Compatibilização completa das classes utilitárias de cores do Tailwind v4 (`dark:bg-card`, `dark:text-white`, `border-slate-200 dark:border-white/10`, etc.) nas páginas internas para transição imediata e natural.
+
 ## [0.7.1] - 2026-05-22
 ### Adicionado / Modificado
 - **Ajuste Fino do Hero Copy na Landing Page:** Otimização do título principal para "Consulte Informações em Segundos", da descrição secundária para realçar o acesso ágil a contatos, placas e vínculos, e da chamada principal de cadastro para "Consultar Agora 🔎" (incluindo uma sutil micro-animação pulsante de conversão).
