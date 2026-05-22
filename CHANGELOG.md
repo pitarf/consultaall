@@ -4,6 +4,7 @@ Todas as mudanças notáveis para este projeto serão documentadas neste arquivo
 
 ## [0.7.1] - 2026-05-22
 ### Adicionado / Modificado
+- **Ajuste Fino do Hero Copy na Landing Page:** Otimização do título principal para "Consulte Informações em Segundos", da descrição secundária para realçar o acesso ágil a contatos, placas e vínculos, e da chamada principal de cadastro para "Consultar Agora 🔎" (incluindo uma sutil micro-animação pulsante de conversão).
 - **Esquema de Cores Claro nos Termos de Uso:** Implementação e polimento de design 100% claro (SaaS Light Premium) na página `/termos`, usando fundo `#f8fafc`, cartões brancos e fontes escuras de alta legibilidade para alinhamento com a Landing Page Whitelist para Google Ads.
 - **Correção Crítica de Sintaxe em Termos:** Correção de rodapé duplicado e código sintático inválido que gerava falha de compilação em produção.
 - **Rebranding Completo Residual (Detetive Buscas):** Remoção definitiva das ocorrências da marca antiga "ConsultaALL" no mockup das abas da home, no FaqAccordion corporativo e na tela de login de administradores.

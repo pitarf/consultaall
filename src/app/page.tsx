@@ -48,20 +48,20 @@ export default async function Home() {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#243b56] tracking-tight leading-[1.1]">
-                Validação Cadastral e <span className="text-[#2872fa]">Inteligência de Dados</span> em um só lugar
+                Consulte Informações <span className="text-[#2872fa]">em Segundos</span>
               </h1>
               
               <p className="text-base md:text-lg text-slate-600 leading-relaxed max-w-2xl">
-                Acesse múltiplas bases de dados oficiais em tempo real. Realize background checks consistentes, enriqueça seus leads comerciais e mitigue riscos transacionais com total segurança e conformidade.
+                Tenha acesso rápido a informações cadastrais, telefones, placas e vínculos através da nossa plataforma online.
               </p>
 
               {/* Ações */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <Link
                   href="/cadastro"
-                  className="bg-[#2872fa] hover:bg-[#1a5ecd] text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-[#2872fa]/10 flex items-center justify-center gap-2 group transition-all active:scale-95 text-base"
+                  className="bg-[#2872fa] hover:bg-[#1a5ecd] text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-[#2872fa]/10 flex items-center justify-center gap-2 group transition-all active:scale-95 text-base animate-pulse"
                 >
-                  Criar Conta Gratuita
+                  Consultar Agora 🔎
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
