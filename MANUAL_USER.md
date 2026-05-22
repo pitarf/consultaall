@@ -24,3 +24,10 @@
 - **Bloqueio de Visualização (Opt-out):** Em conformidade com a LGPD, os titulares de dados podem, a qualquer momento, solicitar o bloqueio e a restrição da exibição de suas informações de CPF nas buscas internas.
 - **Como Solicitar:** Acesse o link "Proteção de Dados (LGPD)" no rodapé da página principal corporativa, preencha o formulário formal informando Nome, CPF, E-mail e o motivo. As solicitações são recebidas instantaneamente pelo administrador e processadas de forma prioritária em até 48 horas comerciais.
 
+## Alternador de Visualização (Tema Clean / Dark)
+Para proporcionar o maior conforto visual aos usuários e administradores da plataforma, implementamos um sistema dinâmico de temas:
+- **Modo Clean (Claro):** Ideal para uso diurno ou ambientes corporativos, com excelente contraste, fundo branco leve e sombras sutis de design minimalista.
+- **Modo Dark (Escuro):** Ideal para uso noturno ou sessões de busca prolongadas, reduzindo a fadiga ocular com o tradicional design glassmorphism premium.
+- **Como Alternar:** No painel do usuário (`/dashboard`) ou painel de controle do administrador (`/admin`), clique no ícone de Sol ☀️ ou Lua 🌙 localizado no cabeçalho superior (ao lado do saldo da sua carteira). A plataforma memoriza instantaneamente a sua escolha para todas as próximas visitas. O alternador também está disponível no canto superior direito das telas de login e cadastro.
+
+

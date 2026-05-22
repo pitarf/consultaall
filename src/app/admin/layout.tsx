@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { ShieldCheck, LayoutDashboard, Users, Activity, LogOut, ArrowLeft, Settings, DollarSign, Tag } from 'lucide-react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 import { cookies } from 'next/headers';
 
@@ -35,9 +36,9 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar Admin */}
-      <aside className="w-64 border-r border-red-500/20 bg-card/50 hidden md:flex flex-col relative overflow-hidden">
-        {/* Glow effect indicando área restrita */}
+      {/* Sidebar Admin - Mantida estaticamente em tom escuro de contraste para visual SaaS premium */}
+      <aside className="w-64 border-r border-red-500/20 bg-[#0f172a] hidden md:flex flex-col relative overflow-hidden">
+        {/* Efeito Glow vermelho sutil indicando privilégios administrativos */}
         <div className="absolute top-0 left-0 w-full h-32 bg-red-500/10 blur-3xl -z-10"></div>
 
         <div className="h-16 flex items-center px-6 border-b border-white/10">
@@ -80,17 +81,30 @@ export default async function AdminLayout({
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 border-b border-white/10 bg-card/30 flex items-center justify-between px-4 md:hidden">
+      {/* Main Content - Fundo dinâmico adaptável ao tema claro ou escuro */}
+      <div className="flex-1 flex flex-col bg-[#f8fafc] dark:bg-background">
+        {/* Header superior adaptativo unificado com ThemeToggle */}
+        <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-card/30 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shadow-sm sticky top-0 z-50 animate-in fade-in duration-300">
           <div className="flex items-center gap-2">
             <ShieldCheck className="text-red-500 w-5 h-5" />
-            <span className="font-bold text-white">Admin</span>
+            <span className="font-bold text-slate-900 dark:text-white text-sm md:text-base">Painel Administrativo</span>
           </div>
-          <Link href="/dashboard" className="text-gray-400"><ArrowLeft className="w-5 h-5" /></Link>
+          
+          <div className="flex items-center gap-3">
+            {/* Alternador dinâmico de tema Clean / Dark */}
+            <ThemeToggle />
+            
+            <Link 
+              href="/dashboard" 
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 transition-all shadow-sm"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Voltar ao App</span>
+            </Link>
+          </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
           {children}
         </main>
       </div>

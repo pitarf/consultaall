@@ -9,12 +9,12 @@ export default async function AdminUsuariosPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8 border-b border-white/10 pb-6">
-        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+      <div className="mb-8 border-b border-slate-200 dark:border-white/10 pb-6">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
           <Users className="text-blue-500 w-8 h-8" />
           Gestão de Usuários
         </h1>
-        <p className="text-gray-400 mt-2">Lista completa de clientes, controle de saldos e banimentos.</p>
+        <p className="text-slate-500 dark:text-gray-400 mt-2">Lista completa de clientes, controle de saldos e banimentos.</p>
       </div>
 
       <UserTableClient initialUsers={users} />

@@ -2,6 +2,18 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.3] - 2026-05-22
+### Adicionado / Modificado
+- **Área Administrativa Reativa a Temas (Clean / Dark):** Compatibilização completa de 100% da área administrativa (`/admin`) e das telas e subpáginas internas com o alternador de temas dinâmico.
+  - **Layout do Admin:** Cabeçalho adaptado com o componente `<ThemeToggle />`, botão de retorno de alto contraste e contêiner central com background responsivo (`bg-[#f8fafc] dark:bg-background`).
+  - **Painel Analítico de KPIs:** Cards de faturamento e consultas convertidos com design glass/white shadow e mini-gráficos reativos a ambos os temas.
+  - **Gestão de Usuários e Modais de Auditoria:** Tabela de usuários adaptada com linhas zebradas suaves e transições. Modais completos de auditoria e ajuste de saldo reescritos para suportar fundos dinâmicos (`bg-white dark:bg-[#0f172a]`), tabelas internas claras e inputs numéricos/textuais de alto contraste.
+  - **Histórico de Vendas:** Tabela de recargas Pix adaptada com linhas zebradas reativas, cabeçalho de contraste e badges de status reativos.
+  - **Configurações de Branding e SEO:** Seção de formulários de metadados, inputs e caixas de pré-visualização de imagens (Logo e Favicon) remodeladas para ótima legibilidade e adaptabilidade visual a fundos claros e escuros.
+  - **Preços de Módulos:** Adaptação completa de inputs tarifários, cards de categorias e caixas de alertas amarelos de preços para herdar as tonalidades e contrastes dinâmicos de cada modo.
+  - **Logs do Sistema:** Cards de depuração, badges de status de severidade e contêineres pre/code de JSON técnico ajustados para ótima legibilidade sem perder a identidade premium.
+  - **Checkpoint de Login Administrativo:** Integração do `<ThemeToggle />` e flexibilização visual completa do formulário de mestre para ótima usabilidade tanto no modo Clean quanto no modo Dark.
+
 ## [0.7.2] - 2026-05-22
 ### Adicionado / Modificado
 - **Alternador Dinâmico de Temas (Dark / Clean):** Criação do componente de estado client `ThemeToggle.tsx` com ícones dinâmicos do Lucide (`Sun` e `Moon`), encaixando-se no cabeçalho do painel de controle (/dashboard) e de forma flutuante absoluta no topo-direita das telas de **Login** e **Cadastro**.

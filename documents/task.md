@@ -50,6 +50,17 @@
 - [x] **Mobile-First Real:** Implementação da Sidebar retrátil com `React Portal` para quebrar bloqueios de blur e usabilidade de botões gigantes.
 - [x] **Fluxo de Conversão (Saldo):** Banner e botões de "Recarregar" integrados a falhas de tentativa de busca sem saldo.
 
+## SPLIT 4: Adaptação de Temas (Clean / Dark) na Área Admin (✅ CONCLUÍDO)
+*Este split foca em estender o alternador de temas dinâmico para toda a área administrativa e login de admin.*
+- [x] Adaptar o layout do Admin (`src/app/admin/layout.tsx`) com `ThemeToggle` e suporte a contraste.
+- [x] Adaptar a página principal de métricas (`src/app/admin/page.tsx` & `DashboardClient.tsx`).
+- [x] Adaptar a página de Vendas (`src/app/admin/vendas/page.tsx`).
+- [x] Adaptar a gestão de usuários e auditoria (`src/app/admin/usuarios/page.tsx` & `UserTableClient.tsx`).
+- [x] Adaptar a página de Configurações de Branding e SEO (`src/app/admin/configuracoes/page.tsx`).
+- [x] Adaptar a tabela de Preços de Módulos (`src/app/admin/precos/PrecosClient.tsx`).
+- [x] Adaptar os logs do sistema (`src/app/admin/logs/page.tsx`).
+- [x] Adaptar a tela de Checkpoint de Login Administrativo (`src/app/admin-login/page.tsx`).
+
 ### 🛠️ Próximas Tarefas Prioritárias
 - [x] Implementação de Login Social (Google OAuth2).
 - [x] Configuração final do SSL/Nginx no domínio oficial.
