@@ -1,4 +1,4 @@
-# Manual do Desenvolvedor - ConsultaALL
+# Manual do Desenvolvedor - Detetive Buscas
 
 ## Integração de API e Modo Híbrido (DirectData V3)
 O sistema utiliza o arquivo `src/services/direct-data.ts` como ponte de comunicação.
@@ -41,3 +41,10 @@ O componente `src/components/DataViewer.tsx` foi refatorado para realizar uma le
 
 ## Monitoramento de Logs
 - **SystemLog:** Registra falhas de API, trocas de senha e confirmações de saldo. Visualizável no admin via interface dedicada.
+
+## Canal de Proteção de Dados (Opt-out LGPD) e Whitelist
+Para conformidade com o Google Ads e LGPD, a plataforma expõe uma rota `/protecao-de-dados`:
+- **Estrutura:** A página `src/app/protecao-de-dados/page.tsx` usa componentes client interativos para gerenciar formulário, máscaras e feedbacks com Toasts.
+- **Armazenamento sem Migrations:** O formulário consome a Server Action `registrarOptOut` (`src/app/actions/optout.ts`). Ela valida o CPF pelo motor interno e registra a solicitação diretamente na tabela `SystemLog` com o nível `WARNING`. Isso permite ao administrador realizar auditorias e dar baixa técnica em solicitações sem a necessidade de migrações complexas de esquema no PostgreSQL.
+- **Componentização SSR:** A Landing Page principal (`src/app/page.tsx`) roda em modo de servidor (Server Component) para otimização extrema de SEO e metadados dinâmicos vindos da tabela `SystemSetting`. Elementos com estado dinâmico como abas (`HomeTabs`), accordions (`FaqAccordion`) e menus (`NavbarClient`) são carregados modularmente como Client Components híbridos.
+

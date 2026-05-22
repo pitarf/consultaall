@@ -1,4 +1,4 @@
-# Manual do Usuário - ConsultaALL
+# Manual do Usuário - Detetive Buscas
 
 ## Consultas de Alta Performance
 - **Velocidade e Precisão:** Utilize diferentes chaves (CPF, Nome, Telefone, E-mail). Graças ao nosso sistema de cache inteligente, se você buscar os mesmos dados nas últimas 48 horas, o resultado é instantâneo.
@@ -18,4 +18,9 @@
 ## Recursos de Administrador
 - **Dashboard Analítico:** Visualize a saúde financeira do site e o ranking dos serviços mais procurados.
 - **Modo Teste:** Possibilidade de realizar consultas de demonstração sem custo para validação do sistema.
-- **Gestão de Auditoria:** Acesso completo aos logs de sistema para suporte técnico rápido ao cliente.
+- **Gestão de Auditoria:** Acesso completo aos logs de sistema para suporte técnico rápido ao cliente, incluindo a aba para monitorar solicitações de bloqueio de dados.
+
+## Conformidade LGPD & Proteção de Dados (Opt-out)
+- **Bloqueio de Visualização (Opt-out):** Em conformidade com a LGPD, os titulares de dados podem, a qualquer momento, solicitar o bloqueio e a restrição da exibição de suas informações de CPF nas buscas internas.
+- **Como Solicitar:** Acesse o link "Proteção de Dados (LGPD)" no rodapé da página principal corporativa, preencha o formulário formal informando Nome, CPF, E-mail e o motivo. As solicitações são recebidas instantaneamente pelo administrador e processadas de forma prioritária em até 48 horas comerciais.
+

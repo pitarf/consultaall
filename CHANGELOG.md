@@ -1,6 +1,24 @@
-# Changelog - ConsultaALL
+# Changelog - Detetive Buscas
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
+
+## [0.7.1] - 2026-05-22
+### Adicionado / Modificado
+- **Esquema de Cores Claro nos Termos de Uso:** Implementação e polimento de design 100% claro (SaaS Light Premium) na página `/termos`, usando fundo `#f8fafc`, cartões brancos e fontes escuras de alta legibilidade para alinhamento com a Landing Page Whitelist para Google Ads.
+- **Correção Crítica de Sintaxe em Termos:** Correção de rodapé duplicado e código sintático inválido que gerava falha de compilação em produção.
+- **Rebranding Completo Residual (Detetive Buscas):** Remoção definitiva das ocorrências da marca antiga "ConsultaALL" no mockup das abas da home, no FaqAccordion corporativo e na tela de login de administradores.
+
+## [0.7.0] - 2026-05-22
+- **Nova Landing Page Whitelist (Estilo DeskData):** Reconstrução total da página pública inicial (`src/app/page.tsx`) com uma paleta de cores light premium corporativa B2B (cinza claro, azul vibrante e marinho) e copywriting whitelist focado em validação cadastral, enriquecimento de leads e mitigação de fraudes para aprovação total do Google Ads.
+- **Dados Estritamente Genéricos nos Mockups (Opt-in Ads):** Ajuste fino de todas as demonstrações e exemplos visuais das abas interativas. Substituição de dados mascarados ou simulados por strings puramente conceituais (ex: "Nome Completo do Titular", "123.456.789-00", "01/02/1987", "exemplo@email.com", "Razão Social da Empresa Ltda") para eliminar qualquer falsa impressão de vazamento de dados aos revisores do Google Ads.
+- **Preservação Histórica (Home 2):** Migração e preservação da Landing Page original escura ("Detetive Buscas") na nova rota pública `/home2` (`src/app/home2/page.tsx`), mantendo-a totalmente funcional.
+- **Re-Branding Oficial (Detetive Buscas):** Substituição de todas as ocorrências visuais de "ConsultaALL" na home e navbar pela marca **Detetive Buscas**, posicionando-a como uma solução SaaS B2B premium e whitelisting de inteligência cadastral sob o domínio público.
+- **Copy Suave Whitelist (Inspirada na DeskData):** Redefinição da copy do Hero e do corpo da Landing Page para um tom corporativo leve, profissional e legítimo (adequado contra restrições no Google Ads), além de acrescentar o aviso explícito de mockups ilustrativos/fictícios no componente de abas de consultas.
+- **Canal Público de Proteção de Dados (Comentado / Em Desenvolvimento):** Ocultação completa do formulário de oposição LGPD na página `/protecao-de-dados`, substituindo a interface por um card elegante de "Módulo LGPD sob demanda / Em Desenvolvimento técnico". Toda a estrutura real do formulário e da action foi deixada perfeitamente comentada no código para permitir demonstração comercial e liberação imediata pós-venda.
+- **Componentização Modular da Landing Page:**
+  - Componente client `HomeTabs.tsx` para exibição interativa das consultas e mocks B2B de retorno, sem exibição de preços públicos.
+  - Componente client `FaqAccordion.tsx` com accordions responsivos institucionais.
+  - Componente client `NavbarClient.tsx` para cabeçalho responsivo leve com menu mobile retrátil.
 
 ## [0.6.0] - 2026-05-13
 ### Adicionado / Modificado

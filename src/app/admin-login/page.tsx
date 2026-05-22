@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="text-center mt-8 text-gray-600 text-xs">
-          ConsultaALL © 2026 • Segurança Nível Militar
+          Detetive Buscas © 2026 • Segurança Nível Militar
         </p>
       </div>
     </div>
