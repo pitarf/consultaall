@@ -64,4 +64,5 @@
 ### 🛠️ Próximas Tarefas Prioritárias
 - [x] Implementação de Login Social (Google OAuth2).
 - [x] Configuração final do SSL/Nginx no domínio oficial.
+- [x] Correção técnica e estabilização do Webhook da PushinPay (Resiliência, IDs corretos e idempotência).
 - [x] Teste de ponta a ponta do Webhook da PushinPay em ambiente de produção.

@@ -2,6 +2,14 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.4] - 2026-05-25
+### Adicionado / Modificado
+- **Correção Crítica do Webhook PushinPay (Confirmação Pix):** Re-estruturação e robustecimento completo do endpoint de integração de webhook (`/api/webhooks/pushinpay`) para garantir o processamento automático de recargas Pix.
+  - **Uso do ID de Transação Correto:** Substituição do mapeamento incorreto do campo `id` (ID da tentativa do webhook) pelo campo `transaction_id` (ID real da transação Pix associado ao `externalId`), resolvendo o bug em que o PIX não era creditado no saldo do cliente.
+  - **Leitura Resiliente do Body:** Implementação de parser flexível de corpo de requisição com base no header `Content-Type` do HTTP, tratando nativamente payloads formatados tanto em `application/json` quanto `application/x-www-form-urlencoded` de forma segura.
+  - **Tratamento Blindado de Exceções (Zero 500):** Adição de verificações preventivas contra dados nulos ou indefinidos antes de submetê-los ao Prisma Client, evitando que exceções de validação de banco resultem em erros HTTP 500 (Internal Server Error).
+  - **Logs de Auditoria e Anti-Fraude:** Inclusão de logs detalhados via banco de dados (`SystemLog`) em português para transações confirmadas, além do bloqueio automático com log em severidade `ERROR` em caso de tentativas de divergência de valores pagos versus faturados.
+
 ## [0.7.3] - 2026-05-22
 ### Adicionado / Modificado
 - **Área Administrativa Reativa a Temas (Clean / Dark):** Compatibilização completa de 100% da área administrativa (`/admin`) e das telas e subpáginas internas com o alternador de temas dinâmico.
