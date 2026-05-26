@@ -68,3 +68,5 @@
 - [x] Teste de ponta a ponta do Webhook da PushinPay em ambiente de produção.
 - [x] Correção de cálculo de faturamento e vendas no painel administrativo.
 - [x] Criação de navegação deslizante premium móvel (AdminMobileMenu) para administradores no celular.
+- [x] Implementação de aba e Server Actions para Confirmação/Aprovação Manual de Pix pelo Administrador.
+

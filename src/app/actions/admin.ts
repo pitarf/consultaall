@@ -288,3 +288,85 @@ export async function getSalesHistory() {
     include: { user: { select: { name: true, email: true } } }
   });
 }
+
+/**
+ * Retorna todos os depósitos Pix que ainda estão aguardando aprovação (PENDING).
+ */
+export async function getPendingDeposits() {
+  await checkAdmin();
+  return prisma.transaction.findMany({
+    where: { type: 'DEPOSIT', status: 'PENDING' },
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+    include: { user: { select: { name: true, email: true } } }
+  });
+}
+
+/**
+ * Confirma manualmente uma recarga Pix pendente, incrementando o saldo do usuário
+ * e registrando o log de auditoria correspondente.
+ */
+export async function approveDepositManual(transactionId: string) {
+  const admin = await checkAdmin();
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Busca a transação pendente
+      const transaction = await tx.transaction.findUnique({
+        where: { id: transactionId },
+        include: { user: true }
+      });
+
+      if (!transaction) {
+        throw new Error('Transação não encontrada.');
+      }
+
+      if (transaction.status === 'COMPLETED') {
+        throw new Error('Transação já está confirmada.');
+      }
+
+      if (transaction.type !== 'DEPOSIT') {
+        throw new Error('Esta transação não é um depósito.');
+      }
+
+      // 2. Atualiza a transação para COMPLETED e documenta a ação
+      await tx.transaction.update({
+        where: { id: transactionId },
+        data: { 
+          status: 'COMPLETED',
+          description: `${transaction.description || 'Recarga de Saldo - Pix'} (Aprovado Manualmente por Admin)`
+        }
+      });
+
+      // 3. Incrementa o saldo do usuário com o valor exato da transação
+      await tx.user.update({
+        where: { id: transaction.userId },
+        data: { 
+          balance: { increment: transaction.amount }
+        }
+      });
+
+      // 4. Registra no Log do Sistema a aprovação manual para auditoria
+      await tx.systemLog.create({
+        data: {
+          level: 'INFO',
+          message: `Depósito Pix de R$ ${transaction.amount.toFixed(2)} confirmado MANUALMENTE pelo Admin para o usuário: ${transaction.user.email}`,
+          context: { 
+            userId: transaction.userId, 
+            transactionId: transaction.id,
+            adminId: admin.id,
+            amount: transaction.amount
+          }
+        }
+      });
+
+      return { success: true };
+    });
+
+    revalidatePath('/admin/vendas');
+    return result;
+  } catch (error: any) {
+    console.error('❌ Erro ao aprovar Pix manualmente:', error.message || error);
+    return { error: error.message || 'Erro interno ao processar aprovação.' };
+  }
+}
