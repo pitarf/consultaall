@@ -9,6 +9,11 @@ Todas as mudanças notáveis para este projeto serão documentadas neste arquivo
   - **Leitura Resiliente do Body:** Implementação de parser flexível de corpo de requisição com base no header `Content-Type` do HTTP, tratando nativamente payloads formatados tanto em `application/json` quanto `application/x-www-form-urlencoded` de forma segura.
   - **Tratamento Blindado de Exceções (Zero 500):** Adição de verificações preventivas contra dados nulos ou indefinidos antes de submetê-los ao Prisma Client, evitando que exceções de validação de banco resultem em erros HTTP 500 (Internal Server Error).
   - **Logs de Auditoria e Anti-Fraude:** Inclusão de logs detalhados via banco de dados (`SystemLog`) em português para transações confirmadas, além do bloqueio automático com log em severidade `ERROR` em caso de tentativas de divergência de valores pagos versus faturados.
+- **Correção de Métricas de Faturamento no Painel Administrativo:**
+  - **Cálculo de Receita Real:** Correção lógica na Server Action `getDashboardMetrics` que buscava o faturamento total acumulado e as vendas recentes com o filtro do tipo inexistente `PURCHASE`. Agora as métricas consultam corretamente a soma dos depósitos confirmados (`type: 'DEPOSIT'` e `status: 'COMPLETED'`), restaurando a exibição em tempo real do faturamento e vendas reais.
+- **Menu Mobile Administrativo (Drawer Deslizante):**
+  - **Navegação Responsiva:** Criação do componente Client `<AdminMobileMenu />` contendo um botão hambúrguer elegante e uma gaveta retrátil lateral em tom escuro (`bg-[#0f172a]`), alinhada ao visual desktop.
+  - **Integração no Layout:** Injeção do menu móvel no cabeçalho superior do layout (`src/app/admin/layout.tsx`) com visibilidade restrita a smartphones (`md:hidden`), permitindo a navegação móvel de alto nível por todas as 6 subpáginas de administração.
 
 ## [0.7.3] - 2026-05-22
 ### Adicionado / Modificado

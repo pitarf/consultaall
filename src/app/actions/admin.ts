@@ -82,9 +82,12 @@ async function checkAdmin() {
 export async function getDashboardMetrics() {
   await checkAdmin();
 
-  // Receita Total (Soma de transações do tipo PURCHASE)
+  // Receita Total (Soma de transações do tipo DEPOSIT confirmados)
   const revenueResult = await prisma.transaction.aggregate({
-    where: { type: 'PURCHASE' },
+    where: { 
+      type: 'DEPOSIT',
+      status: 'COMPLETED'
+    },
     _sum: { amount: true },
   });
   const totalRevenue = revenueResult._sum.amount || 0;
@@ -95,9 +98,12 @@ export async function getDashboardMetrics() {
   // Usuários Ativos
   const totalUsers = await prisma.user.count({ where: { active: true } });
 
-  // Vendas Recentes
+  // Vendas Recentes (DEPOSIT confirmados)
   const recentSales = await prisma.transaction.findMany({
-    where: { type: 'PURCHASE' },
+    where: { 
+      type: 'DEPOSIT',
+      status: 'COMPLETED'
+    },
     orderBy: { createdAt: 'desc' },
     take: 5,
     include: { user: { select: { name: true, email: true } } }

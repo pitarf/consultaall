@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { ShieldCheck, LayoutDashboard, Users, Activity, LogOut, ArrowLeft, Settings, DollarSign, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
-
+import { AdminMobileMenu } from '@/components/AdminMobileMenu';
 import { cookies } from 'next/headers';
 
 export default async function AdminLayout({
@@ -86,8 +86,9 @@ export default async function AdminLayout({
         {/* Header superior adaptativo unificado com ThemeToggle */}
         <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-card/30 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shadow-sm sticky top-0 z-50 animate-in fade-in duration-300">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="text-red-500 w-5 h-5" />
-            <span className="font-bold text-slate-900 dark:text-white text-sm md:text-base">Painel Administrativo</span>
+            <AdminMobileMenu />
+            <ShieldCheck className="text-red-500 w-5 h-5 hidden xs:inline" />
+            <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm md:text-base">Painel Administrativo</span>
           </div>
           
           <div className="flex items-center gap-3">
