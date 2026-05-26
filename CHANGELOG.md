@@ -14,7 +14,9 @@ Todas as mudanças notáveis para este projeto serão documentadas neste arquivo
   - **Interface SaaS Interativa (Abas):** Substituição do histórico de faturamento estático pelo componente interativo `<VendasClient />` estruturado em abas ("Aprovações Pendentes" e "Histórico Confirmado") com contador reativo e animações de loading de salvamento assíncrono com a nova API de transições do React 19.
 - **Correção de Métricas de Faturamento no Painel Administrativo:**
   - **Cálculo de Receita Real:** Correção lógica na Server Action `getDashboardMetrics` que buscava o faturamento total acumulado e as vendas recentes com o filtro do tipo inexistente `PURCHASE`. Agora as métricas consultam corretamente a soma dos depósitos confirmados (`type: 'DEPOSIT'` e `status: 'COMPLETED'`), restaurando a exibição em tempo real do faturamento e vendas reais.
-- **Menu Mobile Administrativo (Drawer Deslizante):**
+- **Menu Mobile Administrativo (Drawer Deslizante com React Portal):**
+  - **Uso de Portais (Solução de CSS):** Substituição da renderização direta pela API `createPortal` do `react-dom` para acoplar a gaveta deslizante diretamente no `document.body`. Isso contorna as limitações de bloco de contenção e o aprisionamento visual gerados pelo `backdrop-blur-md` do cabeçalho pai, restaurando a exibição correta e fluida em tela cheia de smartphones.
+  - **Anti-Hidratação:** Adição de controle de montagem em hook `useEffect` para carregar o portal de forma 100% segura no lado do cliente, prevenindo falhas de hidratação ou referências ao servidor.
   - **Navegação Responsiva:** Criação do componente Client `<AdminMobileMenu />` contendo um botão hambúrguer elegante e uma gaveta retrátil lateral em tom escuro (`bg-[#0f172a]`), alinhada ao visual desktop.
   - **Integração no Layout:** Injeção do menu móvel no cabeçalho superior do layout (`src/app/admin/layout.tsx`) com visibilidade restrita a smartphones (`md:hidden`), permitindo a navegação móvel de alto nível por todas as 6 subpáginas de administração.
 

@@ -1,17 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ShieldCheck, LayoutDashboard, Users, Activity, ArrowLeft, Settings, DollarSign, Tag } from 'lucide-react';
 
 /**
  * Componente client-side que implementa a gaveta lateral deslizante de navegação (Mobile Drawer)
- * para a área administrativa em dispositivos móveis.
+ * para a área administrativa em dispositivos móveis, utilizando React Portal para evitar limitações
+ * de contexto de renderização causadas pelo backdrop-blur de elementos pais.
  */
 export function AdminMobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  // Garante que o Portal só renderize client-side para evitar conflitos de hidratação do Next.js
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fecha o menu automaticamente quando houver mudança de rota
   useEffect(() => {
@@ -32,33 +40,42 @@ export function AdminMobileMenu() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  // Renderiza apenas o botão do hambúrguer se o componente ainda não estiver montado no lado do cliente
+  const renderTriggerButton = () => (
+    <button
+      onClick={toggleMenu}
+      className="p-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 transition-all shadow-sm active:scale-95"
+      aria-label="Abrir menu de navegação"
+    >
+      <Menu className="w-5 h-5" />
+    </button>
+  );
+
+  if (!mounted) {
+    return renderTriggerButton();
+  }
+
   return (
     <div className="md:hidden">
-      {/* Botão Hambúrguer para Abrir o Menu */}
-      <button
-        onClick={toggleMenu}
-        className="p-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 transition-all shadow-sm active:scale-95"
-        aria-label="Abrir menu de navegação"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+      {/* Botão Hambúrguer Estático */}
+      {renderTriggerButton()}
 
-      {/* Gaveta de Navegação (Overlay + Drawer) */}
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex animate-in fade-in duration-200">
-          {/* Overlay Translúcido e Desfocado */}
+      {/* Renderização da Gaveta Lateral usando React Portal acoplado ao body */}
+      {isOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex animate-in fade-in duration-200">
+          {/* Overlay Translúcido e Desfocado sob a tela inteira */}
           <div
             onClick={toggleMenu}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           />
 
-          {/* Drawer Lateral Deslizante */}
-          <aside className="relative w-72 max-w-[85vw] bg-[#0f172a] h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-300">
+          {/* Drawer Lateral Deslizante com posicionamento correto e fundo totalmente opaco */}
+          <aside className="relative w-72 max-w-[85vw] bg-[#0f172a] h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-300 border-r border-white/5 text-white">
             {/* Efeito Glow Vermelho Administrativo no Fundo */}
             <div className="absolute top-0 left-0 w-full h-32 bg-red-500/10 blur-3xl -z-10"></div>
 
             {/* Cabeçalho da Sidebar Móvel */}
-            <div className="h-16 flex items-center justify-between px-6 border-b border-white/10">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 bg-[#0b1120]">
               <div className="flex items-center">
                 <ShieldCheck className="text-red-500 w-6 h-6 mr-2 animate-pulse" />
                 <span className="text-lg font-bold text-white">
@@ -75,12 +92,12 @@ export function AdminMobileMenu() {
             </div>
 
             {/* Links de Navegação do Admin */}
-            <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+            <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto bg-[#0f172a]">
               <Link
                 href="/admin"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   pathname === '/admin'
-                    ? 'bg-red-500/10 text-white border border-red-500/20'
+                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -91,7 +108,7 @@ export function AdminMobileMenu() {
                 href="/admin/usuarios"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   pathname.startsWith('/admin/usuarios')
-                    ? 'bg-red-500/10 text-white border border-red-500/20'
+                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -102,7 +119,7 @@ export function AdminMobileMenu() {
                 href="/admin/vendas"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   pathname.startsWith('/admin/vendas')
-                    ? 'bg-red-500/10 text-white border border-red-500/20'
+                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -113,7 +130,7 @@ export function AdminMobileMenu() {
                 href="/admin/precos"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   pathname.startsWith('/admin/precos')
-                    ? 'bg-red-500/10 text-white border border-red-500/20'
+                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -124,7 +141,7 @@ export function AdminMobileMenu() {
                 href="/admin/configuracoes"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   pathname.startsWith('/admin/configuracoes')
-                    ? 'bg-red-500/10 text-white border border-red-500/20'
+                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -135,7 +152,7 @@ export function AdminMobileMenu() {
                 href="/admin/logs"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   pathname.startsWith('/admin/logs')
-                    ? 'bg-red-500/10 text-white border border-red-500/20'
+                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -145,7 +162,7 @@ export function AdminMobileMenu() {
             </nav>
 
             {/* Rodapé da Sidebar Móvel - Retorno ao Dashboard do App */}
-            <div className="p-4 border-t border-white/10 bg-slate-950/20">
+            <div className="p-4 border-t border-white/10 bg-[#0b1120] relative z-20">
               <Link
                 href="/dashboard"
                 className="flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-95 shadow-inner"
@@ -155,7 +172,8 @@ export function AdminMobileMenu() {
               </Link>
             </div>
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
