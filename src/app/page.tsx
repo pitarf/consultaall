@@ -48,7 +48,7 @@ export default async function Home() {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#243b56] tracking-tight leading-[1.1]">
-                Consulte Informações <span className="text-[#2872fa]">em Segundos</span>
+                Consulte CPF, Telefone e Placa <span className="text-[#2872fa]">em Segundos</span>
               </h1>
               
               <p className="text-base md:text-lg text-slate-600 leading-relaxed max-w-2xl">

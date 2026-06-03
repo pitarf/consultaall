@@ -2,6 +2,10 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.5] - 2026-06-03
+### Adicionado / Modificado
+- **Copywriting do Hero da Landing Page:** Otimização do título principal na página inicial (`src/app/page.tsx`) para focar nas principais consultas da plataforma. O texto foi atualizado de "Consulte Informações em Segundos" para "Consulte CPF, Telefone e Placa em Segundos".
+
 ## [0.7.4] - 2026-05-25
 ### Adicionado / Modificado
 - **Correção Crítica do Webhook PushinPay (Confirmação Pix):** Re-estruturação e robustecimento completo do endpoint de integração de webhook (`/api/webhooks/pushinpay`) para garantir o processamento automático de recargas Pix.

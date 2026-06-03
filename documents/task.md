@@ -70,5 +70,6 @@
 - [x] Criação de navegação deslizante premium móvel (AdminMobileMenu) para administradores no celular.
 - [x] Implementação de aba e Server Actions para Confirmação/Aprovação Manual de Pix pelo Administrador.
 - [x] Correção do menu mobile do administrador com React Portal (solução de aprisionamento de CSS por backdrop-blur).
+- [x] Otimização da chamada principal (Hero) na Landing Page para focar em "CPF, Telefone e Placa".
 
 
