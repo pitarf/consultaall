@@ -6,6 +6,7 @@ Todas as mudanças notáveis para este projeto serão documentadas neste arquivo
 ### Adicionado / Modificado
 - **Validação Manual de Pix na Gestão de Usuários:**
   - Adição de uma interface de abas ("Ajuste Simples" e "Validar Pix Manual") no modal de gerenciamento de saldo da lista de usuários (`src/app/admin/usuarios/UserTableClient.tsx`).
+  - Adição de um botão de ação rápida com ícone do Pix (`QrCode`) na tabela de usuários para abrir o modal diretamente na aba de validação de Pix.
   - Integração da Server Action `createAndApproveDepositManual` para criar e aprovar transações Pix (`DEPOSIT` com status `COMPLETED`) associadas a um ID Pix externo (`externalId`), incrementando o saldo do usuário e gerando logs de auditoria do sistema em português brasileiro.
   - Prevenção de duplicidade de transações por meio da validação atômica de `externalId` único no banco de dados.
 

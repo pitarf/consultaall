@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toggleUserStatus, addBalance, getUserAuditData, createAndApproveDepositManual } from '@/app/actions/admin';
 import { toast } from 'sonner';
-import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode } from 'lucide-react';
 
 export default function UserTableClient({ initialUsers }: { initialUsers: any[] }) {
   const [users, setUsers] = useState(initialUsers);
@@ -42,6 +42,16 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
     setPixId('');
     setPixAmount('');
     setBalanceTab('adjust');
+    setModalOpen(true);
+  };
+
+  const handleOpenPixValidationModal = (user: any) => {
+    setSelectedUser(user);
+    setBalanceAmount('');
+    setBalanceDesc('Correção/Bônus manual');
+    setPixId('');
+    setPixAmount('');
+    setBalanceTab('pix');
     setModalOpen(true);
   };
 
@@ -158,6 +168,15 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                       title="Adicionar Saldo"
                     >
                       <Wallet className="w-4 h-4" />
+                    </button>
+
+                    <button 
+                      onClick={() => handleOpenPixValidationModal(user)}
+                      disabled={loading}
+                      className="p-2 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white rounded transition-colors inline-flex"
+                      title="Validar Pix Manual"
+                    >
+                      <QrCode className="w-4 h-4" />
                     </button>
                     
                     {user.role !== 'ADMIN' && (
