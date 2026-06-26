@@ -71,5 +71,6 @@
 - [x] Implementação de aba e Server Actions para Confirmação/Aprovação Manual de Pix pelo Administrador.
 - [x] Correção do menu mobile do administrador com React Portal (solução de aprisionamento de CSS por backdrop-blur).
 - [x] Otimização da chamada principal (Hero) na Landing Page para focar em "CPF, Telefone e Placa".
+- [x] Criação de opção de validação manual de Pix na Gestão de Usuários para criar e aprovar Pix manualmente (Pix IDs não registrados).
 
 

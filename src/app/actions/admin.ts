@@ -370,3 +370,81 @@ export async function approveDepositManual(transactionId: string) {
     return { error: error.message || 'Erro interno ao processar aprovação.' };
   }
 }
+
+/**
+ * Cria e aprova manualmente uma recarga Pix (para casos em que o webhook falhou e a transação
+ * nem sequer foi registrada no banco de dados de produção).
+ */
+export async function createAndApproveDepositManual(userId: string, externalId: string, amount: number) {
+  const admin = await checkAdmin();
+
+  if (!userId || !externalId || !amount || isNaN(amount) || amount <= 0) {
+    return { error: 'Dados inválidos para criação do Pix manual.' };
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Verifica se já existe transação com esse externalId no banco para evitar duplicidade
+      const existingTx = await tx.transaction.findUnique({
+        where: { externalId }
+      });
+
+      if (existingTx) {
+        throw new Error(`O ID do Pix ${externalId} já está registrado no sistema (Status: ${existingTx.status}).`);
+      }
+
+      // 2. Busca o usuário
+      const user = await tx.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user) {
+        throw new Error('Usuário não encontrado.');
+      }
+
+      // 3. Cria a transação COMPLETED do tipo DEPOSIT com o externalId fornecido
+      const transaction = await tx.transaction.create({
+        data: {
+          userId,
+          amount,
+          type: 'DEPOSIT',
+          status: 'COMPLETED',
+          externalId,
+          description: `Recarga de Saldo - Pix (Criado e Aprovado Manualmente)`
+        }
+      });
+
+      // 4. Incrementa o saldo do usuário
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          balance: { increment: amount }
+        }
+      });
+
+      // 5. Registra o log no sistema
+      await tx.systemLog.create({
+        data: {
+          level: 'INFO',
+          message: `Depósito Pix de R$ ${amount.toFixed(2)} criado e aprovado MANUALMENTE pelo Admin para o usuário: ${user.email} (ID Pix: ${externalId})`,
+          context: {
+            userId,
+            transactionId: transaction.id,
+            adminId: admin.id,
+            amount,
+            externalId
+          }
+        }
+      });
+
+      return { success: true };
+    });
+
+    revalidatePath('/admin/usuarios');
+    revalidatePath('/admin/vendas');
+    return result;
+  } catch (error: any) {
+    console.error('❌ Erro ao criar e aprovar Pix manualmente:', error.message || error);
+    return { error: error.message || 'Erro interno ao processar criação.' };
+  }
+}

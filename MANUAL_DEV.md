@@ -55,4 +55,10 @@ A plataforma possui suporte completo a temas dinâmicos em toda a sua área púb
 - **Estilização Adaptativa:** Utiliza as classes nativas de variantes `dark:` do Tailwind v4 (`bg-white dark:bg-card`, `text-slate-900 dark:text-white`, `border-slate-200 dark:border-white/10`) assegurando uma estética premium glassmorphism nos tons escuros e um design clean limpo e profissional nos tons claros.
 - **Área Administrativa e Login de Checkpoint:** A mesma reatividade e paleta de cores flexíveis foram estendidas para 100% das páginas administrativas, tabelas de KPI, listagem de transações Pix, modais de auditoria técnica e telas de segurança de mestre.
 
+## Validação Manual de Recarga Pix
+Para resolver inconsistências de webhooks da PushinPay (especialmente em ambientes locais de teste ou quando a transação Pix é criada e paga mas não é registrada no banco de dados de produção por problemas do gateway):
+- **Server Action**: `createAndApproveDepositManual(userId, externalId, amount)` em `src/app/actions/admin.ts`. Ela verifica a existência prévia do `externalId` para evitar duplicidade, insere o registro `DEPOSIT` com status `COMPLETED`, credita o saldo ao usuário e registra logs no `SystemLog` para fins de auditoria financeira.
+- **Interface**: No modal de gerenciamento de saldo do usuário (`UserTableClient.tsx`), há uma aba "Validar Pix Manual". Ela solicita o ID Pix (`externalId`) e o valor pago, processando a transação de forma atômica no banco de dados.
+
+
 

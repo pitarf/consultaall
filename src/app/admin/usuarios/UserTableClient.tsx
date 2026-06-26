@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { toggleUserStatus, addBalance, getUserAuditData } from '@/app/actions/admin';
+import { toggleUserStatus, addBalance, getUserAuditData, createAndApproveDepositManual } from '@/app/actions/admin';
 import { toast } from 'sonner';
 import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock } from 'lucide-react';
 
@@ -13,8 +13,11 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [auditData, setAuditData] = useState<{history: any[], transactions: any[]} | null>(null);
   
+  const [balanceTab, setBalanceTab] = useState<'adjust' | 'pix'>('adjust');
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balanceDesc, setBalanceDesc] = useState('Bônus manual');
+  const [pixId, setPixId] = useState('');
+  const [pixAmount, setPixAmount] = useState('');
 
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
     if (!confirm(`Tem certeza que deseja ${currentStatus ? 'desativar' : 'ativar'} este usuário?`)) return;
@@ -24,7 +27,7 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
     try {
       await toggleUserStatus(userId, currentStatus);
       setUsers(users.map(u => u.id === userId ? { ...u, active: !currentStatus } : u));
-      toast.success('Status atualizado com sucesso!');
+      toast.success('Status status atualizado com sucesso!');
     } catch (err) {
       toast.error('Erro ao atualizar usuário.');
     } finally {
@@ -36,7 +39,41 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
     setSelectedUser(user);
     setBalanceAmount('');
     setBalanceDesc('Correção/Bônus manual');
+    setPixId('');
+    setPixAmount('');
+    setBalanceTab('adjust');
     setModalOpen(true);
+  };
+
+  const handleApprovePixManual = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser || !pixId.trim() || !pixAmount || isNaN(Number(pixAmount))) {
+      toast.error('Por favor, preencha todos os campos corretamente.');
+      return;
+    }
+
+    const amount = Number(pixAmount);
+    if (amount <= 0) {
+      toast.error('O valor do Pix deve ser maior que zero.');
+      return;
+    }
+
+    setLoading(true);
+    toast.info('Validando Pix e adicionando saldo...');
+    try {
+      const res = await createAndApproveDepositManual(selectedUser.id, pixId.trim(), amount);
+      if ('error' in res && res.error) {
+        toast.error(res.error);
+      } else {
+        setUsers(users.map(u => u.id === selectedUser.id ? { ...u, balance: u.balance + amount } : u));
+        toast.success('Pix validado e saldo creditado com sucesso!');
+        setModalOpen(false);
+      }
+    } catch (err) {
+      toast.error('Erro ao processar validação do Pix.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOpenAuditModal = async (user: any) => {
@@ -150,53 +187,129 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-6 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Ajuste de Saldo</h3>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Gerenciar Saldo</h3>
             <p className="text-sm text-slate-500 dark:text-gray-400 mb-6">
-              Adicione ou remova saldo (R$) manualmente para o usuário <strong className="text-slate-900 dark:text-white">{selectedUser?.email}</strong>.
+              Gerenciamento de saldo para o usuário <strong className="text-slate-900 dark:text-white">{selectedUser?.email}</strong>.
             </p>
+
+            {/* Abas */}
+            <div className="flex border-b border-slate-100 dark:border-white/5 mb-6">
+              <button
+                type="button"
+                onClick={() => setBalanceTab('adjust')}
+                className={`flex-1 pb-3 text-sm font-semibold border-b-2 transition-all ${
+                  balanceTab === 'adjust'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300'
+                }`}
+              >
+                Ajuste Simples
+              </button>
+              <button
+                type="button"
+                onClick={() => setBalanceTab('pix')}
+                className={`flex-1 pb-3 text-sm font-semibold border-b-2 transition-all ${
+                  balanceTab === 'pix'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300'
+                }`}
+              >
+                Validar Pix Manual
+              </button>
+            </div>
             
-            <form onSubmit={handleAddBalance} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">Valor do Saldo (R$)</label>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  required
-                  value={balanceAmount}
-                  onChange={(e) => setBalanceAmount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
-                  placeholder="Ex: 10.50 ou -5.00"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">Motivo / Descrição</label>
-                <input 
-                  type="text" 
-                  required
-                  value={balanceDesc}
-                  onChange={(e) => setBalanceDesc(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
-                />
-              </div>
-              
-              <div className="flex justify-end gap-3 mt-6">
-                <button 
-                  type="button" 
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  className="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-2 rounded-lg transition-all"
-                >
-                  Confirmar
-                </button>
-              </div>
-            </form>
+            {balanceTab === 'adjust' ? (
+              <form onSubmit={handleAddBalance} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">Valor do Saldo (R$)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    required
+                    value={balanceAmount}
+                    onChange={(e) => setBalanceAmount(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
+                    placeholder="Ex: 10.50 ou -5.00"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">Motivo / Descrição</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={balanceDesc}
+                    onChange={(e) => setBalanceDesc(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
+                  />
+                </div>
+                
+                <div className="flex justify-end gap-3 mt-6">
+                  <button 
+                    type="button" 
+                    onClick={() => setModalOpen(false)}
+                    className="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-2 rounded-lg transition-all"
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleApprovePixManual} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">ID da Transação Pix (externalId)</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={pixId}
+                    onChange={(e) => setPixId(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
+                    placeholder="Ex: A21A4CDF-70B5-4E06-A485-F9FA47874ADB"
+                  />
+                  <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">
+                    Insira o ID Pix gerado no gateway de pagamento (ex: PushinPay).
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">Valor do Pix (R$)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    min="0.01"
+                    required
+                    value={pixAmount}
+                    onChange={(e) => setPixAmount(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
+                    placeholder="Ex: 20.00"
+                  />
+                </div>
+                
+                <div className="flex justify-end gap-3 mt-6">
+                  <button 
+                    type="button" 
+                    onClick={() => setModalOpen(false)}
+                    className="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-2 rounded-lg transition-all"
+                  >
+                    Validar Pix
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

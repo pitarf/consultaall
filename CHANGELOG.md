@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.6] - 2026-06-26
+### Adicionado / Modificado
+- **Validação Manual de Pix na Gestão de Usuários:**
+  - Adição de uma interface de abas ("Ajuste Simples" e "Validar Pix Manual") no modal de gerenciamento de saldo da lista de usuários (`src/app/admin/usuarios/UserTableClient.tsx`).
+  - Integração da Server Action `createAndApproveDepositManual` para criar e aprovar transações Pix (`DEPOSIT` com status `COMPLETED`) associadas a um ID Pix externo (`externalId`), incrementando o saldo do usuário e gerando logs de auditoria do sistema em português brasileiro.
+  - Prevenção de duplicidade de transações por meio da validação atômica de `externalId` único no banco de dados.
+
 ## [0.7.5] - 2026-06-03
 ### Adicionado / Modificado
 - **Copywriting do Hero da Landing Page:** Otimização do título principal na página inicial (`src/app/page.tsx`) para focar nas principais consultas da plataforma. O texto foi atualizado de "Consulte Informações em Segundos" para "Consulte CPF, Telefone e Placa em Segundos".
