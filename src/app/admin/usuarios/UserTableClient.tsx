@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { toggleUserStatus, addBalance, getUserAuditData, createAndApproveDepositManual } from '@/app/actions/admin';
+import { toggleUserStatus, addBalance, getUserAuditData, createAndApproveDepositManual, approveDepositManual } from '@/app/actions/admin';
 import { toast } from 'sonner';
 import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode } from 'lucide-react';
 
@@ -18,6 +18,22 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
   const [balanceDesc, setBalanceDesc] = useState('Bônus manual');
   const [pixId, setPixId] = useState('');
   const [pixAmount, setPixAmount] = useState('');
+  const [pendingDeposits, setPendingDeposits] = useState<any[]>([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+
+  const fetchPendingDeposits = async (userId: string) => {
+    setLoadingPending(true);
+    try {
+      const data = await getUserAuditData(userId);
+      const pending = data.transactions.filter(t => t.type === 'DEPOSIT' && t.status === 'PENDING');
+      setPendingDeposits(pending);
+    } catch (err) {
+      console.error('Erro ao buscar transações pendentes:', err);
+      toast.error('Erro ao carregar Pix pendentes.');
+    } finally {
+      setLoadingPending(false);
+    }
+  };
 
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
     if (!confirm(`Tem certeza que deseja ${currentStatus ? 'desativar' : 'ativar'} este usuário?`)) return;
@@ -43,6 +59,7 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
     setPixAmount('');
     setBalanceTab('adjust');
     setModalOpen(true);
+    fetchPendingDeposits(user.id);
   };
 
   const handleOpenPixValidationModal = (user: any) => {
@@ -53,6 +70,7 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
     setPixAmount('');
     setBalanceTab('pix');
     setModalOpen(true);
+    fetchPendingDeposits(user.id);
   };
 
   const handleApprovePixManual = async (e: React.FormEvent) => {
@@ -81,6 +99,28 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
       }
     } catch (err) {
       toast.error('Erro ao processar validação do Pix.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprovePendingPix = async (transactionId: string, amount: number) => {
+    if (!selectedUser) return;
+    
+    setLoading(true);
+    toast.info('Confirmando recebimento do Pix...');
+    try {
+      const res = await approveDepositManual(transactionId);
+      if ('error' in res && res.error) {
+        toast.error(res.error);
+      } else {
+        setUsers(users.map(u => u.id === selectedUser.id ? { ...u, balance: u.balance + amount } : u));
+        setPendingDeposits(pendingDeposits.filter(t => t.id !== transactionId));
+        toast.success('Pix validado e saldo creditado com sucesso!');
+        setModalOpen(false);
+      }
+    } catch (err) {
+      toast.error('Erro ao aprovar Pix manualmente.');
     } finally {
       setLoading(false);
     }
@@ -281,53 +321,110 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleApprovePixManual} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">ID da Transação Pix (externalId)</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={pixId}
-                    onChange={(e) => setPixId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
-                    placeholder="Ex: A21A4CDF-70B5-4E06-A485-F9FA47874ADB"
-                  />
-                  <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1">
-                    Insira o ID Pix gerado no gateway de pagamento (ex: PushinPay).
-                  </p>
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+                {/* 1. Lista de Pix Pendentes (Aprovação de 1-Clique) */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    Pix Pendentes no Banco
+                  </label>
+                  
+                  {loadingPending ? (
+                    <div className="flex items-center justify-center py-6 text-slate-400">
+                      <Loader2 className="w-5 h-5 animate-spin mr-2 text-primary" />
+                      <span className="text-xs">Buscando Pix pendentes...</span>
+                    </div>
+                  ) : pendingDeposits.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic bg-slate-50 dark:bg-black/20 p-4 rounded-xl text-center border border-slate-200/50 dark:border-white/5">
+                      Nenhum Pix pendente encontrado para este usuário.
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                      {pendingDeposits.map((t) => (
+                        <div key={t.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl text-xs">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-bold text-green-600 dark:text-green-400 text-sm">
+                              R$ {t.amount.toFixed(2).replace('.', ',')}
+                            </span>
+                            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-mono truncate max-w-[200px]" title={t.externalId}>
+                              ID: {t.externalId}
+                            </span>
+                            <span className="text-[9px] text-slate-400 dark:text-gray-500">
+                              {new Date(t.createdAt).toLocaleString('pt-BR')}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleApprovePendingPix(t.id, t.amount)}
+                            disabled={loading}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all shrink-0 hover:scale-105 active:scale-95 shadow-sm"
+                          >
+                            Aprovar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">Valor do Pix (R$)</label>
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    min="0.01"
-                    required
-                    value={pixAmount}
-                    onChange={(e) => setPixAmount(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2.5 px-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
-                    placeholder="Ex: 20.00"
-                  />
-                </div>
-                
-                <div className="flex justify-end gap-3 mt-6">
-                  <button 
-                    type="button" 
-                    onClick={() => setModalOpen(false)}
-                    className="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    type="submit" 
-                    disabled={loading}
-                    className="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-2 rounded-lg transition-all"
-                  >
-                    Validar Pix
-                  </button>
-                </div>
-              </form>
+                <div className="border-t border-slate-100 dark:border-white/5 my-3" />
+
+                {/* 2. Formulário de Forçar Validação (Caso o Pix não exista no banco) */}
+                <form onSubmit={handleApprovePixManual} className="space-y-3">
+                  <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl">
+                    <h4 className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Pix não listado acima?</h4>
+                    <p className="text-[10px] text-amber-600/80 dark:text-amber-200/60 leading-relaxed">
+                      Se o Pix foi pago mas o webhook falhou e a transação não está registrada no banco (erro 404), você pode forçar a criação e aprovação inserindo os dados abaixo.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-gray-300 mb-1">
+                      ID da Transação Pix (externalId)
+                    </label>
+                    <input 
+                      type="text" 
+                      required
+                      value={pixId}
+                      onChange={(e) => setPixId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2 px-3 text-xs text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
+                      placeholder="Ex: A21A4CDF-70B5-4E06-A485-F9FA47874ADB"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-gray-300 mb-1">
+                      Valor do Pix (R$)
+                    </label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      min="0.01"
+                      required
+                      value={pixAmount}
+                      onChange={(e) => setPixAmount(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2 px-3 text-xs text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
+                      placeholder="Ex: 10.00"
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end gap-2 mt-4 pt-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setModalOpen(false)}
+                      className="px-4 py-2 rounded-lg text-xs text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      type="submit" 
+                      disabled={loading}
+                      className="bg-primary hover:bg-primary/90 text-white font-bold px-5 py-2 rounded-lg text-xs transition-all hover:scale-105 active:scale-95"
+                    >
+                      Forçar Validação
+                    </button>
+                  </div>
+                </form>
+              </div>
             )}
           </div>
         </div>
