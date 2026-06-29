@@ -72,5 +72,7 @@
 - [x] Correção do menu mobile do administrador com React Portal (solução de aprisionamento de CSS por backdrop-blur).
 - [x] Otimização da chamada principal (Hero) na Landing Page para focar em "CPF, Telefone e Placa".
 - [x] Criação de opção de validação manual de Pix na Gestão de Usuários para criar e aprovar Pix manualmente (Pix IDs não registrados).
+- [x] Correção do erro 400 na busca por Nome (Migrando para a Pesquisa Avançada V2 da DirectData com polling e tratamento de erro robusto).
+- [x] Validação simplificada de recargas Pix manuais na Gestão de Usuários (tornando o campo ID opcional com fallback autogerado).
 
 

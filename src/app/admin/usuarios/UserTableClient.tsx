@@ -75,8 +75,8 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
 
   const handleApprovePixManual = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUser || !pixId.trim() || !pixAmount || isNaN(Number(pixAmount))) {
-      toast.error('Por favor, preencha todos os campos corretamente.');
+    if (!selectedUser || !pixAmount || isNaN(Number(pixAmount))) {
+      toast.error('Por favor, informe o valor do Pix.');
       return;
     }
 
@@ -89,7 +89,7 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
     setLoading(true);
     toast.info('Validando Pix e adicionando saldo...');
     try {
-      const res = await createAndApproveDepositManual(selectedUser.id, pixId.trim(), amount);
+      const res = await createAndApproveDepositManual(selectedUser.id, pixId.trim() || null, amount);
       if ('error' in res && res.error) {
         toast.error(res.error);
       } else {
@@ -377,17 +377,16 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                     </p>
                   </div>
 
-                  <div>
+                   <div>
                     <label className="block text-xs font-medium text-slate-700 dark:text-gray-300 mb-1">
-                      ID da Transação Pix (externalId)
+                      ID da Transação Pix (Opcional)
                     </label>
                     <input 
                       type="text" 
-                      required
                       value={pixId}
                       onChange={(e) => setPixId(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg py-2 px-3 text-xs text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all"
-                      placeholder="Ex: A21A4CDF-70B5-4E06-A485-F9FA47874ADB"
+                      placeholder="Deixe vazio para ID automático ou digite o ID"
                     />
                   </div>
 

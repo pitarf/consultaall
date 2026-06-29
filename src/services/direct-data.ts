@@ -107,7 +107,8 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
 
     return { success: true, data };
   } catch (error: any) {
-    return { success: false, message: error.message };
+    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    return { success: false, message: apiMessage };
   }
 }
 // SEÇÃO: PESQUISA AVANÇADA (V3) - NOME, TELEFONE, EMAIL (SÍNCRONO)
@@ -120,28 +121,67 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
   const cleanQuery = query.trim();
 
   try {
+    if (type === 'name' || type === 'nome' as any) {
+      // Fluxo V2: Pesquisa Avançada (Filtro -> Processamento -> Polling)
+      const filterRes = await filterNaturalPerson({ fullName: cleanQuery, state });
+      if (!filterRes.success || !filterRes.listFilters || filterRes.listFilters.length === 0) {
+        const errorMsg = filterRes.error?.message || filterRes.metaDados?.mensagem || 'Nenhum registro encontrado.';
+        return { success: false, message: errorMsg };
+      }
+
+      const bestMatch = pickBestCandidate(filterRes.listFilters);
+      if (!bestMatch) {
+        return { success: false, message: 'Nenhum candidato válido identificado.' };
+      }
+
+      const procRes = await processingIds([bestMatch.id], `Busca por Nome: ${cleanQuery}`);
+      if (!procRes.success || !procRes.searchUid) {
+        const errorMsg = procRes.error?.message || procRes.metaDados?.mensagem || 'Falha ao iniciar processamento do candidato.';
+        return { success: false, message: errorMsg };
+      }
+
+      const searchUid = procRes.searchUid;
+
+      // Polling rápido para obter o resultado em estado terminal (10 tentativas, 2s de intervalo)
+      let attempts = 0;
+      while (attempts < 10) {
+        attempts++;
+        await new Promise(r => setTimeout(r, 2000));
+        
+        const viewRes = await viewSearch(searchUid);
+        if (viewRes.success && viewRes.viewSearch) {
+          const item = viewRes.viewSearch.searchItems?.[0];
+          if (item && [4, 5, 6, 7].includes(item.resultId)) {
+            if (item.resultId === 6) {
+              return { success: false, message: item.result || 'Falha no processamento da consulta de nome.' };
+            }
+            return {
+              success: true,
+              data: transformDirectDataAdvanced(item.returnJson || {}, selectedModules),
+              message: item.result || 'Consulta realizada com sucesso.'
+            };
+          }
+        }
+      }
+
+      return { success: false, message: 'O processamento levou mais tempo que o esperado. Tente novamente.' };
+    }
+
+    // Busca síncrona V3 para celular e e-mail (mais econômica e rápida)
     if (type === 'email') {
       url = `${V3_URL}/api/EnriquecimentoLead?TOKEN=${TOKEN}&EMAIL=${encodeURIComponent(cleanQuery)}`;
     } else if (type === 'phone' || type === 'telefone' as any) {
       const phone = cleanQuery.replace(/\D/g, '');
       url = `${V3_URL}/api/EnriquecimentoLead?TOKEN=${TOKEN}&CELULAR=${phone}`;
-    } else if (type === 'name' || type === 'nome' as any) {
-      const parts = cleanQuery.split(' ');
-      const firstName = parts[0];
-      const lastName = parts.slice(1).join(' ');
-      url = `${V3_URL}/api/Similarity?TOKEN=${TOKEN}&NAME=${encodeURIComponent(firstName)}&SURNAME=${encodeURIComponent(lastName)}`;
-      if (state) url += `&STATE=${state}`;
     }
 
     const response = await axios.get(url);
     const res = response.data;
 
-    // Na V3, se houver retorno, ele vem direto em res.retorno
     if (!res.retorno || (Array.isArray(res.retorno) && res.retorno.length === 0)) {
       return { success: false, message: res.metaDados?.mensagem || 'Nenhum registro encontrado.' };
     }
 
-    // Se for lista (como em Similarity), pega o primeiro/melhor
     const rawData = Array.isArray(res.retorno) ? res.retorno[0] : res.retorno;
     
     return {
@@ -151,8 +191,9 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
     };
 
   } catch (error: any) {
-    console.error('Erro na SmartSearch V3:', error.message);
-    return { success: false, message: error.message || 'Erro na comunicação com a API.' };
+    console.error('Erro na SmartSearch:', error.response?.data || error.message);
+    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    return { success: false, message: apiMessage || 'Erro na comunicação com a API.' };
   }
 }
 
@@ -175,7 +216,8 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
     
     return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
   } catch (error: any) {
-    return { success: false, message: error.message };
+    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    return { success: false, message: apiMessage };
   }
 }
 
@@ -241,6 +283,110 @@ function transformDirectDataPlus(raw: any, selectedModules: string[]) {
       codigo_cbo: raw.codigoCBO
     };
   }
+  return result;
+}
+
+// -----------------------------------------------------------------------------
+// SEÇÃO: PESQUISA AVANÇADA (V2) - AUXILIARES E PARSER
+// -----------------------------------------------------------------------------
+
+export async function filterNaturalPerson(filters: {
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
+  state?: string;
+  city?: string;
+}) {
+  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  try {
+    const response = await axiosV2.post('/api/AdvancedSearch/FilterNaturalPerson', filters);
+    return response.data;
+  } catch (error: any) {
+    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    throw new Error(apiMessage);
+  }
+}
+
+export async function processingIds(listIds: string[], searchName: string = 'Consulta ALL') {
+  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  try {
+    const response = await axiosV2.post('/api/AdvancedSearch/ProcessingIds', { listIds, searchName });
+    return response.data;
+  } catch (error: any) {
+    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    throw new Error(apiMessage);
+  }
+}
+
+export async function viewSearch(searchUid: string) {
+  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  try {
+    const response = await axiosV2.post('/api/AdvancedSearch/ViewSearch', { searchUid });
+    return response.data;
+  } catch (error: any) {
+    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    throw new Error(apiMessage);
+  }
+}
+
+function pickBestCandidate(candidates: any[]) {
+  if (!candidates || candidates.length === 0) return null;
+  // Tenta encontrar um com nome da mãe e data de nascimento (mais completo)
+  const complete = candidates.find(c => c.motherName && c.dateOfBirth);
+  if (complete) return complete;
+  return candidates[0];
+}
+
+function transformDirectDataAdvanced(raw: any, selectedModules: string[]) {
+  const result: any = {};
+
+  if (selectedModules.includes('dados_basicos') || selectedModules.includes('documentos')) {
+    result['Dados_Pessoais'] = {
+      nome: raw.nome,
+      cpf: raw.cpf,
+      rg: raw.rg,
+      data_nascimento: raw.nascimento,
+      sexo: raw.sexo,
+      nome_mae: raw.mae,
+      nome_pai: raw.pai,
+      estado_civil: raw.estado_civil,
+      signo: raw.signo
+    };
+  }
+
+  if (selectedModules.includes('telefones')) {
+    result['Telefones'] = {
+      lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => {
+        return `${t.ddd || ''}${t.numero || ''} (${t.tipo || 'N/I'})`;
+      }) : []
+    };
+  }
+
+  if (selectedModules.includes('emails')) {
+    result['Emails'] = {
+      lista: Array.isArray(raw.emails) ? raw.emails.map((e: any) => e.email || e) : []
+    };
+  }
+
+  if (selectedModules.includes('enderecos')) {
+    result['Localizacao'] = {
+      enderecos: Array.isArray(raw.enderecos) ? raw.enderecos.map((end: any) => ({
+        logradouro: end.logradouro,
+        numero: end.numero,
+        bairro: end.bairro,
+        cidade: end.cidade,
+        uf: end.uf,
+        cep: end.cep
+      })) : []
+    };
+  }
+
+  if (selectedModules.includes('parentes')) {
+    result['Vinculos_Familiares'] = {
+      lista: Array.isArray(raw.parentes) ? raw.parentes.map((p: any) => `${p.nome} (${p.vinculo || 'Parente'})`) : []
+    };
+  }
+
   return result;
 }
 

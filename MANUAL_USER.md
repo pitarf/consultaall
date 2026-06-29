@@ -19,7 +19,7 @@
 - **Dashboard Analítico:** Visualize a saúde financeira do site e o ranking dos serviços mais procurados.
 - **Modo Teste:** Possibilidade de realizar consultas de demonstração sem custo para validação do sistema.
 - **Gestão de Auditoria:** Acesso completo aos logs de sistema para suporte técnico rápido ao cliente, incluindo a aba para monitorar solicitações de bloqueio de dados.
-- **Gestão de Usuários e Ajustes de Saldo:** Capacidade de adicionar/remover saldos via Ajuste Simples ou validar transações Pix manualmente inserindo o ID externo do Pix recebido do gateway (caso haja falhas automáticas de webhook), garantindo que o saldo do cliente seja creditado e o faturamento do site atualizado com precisão.
+- **Gestão de Usuários e Ajustes de Saldo:** Capacidade de adicionar/remover saldos via Ajuste Simples ou validar transações Pix manualmente de forma rápida e simplificada (sem a necessidade de digitar o ID externo do Pix, caso o administrador queira apenas confirmar pelo valor recebido no banco), garantindo o crédito ágil na conta do cliente e o faturamento do site atualizado com precisão.
 
 ## Conformidade LGPD & Proteção de Dados (Opt-out)
 - **Bloqueio de Visualização (Opt-out):** Em conformidade com a LGPD, os titulares de dados podem, a qualquer momento, solicitar o bloqueio e a restrição da exibição de suas informações de CPF nas buscas internas.

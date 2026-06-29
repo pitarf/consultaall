@@ -2,6 +2,15 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.7] - 2026-06-27
+### Adicionado / Modificado
+- **Correção da Busca por Nome (DirectData V2):**
+  - Correção do erro HTTP 400 "Parâmetros não suportados" na busca de Pessoa Física por Nome. A busca por Nome foi migrada de volta para a Pesquisa Avançada V2 (`FilterNaturalPerson`, `ProcessingIds` e `ViewSearch` com polling assíncrono), enquanto as buscas por E-mail e Telefone continuam usando o endpoint síncrono e veloz `/api/EnriquecimentoLead` da V3.
+  - Implementação de um tratamento de exceções robusto em todas as chamadas de rede da DirectData, garantindo a leitura e a exibição da mensagem de erro real retornada pela API externa nos Toasts do frontend.
+- **Validação Simplificada de Pix Manual (Sem Caça de IDs):**
+  - Atualização da Server Action `createAndApproveDepositManual` para tornar o `externalId` opcional. Se o administrador deixar o ID em branco, o sistema gera automaticamente um ID de controle único do tipo `MANUAL-[timestamp]-[randomString]`.
+  - Polimento do modal de saldo na Gestão de Usuários, tornando o campo de ID opcional na interface visual e orientando o administrador com um texto amigável.
+
 ## [0.7.6] - 2026-06-26
 ### Adicionado / Modificado
 - **Validação Manual de Pix na Gestão de Usuários:**

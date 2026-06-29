@@ -375,10 +375,13 @@ export async function approveDepositManual(transactionId: string) {
  * Cria e aprova manualmente uma recarga Pix (para casos em que o webhook falhou e a transação
  * nem sequer foi registrada no banco de dados de produção).
  */
-export async function createAndApproveDepositManual(userId: string, externalId: string, amount: number) {
+export async function createAndApproveDepositManual(userId: string, externalId: string | null | undefined, amount: number) {
   const admin = await checkAdmin();
 
-  if (!userId || !externalId || !amount || isNaN(amount) || amount <= 0) {
+  // Se o externalId não for fornecido, geramos um ID de controle manual único automático
+  const finalExternalId = externalId?.trim() || `MANUAL-${Date.now()}-${Math.random().toString(36).substring(2, 11).toUpperCase()}`;
+
+  if (!userId || !amount || isNaN(amount) || amount <= 0) {
     return { error: 'Dados inválidos para criação do Pix manual.' };
   }
 
@@ -386,11 +389,11 @@ export async function createAndApproveDepositManual(userId: string, externalId: 
     const result = await prisma.$transaction(async (tx) => {
       // 1. Verifica se já existe transação com esse externalId no banco para evitar duplicidade
       const existingTx = await tx.transaction.findUnique({
-        where: { externalId }
+        where: { externalId: finalExternalId }
       });
 
       if (existingTx) {
-        throw new Error(`O ID do Pix ${externalId} já está registrado no sistema (Status: ${existingTx.status}).`);
+        throw new Error(`O ID do Pix ${finalExternalId} já está registrado no sistema (Status: ${existingTx.status}).`);
       }
 
       // 2. Busca o usuário
@@ -402,14 +405,14 @@ export async function createAndApproveDepositManual(userId: string, externalId: 
         throw new Error('Usuário não encontrado.');
       }
 
-      // 3. Cria a transação COMPLETED do tipo DEPOSIT com o externalId fornecido
+      // 3. Cria a transação COMPLETED do tipo DEPOSIT com o externalId final
       const transaction = await tx.transaction.create({
         data: {
           userId,
           amount,
           type: 'DEPOSIT',
           status: 'COMPLETED',
-          externalId,
+          externalId: finalExternalId,
           description: `Recarga de Saldo - Pix (Criado e Aprovado Manualmente)`
         }
       });
@@ -426,13 +429,13 @@ export async function createAndApproveDepositManual(userId: string, externalId: 
       await tx.systemLog.create({
         data: {
           level: 'INFO',
-          message: `Depósito Pix de R$ ${amount.toFixed(2)} criado e aprovado MANUALMENTE pelo Admin para o usuário: ${user.email} (ID Pix: ${externalId})`,
+          message: `Depósito Pix de R$ ${amount.toFixed(2)} criado e aprovado MANUALMENTE pelo Admin para o usuário: ${user.email} (ID Pix: ${finalExternalId})`,
           context: {
             userId,
             transactionId: transaction.id,
             adminId: admin.id,
             amount,
-            externalId
+            externalId: finalExternalId
           }
         }
       });

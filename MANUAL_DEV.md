@@ -57,8 +57,14 @@ A plataforma possui suporte completo a temas dinâmicos em toda a sua área púb
 
 ## Validação Manual de Recarga Pix
 Para resolver inconsistências de webhooks da PushinPay (especialmente em ambientes locais de teste ou quando a transação Pix é criada e paga mas não é registrada no banco de dados de produção por problemas do gateway):
-- **Server Action**: `createAndApproveDepositManual(userId, externalId, amount)` em `src/app/actions/admin.ts`. Ela verifica a existência prévia do `externalId` para evitar duplicidade, insere o registro `DEPOSIT` com status `COMPLETED`, credita o saldo ao usuário e registra logs no `SystemLog` para fins de auditoria financeira.
-- **Interface**: No modal de gerenciamento de saldo do usuário (`UserTableClient.tsx`), há uma aba "Validar Pix Manual". Ela solicita o ID Pix (`externalId`) e o valor pago, processando a transação de forma atômica no banco de dados.
+- **Server Action**: `createAndApproveDepositManual(userId, externalId, amount)` em `src/app/actions/admin.ts`. Ela verifica a existência prévia do `externalId` para evitar duplicidade, insere o registro `DEPOSIT` com status `COMPLETED`, credita o saldo ao usuário e registra logs no `SystemLog`. O campo `externalId` é opcional. Se não for informado, a Server Action gerará automaticamente um ID único no formato `MANUAL-[timestamp]-[randomString]`.
+- **Interface**: No modal de gerenciamento de saldo do usuário (`UserTableClient.tsx`), há uma aba "Validar Pix Manual". Ela permite creditar Pix de forma simplificada sem exigir que o administrador digite ou localize o ID do Pix na PushinPay.
+
+## Busca por Nome (DirectData V2 & V3 Híbrido)
+Para a realização de consultas de Pessoa Física na API da DirectData:
+- **Buscas por Telefone e E-mail**: Utilizam a API síncrona V3 da DirectData (`/api/EnriquecimentoLead`), que é rápida e consome apenas uma requisição por chamada.
+- **Busca por Nome**: Como a API V3 da DirectData não possui um correspondente síncrono para busca por Nome (o endpoint `/api/Similarity` exige o CPF para validar similaridade cadastral), o sistema utiliza a Pesquisa Avançada V2 da DirectData (`/api/AdvancedSearch/FilterNaturalPerson`, `/api/AdvancedSearch/ProcessingIds` e `/api/AdvancedSearch/ViewSearch` com polling assíncrono). A Server Action executa o fluxo em 3 etapas por baixo dos panos e realiza um polling rápido de até 10 tentativas para retornar o resultado síncrono traduzido para o frontend.
+
 
 
 
