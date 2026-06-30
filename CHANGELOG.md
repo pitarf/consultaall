@@ -2,7 +2,7 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
-## [0.7.7] - 2026-06-27
+## [0.7.7] - 2026-06-30
 ### Adicionado / Modificado
 - **Correção da Busca por Nome (DirectData V2):**
   - Correção do erro HTTP 400 "Parâmetros não suportados" na busca de Pessoa Física por Nome. A busca por Nome foi migrada de volta para a Pesquisa Avançada V2 (`FilterNaturalPerson`, `ProcessingIds` e `ViewSearch` com polling assíncrono), enquanto as buscas por E-mail e Telefone continuam usando o endpoint síncrono e veloz `/api/EnriquecimentoLead` da V3.
@@ -10,6 +10,8 @@ Todas as mudanças notáveis para este projeto serão documentadas neste arquivo
 - **Validação Simplificada de Pix Manual (Sem Caça de IDs):**
   - Atualização da Server Action `createAndApproveDepositManual` para tornar o `externalId` opcional. Se o administrador deixar o ID em branco, o sistema gera automaticamente um ID de controle único do tipo `MANUAL-[timestamp]-[randomString]`.
   - Polimento do modal de saldo na Gestão de Usuários, tornando o campo de ID opcional na interface visual e orientando o administrador com um texto amigável.
+- **Segurança Dupla no Webhook PushinPay:**
+  - Atualização da rota do webhook (`src/app/api/webhooks/pushinpay/route.ts`) para suportar a autenticação de camada dupla. O token de segurança agora pode ser validado tanto via Query String (`?token=...`) na URL cadastrada quanto via cabeçalhos customizados (`x-pushinpay-token` ou `x-pushin-pay-token`) enviados nativamente pela PushinPay, assegurando total compatibilidade e resiliência a alterações do gateway.
 
 ## [0.7.6] - 2026-06-26
 ### Adicionado / Modificado

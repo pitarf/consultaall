@@ -65,6 +65,13 @@ Para a realização de consultas de Pessoa Física na API da DirectData:
 - **Buscas por Telefone e E-mail**: Utilizam a API síncrona V3 da DirectData (`/api/EnriquecimentoLead`), que é rápida e consome apenas uma requisição por chamada.
 - **Busca por Nome**: Como a API V3 da DirectData não possui um correspondente síncrono para busca por Nome (o endpoint `/api/Similarity` exige o CPF para validar similaridade cadastral), o sistema utiliza a Pesquisa Avançada V2 da DirectData (`/api/AdvancedSearch/FilterNaturalPerson`, `/api/AdvancedSearch/ProcessingIds` e `/api/AdvancedSearch/ViewSearch` com polling assíncrono). A Server Action executa o fluxo em 3 etapas por baixo dos panos e realiza um polling rápido de até 10 tentativas para retornar o resultado síncrono traduzido para o frontend.
 
+## Webhook PushinPay (Segurança Dupla)
+A rota `/api/webhooks/pushinpay` está configurada com segurança robusta de dupla camada para autenticação de requisições:
+- **Query String**: Valida o token `PUSHINPAY_WEBHOOK_TOKEN` passado no parâmetro `?token=...` na URL configurada.
+- **Headers**: Valida o token nos cabeçalhos `x-pushinpay-token` ou `x-pushin-pay-token` enviados de forma nativa pela API da PushinPay.
+Esta estrutura assegura compatibilidade total com os manuais de integração de produção e com scripts de simulação local.
+
+
 
 
 

@@ -12,12 +12,16 @@ export async function POST(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const urlToken = searchParams.get("token");
+    const headerToken = req.headers.get("x-pushinpay-token") || req.headers.get("x-pushin-pay-token");
+    
+    // Suporta tanto o token via query parameter (?token=...) quanto via header de segurança
+    const token = urlToken || headerToken;
     
     // 1. Validar Token de Segurança (Configurado no .env)
     const WEBHOOK_TOKEN = process.env.PUSHINPAY_WEBHOOK_TOKEN;
     
-    if (!urlToken || urlToken !== WEBHOOK_TOKEN) {
-      console.warn(`⚠️ Webhook PushinPay: Tentativa de acesso não autorizada. Token: ${urlToken}`);
+    if (!token || token !== WEBHOOK_TOKEN) {
+      console.warn(`⚠️ Webhook PushinPay: Tentativa de acesso não autorizada. Token URL: ${urlToken} | Token Header: ${headerToken}`);
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
