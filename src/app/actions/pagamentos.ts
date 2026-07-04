@@ -35,7 +35,7 @@ export async function gerarPixRecarga(amount: number) {
     // Valor deve ser em centavos (integer)
     const amountInCents = Math.round(amount * 100);
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const webhookUrl = `${baseUrl}/api/webhooks/pushinpay?token=${WEBHOOK_TOKEN}`;
+    const webhookUrl = `${baseUrl}/api/webhooks/pushinpay?token=${WEBHOOK_TOKEN}&txId=${transaction.id}`;
 
     console.log('📡 Chamando PushinPay...', { amountInCents, webhookUrl });
     

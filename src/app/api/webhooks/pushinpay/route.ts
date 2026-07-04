@@ -12,6 +12,7 @@ export async function POST(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const urlToken = searchParams.get("token");
+    const txId = searchParams.get("txId");
     const headerToken = req.headers.get("x-pushinpay-token") || req.headers.get("x-pushin-pay-token");
     
     // Suporta tanto o token via query parameter (?token=...) quanto via header de segurança
@@ -58,52 +59,64 @@ export async function POST(req: Request) {
     const status = body.status;
     const value = body.value ? Number(body.value) : undefined; // valor em centavos
 
-    console.log(`📡 Dados extraídos: Transação ID: ${transactionId} | Status: ${status} | Valor: ${value}`);
+    console.log(`📡 Dados extraídos: Transação ID (externalId): ${transactionId} | txId URL: ${txId} | Status: ${status} | Valor: ${value}`);
 
     // Evita exceção do Prisma validando a ausência do ID antes da busca
-    if (!transactionId) {
-      console.warn("⚠️ Webhook PushinPay: transaction_id ou id ausentes no payload.");
+    if (!transactionId && !txId) {
+      console.warn("⚠️ Webhook PushinPay: transaction_id/id e txId ausentes no payload e URL.");
       return NextResponse.json({ error: "Transaction ID is missing" }, { status: 400 });
     }
 
-    // Só processamos se o status for "paid"
-    if (status === "paid") {
+    // Só processamos se o status for "paid" ou "approved"
+    if (status === "paid" || status === "approved") {
       if (value === undefined) {
-        console.error(`❌ Webhook PushinPay: Valor de pagamento ausente para transação ${transactionId}`);
+        console.error(`❌ Webhook PushinPay: Valor de pagamento ausente para transação ${transactionId || txId}`);
         return NextResponse.json({ error: "Payment value is missing" }, { status: 400 });
       }
 
       const amountInReais = value / 100;
-      console.log(`🔍 Processando Pix confirmado: ${transactionId} | Valor Convertido: R$ ${amountInReais.toFixed(2)}`);
+      console.log(`🔍 Processando Pix confirmado: ${transactionId || txId} | Valor Convertido: R$ ${amountInReais.toFixed(2)}`);
 
       // 4. Execução da Transação Atômica no Banco de Dados
       try {
         const result = await prisma.$transaction(async (tx) => {
-          // Busca a transação pendente pelo ID da PushinPay (externalId)
-          const transaction = await tx.transaction.findUnique({
-            where: { externalId: transactionId },
-            include: { user: true }
-          });
+          let transaction = null;
+
+          // 4.1 Busca prioritariamente pelo ID interno (txId) enviado na URL do webhook
+          if (txId) {
+            transaction = await tx.transaction.findUnique({
+              where: { id: txId },
+              include: { user: true }
+            });
+          }
+
+          // 4.2 Fallback: Busca pela transação pendente pelo ID da PushinPay (externalId)
+          if (!transaction && transactionId) {
+            transaction = await tx.transaction.findUnique({
+              where: { externalId: transactionId },
+              include: { user: true }
+            });
+          }
 
           if (!transaction) {
-            console.error(`❌ Webhook PushinPay: Transação ${transactionId} não encontrada no banco.`);
+            console.error(`❌ Webhook PushinPay: Transação (txId: ${txId} / externalId: ${transactionId}) não encontrada no banco.`);
             return { error: "Transaction not found" };
           }
 
           if (transaction.status === "COMPLETED") {
-            console.log(`ℹ️ Webhook PushinPay: Transação ${transactionId} já estava processada.`);
+            console.log(`ℹ️ Webhook PushinPay: Transação ${transaction.id} já estava processada.`);
             return { alreadyProcessed: true };
           }
 
           // Segurança: Validamos se o valor pago é compatível com o registrado
           if (Math.abs(amountInReais - transaction.amount) > 0.01) {
-            console.error(`🚨 Webhook PushinPay: Divergência de valores na transação ${transactionId}. Pago: ${amountInReais} | Esperado: ${transaction.amount}`);
+            console.error(`🚨 Webhook PushinPay: Divergência de valores na transação ${transaction.id}. Pago: ${amountInReais} | Esperado: ${transaction.amount}`);
             
             // Grava log de erro de auditoria financeira no banco
             await tx.systemLog.create({
               data: {
                 level: "ERROR",
-                message: `Divergência de valores detectada no Webhook: ID Pix ${transactionId}`,
+                message: `Divergência de valores detectada no Webhook: ID Interno ${transaction.id}`,
                 context: {
                   paid: amountInReais,
                   expected: transaction.amount,
@@ -115,10 +128,13 @@ export async function POST(req: Request) {
             return { error: "Value mismatch" };
           }
 
-          // Atualiza o status da transação interna para COMPLETED
+          // Atualiza o status da transação interna para COMPLETED e vincula o externalId da PushinPay se necessário
           await tx.transaction.update({
             where: { id: transaction.id },
-            data: { status: "COMPLETED" }
+            data: { 
+              status: "COMPLETED",
+              externalId: transaction.externalId || transactionId
+            }
           });
 
           // Incrementa o saldo do usuário (usamos o valor do banco de dados por integridade financeira)
@@ -137,7 +153,7 @@ export async function POST(req: Request) {
               context: { 
                 userId: transaction.userId, 
                 transactionId: transaction.id,
-                pushinpayId: transactionId 
+                pushinpayId: transactionId || "N/A"
               }
             }
           });
@@ -155,7 +171,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Database transaction failed" }, { status: 500 });
       }
     } else {
-      console.log(`ℹ️ Webhook PushinPay: Ignorando evento com status ${status} para transação ${transactionId}`);
+      console.log(`ℹ️ Webhook PushinPay: Ignorando evento com status ${status} para transação ${transactionId || txId}`);
     }
 
     return NextResponse.json({ success: true, message: "Webhook processed successfully" });

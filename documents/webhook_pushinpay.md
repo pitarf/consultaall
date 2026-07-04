@@ -53,22 +53,22 @@ sequenceDiagram
 Siga os seguintes passos para colocar o Webhook para funcionar em produção:
 
 ### Passo 1: Obter a URL do Webhook da sua aplicação
-O webhook do **Detetive Buscas** conta com um mecanismo de segurança de camada dupla. Você pode configurar a URL de notificações da PushinPay de duas formas no painel do gateway:
-1. **Via URL Limpa (Recomendado):** `https://detetivebuscas.com/api/webhooks/pushinpay`
-   *Nesse modelo, o sistema validará a autenticidade comparando o token configurado no `.env` com o header de segurança `x-pushinpay-token` enviado de forma nativa pela PushinPay.*
-2. **Via Query String:** `https://detetivebuscas.com/api/webhooks/pushinpay?token=SEU_TOKEN_DO_WEBHOOK`
-   *Caso opte por passar o token na URL, o sistema validará o parâmetro `?token=...` de forma transparente.*
+O webhook do **Detetive Buscas** conta com um mecanismo de segurança de camada dupla e correspondência por ID interno:
+1. **Via URL Dinâmica Gerada pelo Sistema (Padrão):** O sistema gera e envia automaticamente à PushinPay a URL contendo o token de segurança e o ID interno da transação:
+   `https://detetivebuscas.com/api/webhooks/pushinpay?token=SEU_TOKEN_DO_WEBHOOK&txId=ID_INTERNO_DA_TRANSACAO`
+   *Esta abordagem permite que o webhook busque o depósito prioritariamente pelo ID interno (`txId`) da URL e use o ID da PushinPay do body apenas como fallback, eliminando 100% de inconsistências ou atrasos no banco.*
+2. **Via URL Limpa do Painel:** Se configurada no painel de controle da PushinPay, use:
+   `https://detetivebuscas.com/api/webhooks/pushinpay`
+   *Nesse modelo, a PushinPay deve enviar o token no header `x-pushinpay-token` (configurado na PushinPay no campo "Token do Webhook" com o mesmo valor de `PUSHINPAY_WEBHOOK_TOKEN` do seu `.env`).*
 
 > [!NOTE]
 > O token correspondente deve ser inserido sob a variável `PUSHINPAY_WEBHOOK_TOKEN` no arquivo `.env` de produção.
 
 ### Passo 2: Configurar no Painel da PushinPay
+Como a `webhook_url` é enviada dinamicamente pelo código a cada criação de Pix, a configuração de URL no painel da PushinPay é opcional. No entanto, certifique-se de configurar o **Token do Webhook** no painel do gateway:
 1. Faça login na sua conta no painel da **PushinPay**.
-2. Vá até a seção de **Integrações** ou **Configurações de Webhook**.
-3. Adicione o novo endpoint:
-   - **URL de Destino:** `https://detetivebuscas.com/api/webhooks/pushinpay` (ou use a versão com Query String contendo o token do seu `.env`).
-   - **Eventos:** Selecione o evento de pagamento (ou alteração de status de transação para `paid`).
-   - **Token/Chave de Webhook:** Defina a chave igual ao `PUSHINPAY_WEBHOOK_TOKEN` configurado no seu `.env` (ex: `880d03ddeda5ad631ebd021c6d7b5013`).
+2. Vá até a seção de **Desenvolvedor** ou **Configurações de Webhook**.
+3. No campo **Token do Webhook**, cole o exato valor que você colocou na sua variável `PUSHINPAY_WEBHOOK_TOKEN` no seu `.env` da VPS (ex: `880d03ddeda5ad631ebd021c6d7b5013`). Isso garantirá que o header `x-pushinpay-token` seja enviado de forma segura pela instituição.
 
 ### Passo 3: Configurar as Variáveis de Ambiente (.env) na VPS
 No arquivo `.env` da aplicação na sua VPS, certifique-se de que as seguintes chaves estão configuradas corretamente:
