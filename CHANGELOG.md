@@ -2,6 +2,11 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.8] - 2026-07-12
+### Adicionado / Modificado
+- **Blindagem de SSL na API V3 da DirectData:**
+  - Criação de uma instância customizada do Axios (`axiosV3`) com a desabilitação da validação estrita de certificados SSL (`rejectUnauthorized: false`) para todas as rotas da V3 (Pessoa Física Plus, Pessoa Jurídica Plus e Consulta Veicular). Isso evita falhas silenciosas de handshake de SSL e erros de certificado expirado/incompleto comuns dentro de containers Docker/Node.js na VPS de produção, garantindo que as buscas de CPF, CNPJ e Veículos carreguem com total estabilidade.
+
 ## [0.7.7] - 2026-07-04
 ### Adicionado / Modificado
 - **Correção da Busca por Nome (DirectData V2):**

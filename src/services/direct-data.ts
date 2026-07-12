@@ -20,6 +20,12 @@ const axiosV2 = axios.create({
   httpsAgent: new https.Agent({ rejectUnauthorized: false })
 });
 
+// Agente para ignorar erros de SSL na V3 (para compatibilidade completa de certificados em containers)
+const axiosV3 = axios.create({
+  baseURL: V3_URL,
+  httpsAgent: new https.Agent({ rejectUnauthorized: false })
+});
+
 // -----------------------------------------------------------------------------
 // SEÇÃO: CONSULTA VEICULAR (V3)
 // -----------------------------------------------------------------------------
@@ -31,7 +37,7 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
   const url = `${V3_URL}/api/ConsultaVeicular?TOKEN=${TOKEN}&PLACA=${cleanPlaca}`;
 
   try {
-    const response = await axios.get(url);
+    const response = await axiosV3.get(url);
     const res = response.data;
 
     if (!res.retorno || res.metaDados?.resultadoId !== 1) {
@@ -175,7 +181,7 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
       url = `${V3_URL}/api/EnriquecimentoLead?TOKEN=${TOKEN}&CELULAR=${phone}`;
     }
 
-    const response = await axios.get(url);
+    const response = await axiosV3.get(url);
     const res = response.data;
 
     if (!res.retorno || (Array.isArray(res.retorno) && res.retorno.length === 0)) {
@@ -207,7 +213,7 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
   const url = `${V3_URL}/api/CadastroPessoaFisicaPlus?TOKEN=${TOKEN}&CPF=${cleanCpf}`;
 
   try {
-    const response = await axios.get(url);
+    const response = await axiosV3.get(url);
     const res = response.data;
 
     if (res.retorno) {
@@ -400,7 +406,7 @@ export async function consultaCnpjPlus(cnpj: string, selectedModules: string[] =
   const url = `${V3_URL}/api/CadastroPessoaJuridicaPlus?TOKEN=${TOKEN}&CNPJ=${cleanCnpj}`;
 
   try {
-    const response = await axios.get(url);
+    const response = await axiosV3.get(url);
     const res = response.data;
 
     // Se a requisição async estiver em processamento

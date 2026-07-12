@@ -2,7 +2,7 @@
 
 ## Integração de API e Modo Híbrido (DirectData V3)
 O sistema utiliza o arquivo `src/services/direct-data.ts` como ponte de comunicação.
-- **Modo Real:** Ativado quando `isDemo: false`. Realiza as chamadas via `axios` para a V3 (`/EnriquecimentoLead` ou `/Similarity/SmartSearch`).
+- **Modo Real:** Ativado quando `isDemo: false`. Realiza as chamadas via `axiosV2` (V2) e `axiosV3` (V3) ignorando validação rígida de SSL (`rejectUnauthorized: false`), o que resolve falhas de carregamento e incompatibilidade de certificados em containers Docker.
 - **Roteamento Inteligente:** O método `performSmartSearch` decide dinamicamente a rota dependendo do tipo da chave (`telefone`, `nome`, `email`, `cpf`).
 - **Modo Demo:** Retorna dados de fallback (mock) sem acionar custos. Disponível apenas via painel UI se o usuário tiver `role: 'ADMIN'`.
 
