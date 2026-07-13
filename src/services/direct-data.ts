@@ -199,6 +199,14 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
   } catch (error: any) {
     console.error('Erro na SmartSearch:', error.response?.data || error.message);
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    
+    if (apiMessage && (apiMessage.includes('ECONNRESET') || apiMessage.includes('connreset') || apiMessage.includes('reset') || apiMessage.includes('socket hang up'))) {
+      return {
+        success: false,
+        message: 'A API de busca por Nome (DirectData V2) está temporariamente indisponível ou recusou a conexão (ECONNRESET). Por favor, tente realizar a busca utilizando diretamente o CPF.'
+      };
+    }
+    
     return { success: false, message: apiMessage || 'Erro na comunicação com a API.' };
   }
 }
