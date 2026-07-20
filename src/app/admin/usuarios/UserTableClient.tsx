@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { toggleUserStatus, addBalance, getUserAuditData, createAndApproveDepositManual, approveDepositManual } from '@/app/actions/admin';
+import { toggleUserStatus, toggleUserRole, addBalance, getUserAuditData, createAndApproveDepositManual, approveDepositManual } from '@/app/actions/admin';
 import { toast } from 'sonner';
-import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode, Crown } from 'lucide-react';
 
 export default function UserTableClient({ initialUsers }: { initialUsers: any[] }) {
   const [users, setUsers] = useState(initialUsers);
@@ -43,9 +43,28 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
     try {
       await toggleUserStatus(userId, currentStatus);
       setUsers(users.map(u => u.id === userId ? { ...u, active: !currentStatus } : u));
-      toast.success('Status status atualizado com sucesso!');
+      toast.success('Status atualizado com sucesso!');
     } catch (err) {
       toast.error('Erro ao atualizar usuário.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleRole = async (userId: string, currentRole: string, email: string) => {
+    const isPromoting = currentRole !== 'ADMIN';
+    if (!confirm(`Tem certeza que deseja ${isPromoting ? 'promover a ADMIN' : 'remover os privilégios de ADMIN de'} ${email}?`)) return;
+
+    setLoading(true);
+    toast.info('Atualizando nível de acesso...');
+    try {
+      const res = await toggleUserRole(userId, currentRole);
+      if (res.success) {
+        setUsers(users.map(u => u.id === userId ? { ...u, role: res.newRole } : u));
+        toast.success(`Usuário ${isPromoting ? 'promovido a ADMIN' : 'alterado para USER'} com sucesso!`);
+      }
+    } catch (err) {
+      toast.error('Erro ao alterar cargo do usuário.');
     } finally {
       setLoading(false);
     }
@@ -179,7 +198,12 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                     <div className="flex flex-col">
                       <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                         {user.name || 'Sem Nome'}
-                        {user.role === 'ADMIN' && <ShieldCheck className="w-4 h-4 text-red-500" />}
+                        {user.role === 'ADMIN' && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20">
+                            <Crown className="w-3 h-3 text-amber-500 fill-amber-500/20" />
+                            ADMIN
+                          </span>
+                        )}
                       </span>
                       <span className="text-xs text-slate-400 dark:text-gray-500">{user.email}</span>
                     </div>
@@ -192,6 +216,15 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                   </td>
                   <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{new Date(user.createdAt).toLocaleDateString('pt-BR')}</td>
                   <td className="px-6 py-4 text-right space-x-2">
+                    <button 
+                      onClick={() => handleToggleRole(user.id, user.role, user.email)}
+                      disabled={loading}
+                      className={`p-2 rounded transition-all inline-flex ${user.role === 'ADMIN' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white' : 'bg-slate-200/50 dark:bg-white/5 text-slate-500 dark:text-gray-400 hover:bg-amber-500 hover:text-white'}`}
+                      title={user.role === 'ADMIN' ? "Remover Privilégios de Admin" : "Promover a Administrador (ADMIN)"}
+                    >
+                      <Crown className="w-4 h-4" />
+                    </button>
+
                     <button 
                       onClick={() => handleOpenAuditModal(user)}
                       disabled={loading}

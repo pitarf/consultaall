@@ -138,6 +138,17 @@ export async function toggleUserStatus(userId: string, currentStatus: boolean) {
   return { success: true };
 }
 
+export async function toggleUserRole(userId: string, currentRole: string) {
+  await checkAdmin();
+  const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: newRole },
+  });
+  revalidatePath('/admin/usuarios');
+  return { success: true, newRole };
+}
+
 export async function addBalance(userId: string, amount: number, description: string) {
   await checkAdmin();
   

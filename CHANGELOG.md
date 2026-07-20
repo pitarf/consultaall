@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.7.9] - 2026-07-20
+### Adicionado / Modificado
+- **Gerenciamento de Administradores no Painel (Promover/Rebaixar):**
+  - Criação da Server Action `toggleUserRole` em `src/app/actions/admin.ts` para alternar com segurança o privilégio de acesso de qualquer usuário entre `USER` e `ADMIN`.
+  - Adição de um botão com ícone de Coroa (`Crown`) na coluna de Ações da tabela de Gestão de Usuários (`/admin/usuarios`), permitindo ao administrador promover ou rebaixar usuários com 1 clique diretamente na interface visual.
+  - Adição da Badge visual destacada `ADMIN` com o ícone de coroa para identificação rápida dos administradores da plataforma.
+
 ## [0.7.8] - 2026-07-12
 ### Adicionado / Modificado
 - **Blindagem de SSL na API V3 da DirectData:**
