@@ -19,6 +19,15 @@ export async function gerarPixRecarga(amount: number) {
   }
 
   try {
+    // Busca as chaves de API da PushinPay do banco (SystemSetting) com fallback para .env
+    const settings = await prisma.systemSetting.findFirst();
+    const PUSHINPAY_TOKEN = settings?.pushinpayToken?.trim() || process.env.PUSHINPAY_TOKEN;
+    const WEBHOOK_TOKEN = settings?.pushinpayWebhookToken?.trim() || process.env.PUSHINPAY_WEBHOOK_TOKEN;
+
+    if (!PUSHINPAY_TOKEN) {
+      return { error: 'Token de API PushinPay não configurado.' };
+    }
+
     // 1. Criar transação PENDING no nosso banco
     const transaction = await prisma.transaction.create({
       data: {

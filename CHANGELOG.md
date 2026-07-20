@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.0] - 2026-07-20
+### Adicionado / Modificado
+- **Gerenciamento Dinâmico do Token da PushinPay no Painel Admin:**
+  - Adição dos campos `pushinpayToken` e `pushinpayWebhookToken` ao modelo `SystemSetting` no banco de dados (`prisma/schema.prisma`).
+  - Criação de uma seção dedicada em **Configurações** (`/admin/configuracoes`) com campos mascarados e botões de mostrar/ocultar senha para alterar o Token de API PushinPay e o Token de Segurança do Webhook em tempo real sem precisar reiniciar a VPS ou alterar o arquivo `.env`.
+  - Leitura dinâmica dos tokens em `src/app/actions/pagamentos.ts` e `src/app/api/webhooks/pushinpay/route.ts` com fallback gracioso para as variáveis do `.env` caso o banco de dados não possua chaves customizadas cadastradas.
+
 ## [0.7.9] - 2026-07-20
 ### Adicionado / Modificado
 - **Gerenciamento de Administradores no Painel (Promover/Rebaixar):**

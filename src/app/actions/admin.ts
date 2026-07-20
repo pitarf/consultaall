@@ -197,6 +197,8 @@ export async function updateSystemSettings(data: {
   companyCnpj?: string;
   companyAddress?: string;
   companyEmail?: string;
+  pushinpayToken?: string;
+  pushinpayWebhookToken?: string;
 }) {
   await checkAdmin();
   

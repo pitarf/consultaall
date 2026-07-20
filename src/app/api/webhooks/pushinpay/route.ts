@@ -18,8 +18,9 @@ export async function POST(req: Request) {
     // Suporta tanto o token via query parameter (?token=...) quanto via header de segurança
     const token = urlToken || headerToken;
     
-    // 1. Validar Token de Segurança (Configurado no .env)
-    const WEBHOOK_TOKEN = process.env.PUSHINPAY_WEBHOOK_TOKEN;
+    // 1. Validar Token de Segurança (Configurado no Banco ou .env com fallback)
+    const settings = await prisma.systemSetting.findFirst();
+    const WEBHOOK_TOKEN = settings?.pushinpayWebhookToken?.trim() || process.env.PUSHINPAY_WEBHOOK_TOKEN;
     
     if (!token || token !== WEBHOOK_TOKEN) {
       console.warn(`⚠️ Webhook PushinPay: Tentativa de acesso não autorizada. Token URL: ${urlToken} | Token Header: ${headerToken}`);

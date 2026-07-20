@@ -2,16 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSystemSettings, updateSystemSettings } from '@/app/actions/admin';
-import { Save, Globe, MessageSquare, Loader2, Info, Image, ExternalLink, Scale } from 'lucide-react';
+import { Save, Globe, MessageSquare, Loader2, Info, Image, ExternalLink, Scale, CreditCard, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**
  * Página de Configurações do Sistema no Painel Admin.
- * Permite alterar SEO, Branding (Logo e Favicon) e canais de suporte.
+ * Permite alterar SEO, Branding (Logo e Favicon), Gateway PushinPay e canais de suporte.
  */
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showPushinToken, setShowPushinToken] = useState(false);
+  const [showWebhookToken, setShowWebhookToken] = useState(false);
   const [settings, setSettings] = useState({
     siteTitle: '',
     siteDescription: '',
@@ -23,6 +25,8 @@ export default function AdminSettingsPage() {
     companyCnpj: '',
     companyAddress: '',
     companyEmail: '',
+    pushinpayToken: '',
+    pushinpayWebhookToken: '',
   });
 
   useEffect(() => {
@@ -40,6 +44,8 @@ export default function AdminSettingsPage() {
           companyCnpj: data.companyCnpj || '',
           companyAddress: data.companyAddress || '',
           companyEmail: data.companyEmail || '',
+          pushinpayToken: data.pushinpayToken || '',
+          pushinpayWebhookToken: data.pushinpayWebhookToken || '',
         });
       } catch {
         toast.error('Erro ao carregar configurações');
@@ -224,6 +230,73 @@ export default function AdminSettingsPage() {
                 className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
                 placeholder="consultas, cpf, cnpj, veículos (separadas por vírgula)"
               />
+            </div>
+          </div>
+        </section>
+
+        {/* ====== GATEWAY DE PAGAMENTO (PUSHINPAY) ====== */}
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
+          <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
+            <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Gateway de Pagamento (PushinPay)</h2>
+              <p className="text-slate-500 dark:text-gray-400 text-sm">Configure as chaves de integração Pix. Se deixado em branco, o sistema usará as chaves padrão do arquivo .env.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            {/* Token da API PushinPay */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de API PushinPay (Bearer Token)</label>
+                <button
+                  type="button"
+                  onClick={() => setShowPushinToken(!showPushinToken)}
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                >
+                  {showPushinToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showPushinToken ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+              <input
+                type={showPushinToken ? "text" : "password"}
+                value={settings.pushinpayToken}
+                onChange={(e) => setSettings({ ...settings, pushinpayToken: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                placeholder="Ex: 67768|cy3n6j9UdLD0FeXc0ZjhiNRYrcbGL4pwBIbzJT5B0d32938d"
+              />
+              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                <Info className="w-3 h-3 flex-shrink-0" />
+                Token de autenticação gerado no painel da PushinPay (Menu {'>'} Tokens de Acesso). Usado para gerar cobranças Pix.
+              </p>
+            </div>
+
+            {/* Token de Segurança do Webhook */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de Segurança do Webhook (PUSHINPAY_WEBHOOK_TOKEN)</label>
+                <button
+                  type="button"
+                  onClick={() => setShowWebhookToken(!showWebhookToken)}
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                >
+                  {showWebhookToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showWebhookToken ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+              <input
+                type={showWebhookToken ? "text" : "password"}
+                value={settings.pushinpayWebhookToken}
+                onChange={(e) => setSettings({ ...settings, pushinpayWebhookToken: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                placeholder="Ex: 880d03ddeda5ad631ebd021c6d7b5013"
+              />
+              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                <Info className="w-3 h-3 flex-shrink-0" />
+                Senha de validação inserida na URL do webhook para verificar notificações de pagamento confirmadas.
+              </p>
             </div>
           </div>
         </section>
