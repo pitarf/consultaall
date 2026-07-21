@@ -45,12 +45,23 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
         if (res.status === 'COMPLETED') {
           setStep('success');
           if (onSuccess) onSuccess();
+
+          // Dispara evento de conversão/purchase para o Google Analytics
+          const addedAmount = parseFloat(amount.replace(',', '.'));
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'manual_event_PURCHASE', {
+              value: isNaN(addedAmount) ? 0 : addedAmount,
+              currency: 'BRL',
+              transaction_id: pixData.pixId
+            });
+          }
+
           clearInterval(interval);
         }
       }, 5000); // Checa a cada 5 segundos
     }
     return () => clearInterval(interval);
-  }, [step, pixData, onSuccess]);
+  }, [step, pixData, onSuccess, amount]);
 
   const handleGeneratePix = async () => {
     const val = parseFloat(amount.replace(',', '.'));

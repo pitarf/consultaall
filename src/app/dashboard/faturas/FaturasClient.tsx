@@ -47,6 +47,16 @@ export default function FaturasClient({ initialUser, initialDeposits }: FaturasC
           // Atualiza lista de depósitos
           setDeposits(prev => prev.map(d => d.id === pixData.pixId ? { ...d, status: 'COMPLETED' } : d));
           toast.success('🎉 Pagamento verificado com sucesso! Saldo adicionado.');
+
+          // Dispara evento de conversão/purchase para o Google Analytics
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'manual_event_PURCHASE', {
+              value: isNaN(addedAmount) ? 0 : addedAmount,
+              currency: 'BRL',
+              transaction_id: pixData.pixId
+            });
+          }
+
           clearInterval(interval);
         }
       }, 5000);

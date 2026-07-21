@@ -2,6 +2,12 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.6] - 2026-07-21
+### Adicionado
+- **Rastreamento de Conversões (Google Analytics):**
+  - Adicionado o disparo do evento `manual_event_PURCHASE` no exato momento em que o pagamento via Pix é aprovado em tempo real, evitando falsos positivos e permitindo rastreamento preciso de conversões.
+
+
 ## [0.8.5] - 2026-07-21
 ### Corrigido
 - **Gráfico de Desempenho Diário no Painel Admin:**
