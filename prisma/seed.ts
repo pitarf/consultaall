@@ -59,7 +59,7 @@ async function main() {
   for (const m of modules) {
     await prisma.modulePricing.upsert({
       where: { id: m.id },
-      update: { name: m.name, price: m.price, category: m.category },
+      update: { name: m.name, category: m.category }, // REMOVIDO o price daqui para não resetar
       create: { id: m.id, name: m.name, price: m.price, category: m.category },
     });
   }

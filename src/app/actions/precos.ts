@@ -48,5 +48,6 @@ export async function atualizarPrecoModulo(id: string, novoPreco: number) {
   });
 
   revalidatePath('/admin/precos');
+  revalidatePath('/');
   return { success: true };
 }

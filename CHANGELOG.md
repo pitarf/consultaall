@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.7] - 2026-07-21
+### Corrigido
+- **Sobrescrita de Preços dos Módulos (Bug do Reset):**
+  - Removido o campo `price` da cláusula `update` no script de seed (`prisma/seed.ts`). Agora, as atualizações na VPS não resetam os preços personalizados definidos pelo administrador de volta para os valores padrão (R$ 1,00, R$ 0,50).
+  - Adicionado `revalidatePath('/')` na Action de atualização de preços (`atualizarPrecoModulo`) para invalidar o cache estático do Next.js. Alterar os preços no Painel Admin agora atualiza os preços exibidos na Landing Page instantaneamente.
+
+
 ## [0.8.6] - 2026-07-21
 ### Adicionado
 - **Rastreamento de Conversões (Google Analytics):**

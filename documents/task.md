@@ -83,10 +83,7 @@
 - [x] Criação da rota `/dashboard/faturas` para eliminar o erro 404 do botão "Adicionar Saldo" no menu lateral.
 - [x] Correção da ordenação cronológica, escala dinâmica e cores do gráfico "Desempenho Diário" no Painel Admin.
 - [x] Injeção do evento Google Analytics (`manual_event_PURCHASE`) exatamente no momento de aprovação bem-sucedida do pagamento Pix (em tempo real).
-
-
-
-
+- [x] Correção do Bug de Reset de Preços (removendo `price` do update no prisma seed e adicionando revalidação de cache estático na rota principal `/`).
 
 
 
