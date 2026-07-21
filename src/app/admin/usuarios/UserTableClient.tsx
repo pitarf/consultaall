@@ -214,7 +214,16 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                       {user.active ? 'ATIVO' : 'BANIDO'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{new Date(user.createdAt).toLocaleDateString('pt-BR')}</td>
+                  <td className="px-6 py-4 text-slate-500 dark:text-gray-400 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-slate-900 dark:text-gray-300">
+                        {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                      </span>
+                      <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">
+                        às {new Date(user.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <button 
                       onClick={() => handleToggleRole(user.id, user.role, user.email)}

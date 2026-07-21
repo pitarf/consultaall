@@ -2,6 +2,11 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.2] - 2026-07-20
+### Adicionado / Modificado
+- **Exibição do Horário Exato dos Cadastros na Gestão de Usuários:**
+  - Atualização da coluna "DATA REGISTRO" na tabela de Gestão de Usuários (`/admin/usuarios`), passando a exibir a data e a hora exatas do cadastro (ex: `20/07/2026 às 14:35`).
+
 ## [0.8.1] - 2026-07-20
 ### Adicionado / Modificado
 - **Tabela de Preços Dinâmica e Transparente na Landing Page (`#precos`):**

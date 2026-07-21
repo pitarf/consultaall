@@ -78,6 +78,8 @@
 - [x] Criação de botão de ação (Promover/Rebaixar Admin) na Gestão de Usuários e Server Action `toggleUserRole` para gerenciar administradores pela interface.
 - [x] Criação de campos dinâmicos no Painel de Configurações (`/admin/configuracoes`) para alterar o Token da API PushinPay e o Token do Webhook em tempo real.
 - [x] Adição do link "Preços" no menu e da seção de Tabela de Preços Dinâmica na Landing Page (`/` e `#precos`).
+- [x] Exibição do horário exato do cadastro dos usuários na coluna "Data Registro" da Gestão de Usuários (`/admin/usuarios`).
+
 
 
 
