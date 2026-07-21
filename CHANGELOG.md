@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.8] - 2026-07-21
+### Corrigido
+- **Consulta Avançada por Nome (FilterNaturalPerson):**
+  - Atualização do Endpoint da API para `https://api.app.directd.com.br` evitando recusa de conexão (Connection Reset) pelo WAF da DirectData.
+  - Implementação de injeção compulsória de todos os campos do contrato no Payload da requisição (ex: `motherName`, `postalCode`, `receiveBolsaFamilia` como `null`), conforme exigência estrita da nova versão da API para evitar HTTP 400.
+
+
 ## [0.8.7] - 2026-07-21
 ### Corrigido
 - **Sobrescrita de Preços dos Módulos (Bug do Reset):**

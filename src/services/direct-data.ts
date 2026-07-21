@@ -313,7 +313,28 @@ export async function filterNaturalPerson(filters: {
 }) {
   if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   try {
-    const response = await axiosV2.post('/api/AdvancedSearch/FilterNaturalPerson', filters);
+    const payload = {
+      fullName: filters.fullName || "",
+      motherName: "",
+      postalCode: "",
+      street: "",
+      city: filters.city || "",
+      state: filters.state || "",
+      number: "",
+      neighborhood: "",
+      email: filters.email || "",
+      phoneNumber: filters.phoneNumber || "",
+      dateOfBirthStart: "",
+      dateOfBirthEnd: "",
+      receiveAuxilioEmergencial: null,
+      receiveAuxilioReconstrucao: null,
+      receiveBolsaFamilia: null,
+      receiveBPC: null,
+      receiveGarantiaSafra: null,
+      receiveSeguroDefeso: null
+    };
+
+    const response = await axiosV2.post('https://api.app.directd.com.br/api/AdvancedSearch/FilterNaturalPerson', payload);
     return response.data;
   } catch (error: any) {
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
