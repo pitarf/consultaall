@@ -75,7 +75,7 @@ export function SidebarNav({ isAdmin, whatsappLink }: SidebarNavProps) {
 
       <Link href="/dashboard/historico" className={`${navItemClass('/dashboard/historico')} mt-4`}>
         <History className="w-4 h-4" />
-        <span className="text-sm">Histórico</span>
+        <span className="text-sm">Minhas consultas</span>
       </Link>
 
       <Link href="/dashboard/faturas" className={navItemClass('/dashboard/faturas')}>

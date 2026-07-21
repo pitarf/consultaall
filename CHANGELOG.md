@@ -2,6 +2,12 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.3] - 2026-07-20
+### Adicionado / Modificado
+- **Nomenclatura do Menu Lateral ("Minhas consultas"):**
+  - Atualização do item de menu lateral em `src/components/SidebarNav.tsx` de "Histórico" para **"Minhas consultas"**.
+  - Atualização do título principal da página `/dashboard/historico` para **"Minhas Consultas"**.
+
 ## [0.8.2] - 2026-07-20
 ### Adicionado / Modificado
 - **Exibição do Horário Exato dos Cadastros na Gestão de Usuários:**

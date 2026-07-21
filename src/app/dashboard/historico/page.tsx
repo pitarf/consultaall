@@ -26,10 +26,10 @@ export default async function HistoricoPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Histórico de Consultas
+              Minhas Consultas
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-              Reveja todas as consultas que você já realizou. Consultas passadas ficam salvas para sua conveniência.
+              Reveja todas as buscas e relatórios que você já realizou. Consultas passadas ficam salvas sem cobrança adicional.
             </p>
           </div>
         </div>
