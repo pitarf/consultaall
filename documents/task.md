@@ -81,6 +81,8 @@
 - [x] Exibição do horário exato do cadastro dos usuários na coluna "Data Registro" da Gestão de Usuários (`/admin/usuarios`).
 - [x] Alteração do nome do menu lateral e cabeçalho de "Histórico" para **"Minhas consultas"**.
 - [x] Criação da rota `/dashboard/faturas` para eliminar o erro 404 do botão "Adicionar Saldo" no menu lateral.
+- [x] Correção da ordenação cronológica, escala dinâmica e cores do gráfico "Desempenho Diário" no Painel Admin.
+
 
 
 

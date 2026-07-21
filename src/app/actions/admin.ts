@@ -267,15 +267,25 @@ export async function getAdvancedMetrics(monthFilter?: number) {
       status: 'COMPLETED',
       createdAt: { gte: thirtyDaysAgo }
     },
-    select: { amount: true, createdAt: true }
+    select: { amount: true, createdAt: true },
+    orderBy: { createdAt: 'asc' }
   });
 
-  // Agrupar por dia (isso é feito melhor no JS após a busca)
-  const statsByDay = dailyData.reduce((acc: any, t) => {
-    const day = t.createdAt.toLocaleDateString('pt-BR');
-    acc[day] = (acc[day] || 0) + t.amount;
-    return acc;
-  }, {});
+  // Agrupar por dia garantindo que todos os últimos 30 dias estejam presentes em ordem cronológica
+  const statsByDay: { [key: string]: number } = {};
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toLocaleDateString('pt-BR');
+    statsByDay[dateStr] = 0;
+  }
+
+  dailyData.forEach((t) => {
+    const dateStr = t.createdAt.toLocaleDateString('pt-BR');
+    if (dateStr in statsByDay) {
+      statsByDay[dateStr] += t.amount;
+    }
+  });
 
   return {
     monthlyRevenue: monthlyRevenue._sum.amount || 0,

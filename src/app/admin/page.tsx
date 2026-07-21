@@ -93,30 +93,35 @@ export default async function AdminDashboardPage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-700">
-        {/* Gráfico de Faturamento Diário (Simulado com Mini-Barras) */}
+        {/* Gráfico de Faturamento Diário (Com Barras Dinâmicas) */}
         <div className="lg:col-span-2 glass-panel rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm p-8">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-green-500" />
             Desempenho Diário (Últimos 30 dias)
           </h2>
           
-          <div className="h-64 flex items-end justify-between gap-1 mt-10">
-            {Object.entries(advanced.statsByDay).slice(-15).map(([day, amount]: any, i) => (
-              <div key={day} className="flex flex-col items-center gap-2 group relative flex-1">
-                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 dark:bg-white text-white dark:text-black text-[10px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap z-20">
-                  R$ {amount.toFixed(2)}
+          <div className="h-64 flex items-end justify-between gap-1.5 mt-10">
+            {(() => {
+              const entries = Object.entries(advanced.statsByDay);
+              const maxDailyRevenue = Math.max(...entries.map(([_, amount]: any) => amount), 100);
+              
+              return entries.map(([day, amount]: any, i) => (
+                <div key={day} className="flex flex-col items-center gap-2 group relative flex-1">
+                  <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 dark:bg-white text-white dark:text-black text-[10px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap z-20">
+                    R$ {amount.toFixed(2)}
+                  </div>
+                  <div 
+                    className={`w-full transition-all rounded-t-md relative ${amount > 0 ? 'bg-gradient-to-t from-[#2872fa] to-blue-400 opacity-90 group-hover:opacity-100 hover:scale-[1.05]' : 'bg-slate-200/20 dark:bg-white/5'}`}
+                    style={{ height: `${amount > 0 ? Math.max((amount / maxDailyRevenue) * 100, 8) : 4}%` }}
+                  >
+                    {amount > 0 && <div className="absolute inset-0 bg-gradient-to-t from-[#2872fa]/20 to-transparent opacity-50"></div>}
+                  </div>
+                  <span className="text-[8px] text-slate-400 dark:text-gray-600 font-bold rotate-45 mt-2 origin-left truncate w-full">
+                    {day.split('/')[0]}/{day.split('/')[1]}
+                  </span>
                 </div>
-                <div 
-                  className="w-full bg-primary/20 group-hover:bg-primary transition-all rounded-t-lg relative"
-                  style={{ height: `${Math.max((amount / 500) * 100, 5)}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-50"></div>
-                </div>
-                <span className="text-[8px] text-slate-400 dark:text-gray-600 font-bold rotate-45 mt-2 origin-left truncate w-full">
-                  {day.split('/')[0]}/{day.split('/')[1]}
-                </span>
-              </div>
-            ))}
+              ));
+            })()}
             {Object.keys(advanced.statsByDay).length === 0 && (
               <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-gray-600 italic text-sm">
                 Aguardando primeiras vendas do período...

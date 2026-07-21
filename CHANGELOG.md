@@ -2,6 +2,14 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.5] - 2026-07-21
+### Corrigido
+- **Gráfico de Desempenho Diário no Painel Admin:**
+  - Correção na ordenação cronológica dos últimos 30 dias de faturamento no agrupamento do banco de dados (anteriormente as datas ficavam em ordem randômica/de retorno do banco).
+  - Preenchimento de todos os últimos 30 dias de forma sequencial (exibindo R$ 0,00 nos dias sem depósitos ao invés de pular datas ou quebrar a escala).
+  - Escalonamento da altura das barras dinamicamente com base no faturamento máximo do período selecionado.
+  - Correção de contraste e visibilidade das barras em modo escuro utilizando gradiente sólido azul com opacidade adequada.
+
 ## [0.8.4] - 2026-07-20
 ### Adicionado / Modificado
 - **Criação da Página de Adicionar Saldo & Extrato de Recargas (`/dashboard/faturas`):**
