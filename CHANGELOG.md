@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.1] - 2026-07-20
+### Adicionado / Modificado
+- **Tabela de Preços Dinâmica e Transparente na Landing Page (`#precos`):**
+  - Adição do link **"Preços"** no menu de navegação da cabeçalho (desktop e mobile) posicionado entre "Como Funciona" e "Aplicações".
+  - Criação da seção dedicada de preços e tarifas transparentes na página inicial (`src/app/page.tsx`), buscando os valores vigentes de cada módulo diretamente do banco de dados (`prisma.modulePricing.findMany()`).
+  - Apresentação visual de alta conversão (CRO) dividida por categorias (Dados Pessoais, Pessoas Relacionadas, Renda, Veículos, Empresas e Crédito) para destacar o valor acessível das consultas (a partir de R$ 0,50) e converter visitantes em novos cadastros.
+
 ## [0.8.0] - 2026-07-20
 ### Adicionado / Modificado
 - **Gerenciamento Dinâmico do Token da PushinPay no Painel Admin:**

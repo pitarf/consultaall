@@ -41,6 +41,9 @@ export default function NavbarClient({ logoUrl, siteTitle }: NavbarClientProps) 
           <Link href="#como-funciona" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             Como Funciona
           </Link>
+          <Link href="#precos" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
+            Preços
+          </Link>
           <Link href="#aplicacoes" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             Aplicações
           </Link>
@@ -80,7 +83,7 @@ export default function NavbarClient({ logoUrl, siteTitle }: NavbarClientProps) 
       {/* Menu retrátil mobile */}
       <div 
         className={`md:hidden bg-white border-b border-slate-200 overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? 'max-h-[300px]' : 'max-h-0'
+          isOpen ? 'max-h-[350px]' : 'max-h-0'
         }`}
       >
         <div className="px-4 pt-2 pb-6 space-y-3">
@@ -97,6 +100,13 @@ export default function NavbarClient({ logoUrl, siteTitle }: NavbarClientProps) 
             className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
           >
             Como Funciona
+          </Link>
+          <Link
+            href="#precos"
+            onClick={() => setIsOpen(false)}
+            className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
+          >
+            Preços
           </Link>
           <Link
             href="#aplicacoes"

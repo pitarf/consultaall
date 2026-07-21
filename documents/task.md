@@ -77,6 +77,8 @@
 - [x] Implementação de blindagem de SSL (axiosV3 com rejectUnauthorized: false) nas chamadas V3 da DirectData para evitar falhas de carregamento e incompatibilidade de certificados em containers.
 - [x] Criação de botão de ação (Promover/Rebaixar Admin) na Gestão de Usuários e Server Action `toggleUserRole` para gerenciar administradores pela interface.
 - [x] Criação de campos dinâmicos no Painel de Configurações (`/admin/configuracoes`) para alterar o Token da API PushinPay e o Token do Webhook em tempo real.
+- [x] Adição do link "Preços" no menu e da seção de Tabela de Preços Dinâmica na Landing Page (`/` e `#precos`).
+
 
 
 

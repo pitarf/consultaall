@@ -13,7 +13,14 @@ import {
   TrendingUp,
   Fingerprint,
   RefreshCw,
-  Users2
+  Users2,
+  Wallet,
+  CheckCircle,
+  Building2,
+  Car,
+  UserCheck,
+  CreditCard,
+  Users
 } from 'lucide-react';
 
 /**
@@ -23,7 +30,76 @@ import {
  * 100% otimizado para aprovação do Google Ads.
  */
 export default async function Home() {
-  const settings = await prisma.systemSetting.findFirst();
+  const [settings, pricings] = await Promise.all([
+    prisma.systemSetting.findFirst(),
+    prisma.modulePricing.findMany()
+  ]);
+
+  const getPrice = (id: string, defaultPrice: number) => {
+    const found = pricings.find(p => p.id === id);
+    return found ? found.price : defaultPrice;
+  };
+
+  const categories = [
+    {
+      title: "Dados Pessoais",
+      icon: <UserCheck className="w-5 h-5 text-[#2872fa]" />,
+      items: [
+        { name: "Dados básicos", price: getPrice('dados_basicos', 1.00) },
+        { name: "Documentos (RG/PIS/NIS)", price: getPrice('documentos', 1.00) },
+        { name: "E-mails", price: getPrice('emails', 0.50) },
+        { name: "Telefones", price: getPrice('telefones', 0.50) },
+        { name: "Endereços", price: getPrice('enderecos', 1.00) },
+      ]
+    },
+    {
+      title: "Pessoas Relacionadas",
+      icon: <Users className="w-5 h-5 text-purple-600" />,
+      items: [
+        { name: "Parentes", price: getPrice('parentes', 1.00) },
+        { name: "Vizinhos", price: getPrice('vizinhos', 1.00) },
+        { name: "Sócios / Empresas", price: getPrice('socio_empresa', 1.50) },
+      ]
+    },
+    {
+      title: "Patrimônio e Renda",
+      icon: <TrendingUp className="w-5 h-5 text-emerald-600" />,
+      items: [
+        { name: "Poder Aquisitivo", price: getPrice('poder_aquisitivo', 1.50) },
+        { name: "Dados Trabalhistas", price: getPrice('dados_trabalhistas', 1.00) },
+        { name: "Seguro Social (INSS)", price: getPrice('seguro_social', 1.00) },
+      ]
+    },
+    {
+      title: "Veículos",
+      icon: <Car className="w-5 h-5 text-amber-600" />,
+      items: [
+        { name: "Dados Básicos e Técnicos", price: getPrice('veiculo_basico', 1.00) },
+        { name: "Situação e Documentação", price: getPrice('veiculo_documentacao', 1.00) },
+        { name: "Dados do Proprietário", price: getPrice('veiculo_proprietario', 1.50) },
+        { name: "Restrições e Histórico", price: getPrice('veiculo_restricoes', 2.00) },
+      ]
+    },
+    {
+      title: "Empresas (CNPJ)",
+      icon: <Building2 className="w-5 h-5 text-blue-600" />,
+      items: [
+        { name: "Dados Básicos e Natureza", price: getPrice('cnpj_basico', 1.00) },
+        { name: "Contato e Localização", price: getPrice('cnpj_contato', 1.00) },
+        { name: "Quadro Societário (QSA)", price: getPrice('cnpj_socios', 1.50) },
+        { name: "Faturamento e Porte", price: getPrice('cnpj_faturamento', 2.00) },
+      ]
+    },
+    {
+      title: "Crédito e Histórico",
+      icon: <CreditCard className="w-5 h-5 text-indigo-600" />,
+      items: [
+        { name: "Score de Crédito", price: getPrice('analise_credito', 2.00) },
+        { name: "Processos Judiciais", price: getPrice('processos', 1.00) },
+        { name: "Certidões Negativas", price: getPrice('certidoes', 1.00) },
+      ]
+    }
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-800 antialiased overflow-x-hidden">
@@ -212,6 +288,110 @@ export default async function Home() {
                 <p className="text-slate-600 text-sm leading-relaxed">{item.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===================== TABELA DE PREÇOS E MÓDULOS (PREÇOS) ===================== */}
+      <section id="precos" className="py-20 bg-white border-b border-slate-200 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
+            <span className="text-emerald-600 bg-emerald-50 border border-emerald-200/60 text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+              Preços Transparentes & Sem Mensalidade
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#243b56] tracking-tight">
+              Pague Apenas Pelo Que Consultar
+            </h2>
+            <p className="text-slate-600 text-sm md:text-base max-w-2xl mx-auto">
+              Sem taxas ocultas, contratos de fidelidade ou mensalidades. Adicione saldo via Pix e consulte os dados que precisar em tempo real.
+            </p>
+          </div>
+
+          {/* Destaque de Benefícios da Tarifação */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                <Wallet className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-slate-900 text-sm">A Partir de R$ 0,50</h4>
+                <p className="text-xs text-slate-500">Módulos avulsos e fracionados por consulta</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <Zap className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-slate-900 text-sm">Recarga Instantânea via Pix</h4>
+                <p className="text-xs text-slate-500">Saldo liberado automaticamente no painel</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-slate-900 text-sm">Cache Inteligente Integrado</h4>
+                <p className="text-xs text-slate-500">Zero cobrança duplicada em buscas recentes</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid de Categorias e Módulos com Preços Dinâmicos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="bg-slate-50 border border-slate-200 rounded-3xl p-6 flex flex-col justify-between hover:border-[#2872fa]/40 hover:shadow-lg transition-all text-left">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <h3 className="font-bold text-lg text-[#243b56] flex items-center gap-2">
+                      {cat.icon}
+                      {cat.title}
+                    </h3>
+                    <span className="text-[11px] font-semibold text-slate-500 bg-white px-2.5 py-1 rounded-full border border-slate-200">
+                      {cat.items.length} módulos
+                    </span>
+                  </div>
+
+                  <ul className="space-y-2.5">
+                    {cat.items.map((item, i) => (
+                      <li key={i} className="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-white border border-slate-200/60 shadow-2xs">
+                        <span className="text-slate-700 font-medium">{item.name}</span>
+                        <span className="font-mono font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded text-[11px]">
+                          R$ {item.price.toFixed(2).replace('.', ',')}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-6 mt-4 border-t border-slate-200/60">
+                  <Link
+                    href="/cadastro"
+                    className="w-full bg-white hover:bg-[#2872fa] hover:text-white border border-slate-300 hover:border-[#2872fa] text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm group"
+                  >
+                    Consultar este Módulo
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center bg-blue-50/60 border border-blue-100 rounded-2xl p-6 max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-left space-y-1">
+              <h4 className="font-bold text-sm text-[#243b56]">Quer testar a plataforma agora mesmo?</h4>
+              <p className="text-xs text-slate-600">Crie sua conta em menos de 1 minuto sem precisar de cartão de crédito.</p>
+            </div>
+            <Link
+              href="/cadastro"
+              className="bg-[#2872fa] hover:bg-[#1a5ecd] text-white text-xs font-bold py-3 px-6 rounded-xl shadow-md transition-all shrink-0 active:scale-95"
+            >
+              Criar Conta Gratuita 🚀
+            </Link>
           </div>
         </div>
       </section>
