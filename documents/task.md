@@ -80,6 +80,8 @@
 - [x] Adição do link "Preços" no menu e da seção de Tabela de Preços Dinâmica na Landing Page (`/` e `#precos`).
 - [x] Exibição do horário exato do cadastro dos usuários na coluna "Data Registro" da Gestão de Usuários (`/admin/usuarios`).
 - [x] Alteração do nome do menu lateral e cabeçalho de "Histórico" para **"Minhas consultas"**.
+- [x] Criação da rota `/dashboard/faturas` para eliminar o erro 404 do botão "Adicionar Saldo" no menu lateral.
+
 
 
 

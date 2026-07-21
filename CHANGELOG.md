@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.4] - 2026-07-20
+### Adicionado / Modificado
+- **Criação da Página de Adicionar Saldo & Extrato de Recargas (`/dashboard/faturas`):**
+  - Eliminação completa do erro 404 ao clicar no botão "Adicionar Saldo" do menu lateral.
+  - Criação da nova rota de usuário `/dashboard/faturas` composta por `page.tsx` (Server) e `FaturasClient.tsx` (Client).
+  - Inclui painel de geração de recargas Pix instantâneas com verificação automática de pagamento em tempo real e visualização do extrato completo de depósitos do usuário.
+
 ## [0.8.3] - 2026-07-20
 ### Adicionado / Modificado
 - **Nomenclatura do Menu Lateral ("Minhas consultas"):**
