@@ -15,7 +15,8 @@ const axiosV2 = axios.create({
   baseURL: 'https://api.directd.com.br',
   headers: { 
     'Content-Type': 'application/json',
-    'Token': TOKEN 
+    'Token': TOKEN,
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   },
   httpsAgent: new https.Agent({ rejectUnauthorized: false })
 });
