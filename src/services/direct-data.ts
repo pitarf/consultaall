@@ -363,22 +363,50 @@ export async function filterNaturalPerson(filters: {
 export async function processingIds(listIds: string[], searchName: string = 'Consulta ALL') {
   if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   try {
-    const response = await axiosV2.post('/api/AdvancedSearch/ProcessingIds', { listIds, searchName });
-    return response.data;
+    const response = await fetch('https://api.app.directd.com.br/api/AdvancedSearch/ProcessingIds', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Token': TOKEN,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      body: JSON.stringify({ listIds, searchName })
+    });
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`DirectData API Error ${response.status}: ${errText}`);
+    }
+    
+    return await response.json();
   } catch (error: any) {
-    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    throw new Error(apiMessage);
+    throw new Error(error.message || 'Erro desconhecido em ProcessingIds');
   }
 }
 
 export async function viewSearch(searchUid: string) {
   if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   try {
-    const response = await axiosV2.post('/api/AdvancedSearch/ViewSearch', { searchUid });
-    return response.data;
+    const response = await fetch('https://api.app.directd.com.br/api/AdvancedSearch/ViewSearch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Token': TOKEN,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      body: JSON.stringify({ searchUid })
+    });
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`DirectData API Error ${response.status}: ${errText}`);
+    }
+    
+    return await response.json();
   } catch (error: any) {
-    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    throw new Error(apiMessage);
+    throw new Error(error.message || 'Erro desconhecido em ViewSearch');
   }
 }
 
