@@ -335,11 +335,28 @@ export async function filterNaturalPerson(filters: {
       receiveSeguroDefeso: null
     };
 
-    const response = await axiosV2.post('https://api.app.directd.com.br/api/AdvancedSearch/FilterNaturalPerson', payload);
-    return response.data;
+    const response = await fetch('https://api.app.directd.com.br/api/AdvancedSearch/FilterNaturalPerson', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Token': TOKEN,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`DirectData API Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
   } catch (error: any) {
-    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    throw new Error(apiMessage);
+    console.error("FilterNaturalPerson falhou:", error);
+    // Preserva a mensagem de ECONNRESET ou repassa o erro da API
+    throw new Error(error.message || 'Erro desconhecido ao conectar com DirectData');
   }
 }
 

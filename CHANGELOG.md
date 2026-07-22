@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.8.9] - 2026-07-21
+### Corrigido
+- **Bypass de WAF (Cloudflare/DirectData) na Busca por Nome:**
+  - Remoção completa do client `axiosV2` (que possuía `rejectUnauthorized: false`) na chamada `FilterNaturalPerson` devido ao gatilho de bloqueio severo (`ECONNRESET`) pelo WAF da DirectData contra IPs de Datacenter.
+  - Migração para a API `fetch` nativa (undici) do Node.js utilizando verificação estrita de SSL e cabeçalho `User-Agent` simulado (Spoofing) de um navegador Chrome, resolvendo o corte de conexão imediato na VPS.
+
+
 ## [0.8.8] - 2026-07-21
 ### Corrigido
 - **Consulta Avançada por Nome (FilterNaturalPerson):**

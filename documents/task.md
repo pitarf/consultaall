@@ -85,4 +85,4 @@
 - [x] Injeção do evento Google Analytics (`manual_event_PURCHASE`) exatamente no momento de aprovação bem-sucedida do pagamento Pix (em tempo real).
 - [x] Correção do Bug de Reset de Preços (removendo `price` do update no prisma seed e adicionando revalidação de cache estático na rota principal `/`).
 - [x] Correção Definitiva da Consulta por Nome (ajuste para o Endpoint `api.app` exigido pela DirectData e preenchimento de contrato nulo obrigatório).
-
+- [x] Bypass do WAF (Cloudflare/Firewall) na Busca por Nome migrando a chamada de `axios` para `fetch` nativo e removendo flag insegura de SSL.
