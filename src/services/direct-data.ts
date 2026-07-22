@@ -418,26 +418,30 @@ function pickBestCandidate(candidates: any[]) {
   return candidates[0];
 }
 
-function transformDirectDataAdvanced(raw: any, selectedModules: string[]) {
+function transformDirectDataAdvanced(rawResponse: any, selectedModules: string[]) {
   const result: any = {};
+  const raw = rawResponse.retorno || rawResponse;
 
   if (selectedModules.includes('dados_basicos') || selectedModules.includes('documentos')) {
     result['Dados_Pessoais'] = {
-      nome: raw.nome,
+      nome: raw.nome || raw.nome_completo,
       cpf: raw.cpf,
       rg: raw.rg,
-      data_nascimento: raw.nascimento,
+      data_nascimento: raw.dataNascimento || raw.nascimento,
       sexo: raw.sexo,
-      nome_mae: raw.mae,
-      nome_pai: raw.pai,
-      estado_civil: raw.estado_civil,
-      signo: raw.signo
+      nome_mae: raw.nomeMae || raw.mae,
+      nome_pai: raw.nomePai || raw.pai,
+      estado_civil: raw.estadoCivil || raw.estado_civil,
+      signo: raw.signo,
+      situacao_cadastral: raw.situacaoCadastral,
+      renda_estimada: raw.rendaEstimada ? `R$ ${raw.rendaEstimada}` : undefined
     };
   }
 
   if (selectedModules.includes('telefones')) {
     result['Telefones'] = {
       lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => {
+        if (typeof t === 'string') return t;
         return `${t.ddd || ''}${t.numero || ''} (${t.tipo || 'N/I'})`;
       }) : []
     };
@@ -454,6 +458,7 @@ function transformDirectDataAdvanced(raw: any, selectedModules: string[]) {
       enderecos: Array.isArray(raw.enderecos) ? raw.enderecos.map((end: any) => ({
         logradouro: end.logradouro,
         numero: end.numero,
+        complemento: end.complemento,
         bairro: end.bairro,
         cidade: end.cidade,
         uf: end.uf,
@@ -463,8 +468,9 @@ function transformDirectDataAdvanced(raw: any, selectedModules: string[]) {
   }
 
   if (selectedModules.includes('parentes')) {
+    const parentes = raw.parentescos || raw.parentes;
     result['Vinculos_Familiares'] = {
-      lista: Array.isArray(raw.parentes) ? raw.parentes.map((p: any) => `${p.nome} (${p.vinculo || 'Parente'})`) : []
+      lista: Array.isArray(parentes) ? parentes.map((p: any) => `${p.nome} (${p.vinculo || 'Parente'})`) : []
     };
   }
 
