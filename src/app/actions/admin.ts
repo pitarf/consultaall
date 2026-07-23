@@ -271,8 +271,16 @@ export async function getAdvancedMetrics(monthFilter?: number) {
     orderBy: { createdAt: 'asc' }
   });
 
+  // Buscar Novos Usuários (Últimos 30 dias)
+  const dailyUsers = await prisma.user.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true },
+    orderBy: { createdAt: 'asc' }
+  });
+
   // Agrupar por dia garantindo que todos os últimos 30 dias estejam presentes em ordem cronológica
-  const statsByDay: { [key: string]: number } = {};
+  const chartData: { day: string; amount: number; users: number }[] = [];
+  const statsMap: { [key: string]: { amount: number; users: number } } = {};
   
   // Helper para formatar data localmente no formato YYYY-MM-DD e DD/MM
   const formatDate = (date: Date) => {
@@ -284,23 +292,32 @@ export async function getAdvancedMetrics(monthFilter?: number) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dateStr = formatDate(d);
-    statsByDay[dateStr] = 0;
+    statsMap[dateStr] = { amount: 0, users: 0 };
+    chartData.push({ day: dateStr, amount: 0, users: 0 });
   }
 
   dailyData.forEach((t) => {
     const dateStr = formatDate(t.createdAt);
-    if (dateStr in statsByDay) {
-      statsByDay[dateStr] += t.amount;
-    } else {
-      // Se por fuso a data sair da janela de 30 dias estrita, alocamos mesmo assim
-      statsByDay[dateStr] = t.amount;
+    if (statsMap[dateStr]) {
+      statsMap[dateStr].amount += t.amount;
+      const target = chartData.find(item => item.day === dateStr);
+      if (target) target.amount += t.amount;
+    }
+  });
+
+  dailyUsers.forEach((u) => {
+    const dateStr = formatDate(u.createdAt);
+    if (statsMap[dateStr]) {
+      statsMap[dateStr].users += 1;
+      const target = chartData.find(item => item.day === dateStr);
+      if (target) target.users += 1;
     }
   });
 
   return {
     monthlyRevenue: monthlyRevenue._sum.amount || 0,
     monthlyQueries,
-    statsByDay
+    chartData
   };
 }
 
