@@ -111,7 +111,7 @@ export default async function AdminDashboardPage({
                     R$ {amount.toFixed(2)}
                   </div>
                   <div 
-                    className={`w-full transition-all rounded-t-md relative ${amount > 0 ? 'bg-gradient-to-t from-[#2872fa] to-blue-400 opacity-90 group-hover:opacity-100 hover:scale-[1.05]' : 'bg-slate-200/20 dark:bg-white/5'}`}
+                    className={`w-full transition-all rounded-t-md relative ${amount > 0 ? 'bg-gradient-to-t from-[#2872fa] to-blue-400 opacity-90 group-hover:opacity-100 hover:scale-[1.05]' : 'bg-slate-200/50 dark:bg-white/5'}`}
                     style={{ height: `${amount > 0 ? Math.max((amount / maxDailyRevenue) * 100, 8) : 4}%` }}
                   >
                     {amount > 0 && <div className="absolute inset-0 bg-gradient-to-t from-[#2872fa]/20 to-transparent opacity-50"></div>}

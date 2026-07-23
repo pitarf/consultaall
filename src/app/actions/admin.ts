@@ -273,17 +273,27 @@ export async function getAdvancedMetrics(monthFilter?: number) {
 
   // Agrupar por dia garantindo que todos os últimos 30 dias estejam presentes em ordem cronológica
   const statsByDay: { [key: string]: number } = {};
+  
+  // Helper para formatar data localmente no formato YYYY-MM-DD e DD/MM
+  const formatDate = (date: Date) => {
+    // Usar fuso do Brasil para agrupar corretamente os dias
+    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  };
+
   for (let i = 29; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const dateStr = d.toLocaleDateString('pt-BR');
+    const dateStr = formatDate(d);
     statsByDay[dateStr] = 0;
   }
 
   dailyData.forEach((t) => {
-    const dateStr = t.createdAt.toLocaleDateString('pt-BR');
+    const dateStr = formatDate(t.createdAt);
     if (dateStr in statsByDay) {
       statsByDay[dateStr] += t.amount;
+    } else {
+      // Se por fuso a data sair da janela de 30 dias estrita, alocamos mesmo assim
+      statsByDay[dateStr] = t.amount;
     }
   });
 
