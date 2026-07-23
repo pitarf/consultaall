@@ -100,33 +100,86 @@ export default async function AdminDashboardPage({
             Desempenho Diário (Últimos 30 dias)
           </h2>
           
-          <div className="h-64 flex items-end justify-between gap-1.5 mt-10">
+          <div className="h-64 mt-10 relative">
             {(() => {
               const entries = Object.entries(advanced.statsByDay);
+              if (entries.length === 0) {
+                return (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-gray-600 italic text-sm">
+                    Aguardando primeiras vendas do período...
+                  </div>
+                );
+              }
+
               const maxDailyRevenue = Math.max(...entries.map(([_, amount]: any) => amount), 100);
               
-              return entries.map(([day, amount]: any, i) => (
-                <div key={day} className="flex flex-col items-center justify-end gap-2 group relative flex-1 h-full">
-                  <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 dark:bg-white text-white dark:text-black text-[10px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap z-20">
-                    R$ {amount.toFixed(2)}
+              // Build SVG points
+              // Y limits: 95 (bottom) to 5 (top) to give padding for the stroke
+              const points = entries.map(([_, amount]: any, i) => {
+                const x = (i / (entries.length - 1)) * 100;
+                const y = 95 - ((amount / maxDailyRevenue) * 90);
+                return `${x},${y}`;
+              }).join(' ');
+
+              const areaPoints = `0,100 ${points} 100,100`;
+
+              return (
+                <div className="w-full h-full flex flex-col justify-end relative">
+                  <div className="flex-1 w-full relative group">
+                    <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+                      <defs>
+                        <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#2872fa" stopOpacity="0.4" />
+                          <stop offset="100%" stopColor="#2872fa" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <polygon points={areaPoints} fill="url(#gradientArea)" className="transition-all duration-700 ease-out" />
+                      <polyline points={points} fill="none" stroke="#2872fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-all duration-700 ease-out" />
+                    </svg>
+
+                    {/* Tooltips Overlay */}
+                    <div className="absolute inset-0 flex justify-between">
+                      {entries.map(([day, amount]: any, i) => (
+                        <div key={day} className="flex-1 group/tooltip relative flex justify-center cursor-crosshair">
+                          {/* Hover Guide Line */}
+                          <div className="absolute top-0 bottom-0 w-px bg-slate-300 dark:bg-slate-700 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none" />
+                          
+                          {/* Tooltip Box */}
+                          <div className="absolute bottom-full mb-2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity bg-slate-900 dark:bg-white text-white dark:text-black text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-20 pointer-events-none transform -translate-x-1/2 left-1/2">
+                            R$ {amount.toFixed(2)}
+                            <div className="text-[9px] font-normal text-slate-300 dark:text-slate-600 mt-0.5">{day}</div>
+                          </div>
+                          
+                          {/* Data Point Dot */}
+                          <div 
+                            className="absolute w-2 h-2 rounded-full bg-[#2872fa] ring-2 ring-white dark:ring-card opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none transform -translate-x-1/2 left-1/2"
+                            style={{ top: `${95 - ((amount / maxDailyRevenue) * 90)}%`, marginTop: '-4px' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div 
-                    className={`w-full transition-all rounded-t-md relative ${amount > 0 ? 'bg-gradient-to-t from-[#2872fa] to-blue-400 opacity-90 group-hover:opacity-100 hover:scale-[1.05]' : 'bg-slate-200/50 dark:bg-white/5'}`}
-                    style={{ height: `${amount > 0 ? Math.max((amount / maxDailyRevenue) * 100, 8) : 4}%` }}
-                  >
-                    {amount > 0 && <div className="absolute inset-0 bg-gradient-to-t from-[#2872fa]/20 to-transparent opacity-50"></div>}
+
+                  {/* Eixo X: Datas Otimizadas para não vazar */}
+                  <div className="flex justify-between w-full mt-4 border-t border-slate-100 dark:border-white/5 pt-3">
+                    {entries.map(([day, _]: any, i) => {
+                      const showLabel = i % 5 === 0 || i === entries.length - 1;
+                      return (
+                        <div key={day} className="flex-1 flex justify-center">
+                          {showLabel ? (
+                            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium truncate px-1">
+                              {day.split('/')[0]}/{day.split('/')[1]}
+                            </span>
+                          ) : (
+                            <span className="opacity-0 w-full">-</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <span className="text-[8px] text-slate-400 dark:text-gray-600 font-bold rotate-45 mt-2 origin-left truncate w-full">
-                    {day.split('/')[0]}/{day.split('/')[1]}
-                  </span>
                 </div>
-              ));
+              );
             })()}
-            {Object.keys(advanced.statsByDay).length === 0 && (
-              <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-gray-600 italic text-sm">
-                Aguardando primeiras vendas do período...
-              </div>
-            )}
           </div>
         </div>
 
