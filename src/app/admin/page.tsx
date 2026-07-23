@@ -106,7 +106,7 @@ export default async function AdminDashboardPage({
               const maxDailyRevenue = Math.max(...entries.map(([_, amount]: any) => amount), 100);
               
               return entries.map(([day, amount]: any, i) => (
-                <div key={day} className="flex flex-col items-center gap-2 group relative flex-1">
+                <div key={day} className="flex flex-col items-center justify-end gap-2 group relative flex-1 h-full">
                   <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 dark:bg-white text-white dark:text-black text-[10px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap z-20">
                     R$ {amount.toFixed(2)}
                   </div>
