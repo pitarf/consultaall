@@ -22,6 +22,7 @@ function urlBase64ToUint8Array(base64String: string) {
 export default function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionState, setSubscriptionState] = useState<PushSubscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,8 +39,34 @@ export default function PushNotificationManager() {
       const registration = await navigator.serviceWorker.register('/sw.js');
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
+      setSubscriptionState(subscription);
     } catch (error) {
       console.error('Service Worker registration failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function unsubscribeFromPush() {
+    setIsLoading(true);
+    try {
+      if (subscriptionState) {
+        // Envia o endpoint para o backend excluir do banco
+        await fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subscriptionState.endpoint }),
+        });
+
+        // Cancela a inscrição no navegador
+        await subscriptionState.unsubscribe();
+      }
+      setIsSubscribed(false);
+      setSubscriptionState(null);
+      toast.info('Notificações de vendas desativadas.');
+    } catch (error) {
+      console.error('Failed to unsubscribe:', error);
+      toast.error('Erro ao desativar notificações.');
     } finally {
       setIsLoading(false);
     }
@@ -72,9 +99,9 @@ export default function PushNotificationManager() {
       });
 
       setIsSubscribed(true);
+      setSubscriptionState(subscription);
       toast.success('Notificações de vendas ativadas neste dispositivo!');
       
-      // Test notification
       new Notification('ConsultAll Admin', {
         body: 'Você receberá avisos de recarga neste dispositivo.',
         icon: '/logo.webp'
@@ -88,13 +115,21 @@ export default function PushNotificationManager() {
     }
   }
 
+  const toggleSubscription = () => {
+    if (isSubscribed) {
+      unsubscribeFromPush();
+    } else {
+      subscribeToPush();
+    }
+  };
+
   if (!isSupported) return null;
 
   return (
     <button
-      onClick={isSubscribed ? undefined : subscribeToPush}
-      disabled={isLoading || isSubscribed}
-      title={isSubscribed ? "Notificações Ativas" : "Ativar Notificações de Venda"}
+      onClick={toggleSubscription}
+      disabled={isLoading}
+      title={isSubscribed ? "Desativar Notificações" : "Ativar Notificações de Venda"}
       className={`p-2 rounded-xl transition-all border ${
         isSubscribed 
           ? 'bg-blue-500/10 border-blue-500/20 text-blue-500 dark:bg-blue-500/20 dark:text-blue-400' 
