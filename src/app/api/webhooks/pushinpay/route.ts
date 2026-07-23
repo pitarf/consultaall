@@ -167,6 +167,53 @@ export async function POST(req: Request) {
           const errorStatus = result.error === "Transaction not found" ? 404 : 400;
           return NextResponse.json({ error: result.error }, { status: errorStatus });
         }
+
+        // Tenta enviar notificação push de forma assíncrona (não deve bloquear o webhook)
+        if (result.success && amountInReais > 0) {
+          (async () => {
+            try {
+              const webpush = require('web-push');
+              
+              if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+                console.warn('⚠️ Web Push: VAPID keys not configured in environment.');
+                return;
+              }
+
+              webpush.setVapidDetails(
+                process.env.VAPID_SUBJECT || 'mailto:contato@detetivebuscas.com',
+                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+                process.env.VAPID_PRIVATE_KEY
+              );
+
+              const subscriptions = await prisma.adminPushSubscription.findMany();
+              
+              const payload = JSON.stringify({
+                title: 'Venda realizada',
+                body: `Você fez uma venda de R$${amountInReais.toFixed(2).replace('.', ',')}`,
+                url: '/admin'
+              });
+
+              for (const sub of subscriptions) {
+                try {
+                  await webpush.sendNotification({
+                    endpoint: sub.endpoint,
+                    keys: { p256dh: sub.p256dh, auth: sub.auth }
+                  }, payload);
+                } catch (subErr: any) {
+                  // Se a inscrição expirou (410 Gone), removemos do banco
+                  if (subErr.statusCode === 410 || subErr.statusCode === 404) {
+                    await prisma.adminPushSubscription.delete({ where: { id: sub.id } });
+                  } else {
+                    console.error('⚠️ Web Push: Error sending to subscription', sub.id, subErr.message);
+                  }
+                }
+              }
+            } catch (pushErr) {
+              console.error('🚨 Web Push: Falha geral ao enviar notificação:', pushErr);
+            }
+          })();
+        }
+
       } catch (dbError: any) {
         console.error("❌ Webhook PushinPay: Falha crítica na transação do banco:", dbError.message);
         return NextResponse.json({ error: "Database transaction failed" }, { status: 500 });

@@ -97,3 +97,12 @@ model PasswordResetToken {
   @@index([email])
   @@index([token])
 }
+
+model AdminPushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String?  // Opcional, para atrelar a um admin específico se tivermos login
+  createdAt DateTime @default(now())
+}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdminMobileMenu } from '@/components/AdminMobileMenu';
 import { cookies } from 'next/headers';
+import PushNotificationManager from '@/components/admin/PushNotificationManager';
 
 export default async function AdminLayout({
   children,
@@ -92,6 +93,9 @@ export default async function AdminLayout({
           </div>
           
           <div className="flex items-center gap-3">
+            {/* Botão de Ativar Notificações Push */}
+            <PushNotificationManager />
+            
             {/* Alternador dinâmico de tema Clean / Dark */}
             <ThemeToggle />
             
