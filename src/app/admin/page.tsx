@@ -134,7 +134,7 @@ export default async function AdminDashboardPage({
                         </linearGradient>
                       </defs>
                       <polygon points={areaPoints} fill="url(#gradientArea)" className="transition-all duration-700 ease-out" />
-                      <polyline points={points} fill="none" stroke="#2872fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-all duration-700 ease-out" />
+                      <polyline points={points} fill="none" stroke="#2872fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" className="transition-all duration-700 ease-out" />
                     </svg>
 
                     {/* Tooltips Overlay */}
