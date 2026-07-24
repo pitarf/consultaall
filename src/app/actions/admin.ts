@@ -117,7 +117,57 @@ export async function getDashboardMetrics() {
     take: 5,
   });
 
-  return { totalRevenue, totalQueries, totalUsers, recentSales, topQueries };
+  // Faturamento de Hoje (UTC-3 / Brasília aproximado)
+  const tzOffset = 3 * 60 * 60 * 1000; // 3 horas em ms
+  const now = new Date();
+  const todayLocal = new Date(now.getTime() - tzOffset);
+  const startOfToday = new Date(todayLocal);
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  // Re-ajusta de volta para UTC para comparar no banco
+  const startOfTodayUTC = new Date(startOfToday.getTime() + tzOffset);
+
+  const startOfYesterdayUTC = new Date(startOfTodayUTC.getTime() - 24 * 60 * 60 * 1000);
+
+  const todayRevenueResult = await prisma.transaction.aggregate({
+    where: {
+      type: 'DEPOSIT',
+      status: 'COMPLETED',
+      createdAt: { gte: startOfTodayUTC }
+    },
+    _sum: { amount: true },
+  });
+  const todayRevenue = todayRevenueResult._sum.amount || 0;
+
+  const yesterdayRevenueResult = await prisma.transaction.aggregate({
+    where: {
+      type: 'DEPOSIT',
+      status: 'COMPLETED',
+      createdAt: {
+        gte: startOfYesterdayUTC,
+        lt: startOfTodayUTC
+      }
+    },
+    _sum: { amount: true },
+  });
+  const yesterdayRevenue = yesterdayRevenueResult._sum.amount || 0;
+
+  let changePercentage = 0;
+  if (yesterdayRevenue > 0) {
+    changePercentage = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100;
+  } else if (todayRevenue > 0) {
+    changePercentage = 100; // se ontem foi zero e hoje teve faturamento
+  }
+
+  return { 
+    totalRevenue, 
+    totalQueries, 
+    totalUsers, 
+    recentSales, 
+    topQueries,
+    todayRevenue,
+    yesterdayRevenue,
+    changePercentage
+  };
 }
 
 export async function getUsers() {

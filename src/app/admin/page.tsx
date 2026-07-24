@@ -31,7 +31,36 @@ export default async function AdminDashboardPage({
       </div>
 
       {/* KPI Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-12 animate-in fade-in duration-500">
+        <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-blue-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-blue-500/20 dark:hover:border-blue-500/20">
+          <div className="flex justify-between items-start relative z-10">
+            <div>
+              <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Faturamento (Dia)</p>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                R$ {metrics.todayRevenue.toFixed(2).replace('.', ',')}
+              </h3>
+              {metrics.changePercentage > 0 ? (
+                <div className="flex items-center gap-1 mt-2 text-green-500 text-[10px] font-bold">
+                  <ArrowUpRight className="w-3 h-3" />
+                  {metrics.changePercentage.toFixed(0)}% A MAIS QUE ONTEM
+                </div>
+              ) : metrics.changePercentage < 0 ? (
+                <div className="flex items-center gap-1 mt-2 text-red-500 text-[10px] font-bold">
+                  <ArrowDownRight className="w-3 h-3" />
+                  {Math.abs(metrics.changePercentage).toFixed(0)}% A MENOS QUE ONTEM
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 mt-2 text-slate-400 dark:text-gray-500 text-[10px] font-bold">
+                  IGUAL A ONTEM
+                </div>
+              )}
+            </div>
+            <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500 group-hover:scale-110 transition-transform">
+              <DollarSign className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+
         <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-green-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-green-500/20 dark:hover:border-green-500/20">
           <div className="flex justify-between items-start relative z-10">
             <div>
