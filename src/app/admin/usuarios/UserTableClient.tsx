@@ -188,6 +188,7 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                 <th className="px-6 py-4">Saldo (R$)</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Data Registro</th>
+                <th className="px-6 py-4">Último Acesso</th>
                 <th className="px-6 py-4 text-right">Ações</th>
               </tr>
             </thead>
@@ -223,6 +224,20 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                         às {new Date(user.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-slate-500 dark:text-gray-400 whitespace-nowrap">
+                    {user.lastAccessAt ? (
+                      <div className="flex flex-col">
+                        <span className="font-medium text-slate-900 dark:text-gray-300">
+                          {new Date(user.lastAccessAt).toLocaleDateString('pt-BR')}
+                        </span>
+                        <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">
+                          às {new Date(user.lastAccessAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400 dark:text-gray-500 italic">Nunca</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <button 
