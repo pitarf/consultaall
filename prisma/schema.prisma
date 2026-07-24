@@ -23,6 +23,8 @@ model User {
   adminAttempts     Int       @default(0)
   adminLockoutUntil DateTime?
   lastActiveAt      DateTime?
+  whatsapp          String?
+  hasSeenPromoPopup Boolean   @default(false)
 
   transactions  Transaction[]
   searches      SearchHistory[]

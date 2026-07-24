@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toggleUserStatus, toggleUserRole, addBalance, getUserAuditData, createAndApproveDepositManual, approveDepositManual } from '@/app/actions/admin';
 import { toast } from 'sonner';
-import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode, Crown } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode, Crown, Phone } from 'lucide-react';
 
 export default function UserTableClient({ initialUsers }: { initialUsers: any[] }) {
   const [users, setUsers] = useState(initialUsers);
@@ -20,6 +20,19 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
   const [pixAmount, setPixAmount] = useState('');
   const [pendingDeposits, setPendingDeposits] = useState<any[]>([]);
   const [loadingPending, setLoadingPending] = useState(false);
+
+  // Formata o whatsapp para exibição
+  const formatWhatsapp = (val: string) => {
+    if (!val) return '';
+    const clean = val.replace(/\D/g, '');
+    if (clean.length === 11) {
+      return `(${clean.slice(0, 2)}) ${clean.slice(2, 7)}-${clean.slice(7)}`;
+    }
+    if (clean.length === 10) {
+      return `(${clean.slice(0, 2)}) ${clean.slice(2, 6)}-${clean.slice(6)}`;
+    }
+    return clean;
+  };
 
   const fetchPendingDeposits = async (userId: string) => {
     setLoadingPending(true);
@@ -207,6 +220,12 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                         )}
                       </span>
                       <span className="text-xs text-slate-400 dark:text-gray-500">{user.email}</span>
+                      {user.whatsapp && (
+                        <span className="text-xs text-blue-500 dark:text-blue-400 font-mono mt-0.5 flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-blue-400" />
+                          {formatWhatsapp(user.whatsapp)}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 font-mono text-green-600 dark:text-green-400 font-bold">R$ {user.balance.toFixed(2).replace('.', ',')}</td>

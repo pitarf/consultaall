@@ -11,7 +11,7 @@ export async function getUserProfile() {
 
   return prisma.user.findUnique({
     where: { id: session.userId },
-    select: { name: true, email: true, createdAt: true, balance: true, role: true }
+    select: { name: true, email: true, createdAt: true, balance: true, role: true, whatsapp: true, hasSeenPromoPopup: true }
   });
 }
 

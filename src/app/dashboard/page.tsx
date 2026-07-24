@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Search, Loader2, HelpCircle, FlaskConical, Zap, ChevronDown } from 'lucide-react';
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
+import PromoModal from '@/components/PromoModal';
 
 // Estrutura visual base (custos serão sobrescritos pelo banco)
 const INITIAL_DATA_MODULES = [
@@ -62,6 +63,7 @@ export default function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   // Carrega preços reais e verifica se é admin
   useEffect(() => {
@@ -72,8 +74,11 @@ export default function DashboardPage() {
           getUserProfile()
         ]);
 
-        if (profile?.role === 'ADMIN') {
-          setIsAdmin(true);
+        if (profile) {
+          setUserProfile(profile);
+          if (profile.role === 'ADMIN') {
+            setIsAdmin(true);
+          }
         }
 
         const updatedModules = INITIAL_DATA_MODULES.map(cat => ({
@@ -393,6 +398,13 @@ export default function DashboardPage() {
         <div className="mt-8">
           <DataViewer data={resultado} title="Relatório de Consulta" />
         </div>
+      )}
+
+      {userProfile && (
+        <PromoModal 
+          hasSeenPopup={userProfile.hasSeenPromoPopup} 
+          userWhatsapp={userProfile.whatsapp} 
+        />
       )}
     </div>
   );
