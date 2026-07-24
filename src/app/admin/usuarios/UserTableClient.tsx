@@ -226,17 +226,17 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                     </div>
                   </td>
                   <td className="px-6 py-4 text-slate-500 dark:text-gray-400 whitespace-nowrap">
-                    {user.lastAccessAt ? (
+                    {user.lastActiveAt ? (
                       <div className="flex flex-col">
                         <span className="font-medium text-slate-900 dark:text-gray-300">
-                          {new Date(user.lastAccessAt).toLocaleDateString('pt-BR')}
+                          {new Date(user.lastActiveAt).toLocaleDateString('pt-BR')}
                         </span>
                         <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">
-                          às {new Date(user.lastAccessAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          às {new Date(user.lastActiveAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-xs text-slate-400 dark:text-gray-500 italic">Nunca</span>
+                      <span className="text-slate-400 dark:text-gray-500 italic text-xs">Nunca</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">

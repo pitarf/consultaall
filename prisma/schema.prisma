@@ -16,13 +16,13 @@ model User {
   balance       Float     @default(0)      // Saldo em R$
   role          String    @default("USER") // USER ou ADMIN
   active        Boolean   @default(true)   // Para banir ou desativar
-  lastAccessAt  DateTime?                  // Data/hora do último acesso
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
   // Controle de segurança do painel admin
   adminAttempts     Int       @default(0)
   adminLockoutUntil DateTime?
+  lastActiveAt      DateTime?
 
   transactions  Transaction[]
   searches      SearchHistory[]

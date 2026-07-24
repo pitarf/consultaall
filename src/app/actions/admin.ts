@@ -124,7 +124,7 @@ export async function getUsers() {
   await checkAdmin();
   return prisma.user.findMany({
     orderBy: { createdAt: 'desc' },
-    select: { id: true, name: true, email: true, balance: true, role: true, active: true, createdAt: true, lastAccessAt: true }
+    select: { id: true, name: true, email: true, balance: true, role: true, active: true, createdAt: true, lastActiveAt: true }
   });
 }
 

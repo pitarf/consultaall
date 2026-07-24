@@ -23,11 +23,20 @@ export default async function AdminLayout({
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { name: true, role: true },
+    select: { name: true, role: true, lastActiveAt: true },
   });
 
   if (!user || user.role !== 'ADMIN') {
     redirect('/dashboard'); // Redireciona usuários normais para fora do admin
+  }
+
+  // Atualiza lastActiveAt se passou mais de 10 minutos para não sobrecarregar o banco
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+  if (!user.lastActiveAt || user.lastActiveAt < tenMinutesAgo) {
+    prisma.user.update({
+      where: { id: session.userId },
+      data: { lastActiveAt: new Date() }
+    }).catch(err => console.error("Erro ao atualizar lastActiveAt no Admin Layout:", err));
   }
 
   // Checkpoint de segurança secundária

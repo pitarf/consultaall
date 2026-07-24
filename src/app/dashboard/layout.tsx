@@ -27,27 +27,25 @@ export default async function DashboardLayout({
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, name: true, email: true, balance: true, role: true, lastAccessAt: true },
+    select: { id: true, name: true, email: true, balance: true, role: true, lastActiveAt: true },
   });
 
-  if (user) {
-    const lastAccess = user.lastAccessAt;
-    if (!lastAccess || Date.now() - new Date(lastAccess).getTime() > 15 * 60 * 1000) {
-      // Atualiza de forma assíncrona (sem await) para não atrasar a renderização do layout
-      prisma.user.update({
-        where: { id: user.id },
-        data: { lastAccessAt: new Date() }
-      }).catch(err => console.error('Failed to update lastAccessAt:', err));
-    }
+  if (!user) {
+    redirect('/login');
+  }
+
+  // Atualiza lastActiveAt se passou mais de 10 minutos para não sobrecarregar o banco
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+  if (!user.lastActiveAt || user.lastActiveAt < tenMinutesAgo) {
+    prisma.user.update({
+      where: { id: session.userId },
+      data: { lastActiveAt: new Date() }
+    }).catch(err => console.error("Erro ao atualizar lastActiveAt no Dashboard:", err));
   }
 
   const settings = await prisma.systemSetting.findFirst();
   const whatsappNumber = (settings?.supportWhatsapp || "5511999999999").replace(/\D/g, '');
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=Ol%C3%A1%2C%20gostaria%20de%20suporte%20no%20DetetiveBuscas`;
-
-  if (!user) {
-    redirect('/login');
-  }
 
   return (
     <div className="min-h-screen bg-background flex">
