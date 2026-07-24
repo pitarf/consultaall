@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { toggleUserStatus, toggleUserRole, addBalance, getUserAuditData, createAndApproveDepositManual, approveDepositManual } from '@/app/actions/admin';
 import { toast } from 'sonner';
-import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode, Crown, Phone } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode, Crown, Phone, Download } from 'lucide-react';
 
 export default function UserTableClient({ initialUsers }: { initialUsers: any[] }) {
   const [users, setUsers] = useState(initialUsers);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
@@ -20,6 +21,47 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
   const [pixAmount, setPixAmount] = useState('');
   const [pendingDeposits, setPendingDeposits] = useState<any[]>([]);
   const [loadingPending, setLoadingPending] = useState(false);
+
+  // Filtra os usuários com base no termo de busca (Nome, E-mail ou WhatsApp)
+  const filteredUsers = users.filter(user => {
+    const term = searchTerm.toLowerCase();
+    return (
+      (user.name || '').toLowerCase().includes(term) ||
+      (user.email || '').toLowerCase().includes(term) ||
+      (user.whatsapp || '').includes(term)
+    );
+  });
+
+  // Função para exportar os dados dos usuários para CSV (Excel pt-BR compatível)
+  const handleExportCSV = () => {
+    const headers = ['Nome', 'Email', 'WhatsApp', 'Saldo', 'Status', 'Data Registro', 'Ultimo Acesso'];
+    
+    const rows = users.map(user => [
+      user.name || 'Sem Nome',
+      user.email,
+      user.whatsapp ? user.whatsapp : 'Não informado',
+      `R$ ${user.balance.toFixed(2).replace('.', ',')}`,
+      user.active ? 'Ativo' : 'Banido',
+      new Date(user.createdAt).toLocaleDateString('pt-BR'),
+      user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString('pt-BR') : 'Nunca'
+    ]);
+
+    // \uFEFF força o Excel a abrir em UTF-8, preservando acentos
+    const csvContent = "\uFEFF" + [
+      headers.join(';'),
+      ...rows.map(e => e.join(';'))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `usuarios_leads_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Dados exportados com sucesso!');
+  };
 
   // Formata o whatsapp para exibição
   const formatWhatsapp = (val: string) => {
@@ -192,6 +234,31 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
 
   return (
     <>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        {/* Barra de pesquisa */}
+        <div className="relative flex-grow max-w-md">
+          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+            <Search className="w-4 h-4" />
+          </span>
+          <input
+            type="text"
+            placeholder="Pesquisar por nome, e-mail ou WhatsApp..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/30 text-sm transition-all shadow-sm"
+          />
+        </div>
+
+        {/* Botão de Exportar */}
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-blue-500/10 active:scale-95 cursor-pointer"
+        >
+          <Download className="w-4 h-4" />
+          Exportar Leads (CSV)
+        </button>
+      </div>
+
       <div className="glass-panel rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-card shadow-sm hover:shadow-md transition-all">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-700 dark:text-gray-300">
@@ -206,7 +273,7 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5 bg-transparent dark:bg-black/10">
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
