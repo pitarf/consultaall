@@ -73,6 +73,7 @@ export async function register(prevState: any, formData: FormData) {
         email,
         passwordHash,
         balance: 0.0, // Saldo inicial zerado
+        hasSeenPromoPopup: false, // Força a exibição do popup logo após o cadastro
       },
     });
 

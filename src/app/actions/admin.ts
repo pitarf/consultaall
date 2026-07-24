@@ -82,6 +82,22 @@ async function checkAdmin() {
 export async function getDashboardMetrics() {
   await checkAdmin();
 
+  // Corrige retroativamente usuários criados antes desta implementação
+  // para que não vejam o popup promocional (apenas novos cadastros verão)
+  try {
+    await prisma.user.updateMany({
+      where: {
+        createdAt: { lt: new Date('2026-07-25T00:00:00Z') },
+        hasSeenPromoPopup: false
+      },
+      data: {
+        hasSeenPromoPopup: true
+      }
+    });
+  } catch (err) {
+    console.error('Erro ao corrigir hasSeenPromoPopup de usuários antigos:', err);
+  }
+
   // Receita Total (Soma de transações do tipo DEPOSIT confirmados)
   const revenueResult = await prisma.transaction.aggregate({
     where: { 

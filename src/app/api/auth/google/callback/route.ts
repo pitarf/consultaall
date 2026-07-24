@@ -82,6 +82,7 @@ export async function GET(request: NextRequest) {
           name: name || 'Usuário Google',
           passwordHash: null, // Sem senha
           balance: 0.0,
+          hasSeenPromoPopup: false, // Força a exibição do popup logo após o cadastro
         },
       });
     }
