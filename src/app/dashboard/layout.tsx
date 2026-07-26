@@ -13,6 +13,14 @@ import { BalanceHeader } from '@/components/BalanceHeader';
 import { SidebarNav } from '@/components/SidebarNav';
 import { MobileSidebar } from '@/components/MobileSidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardLayout({
   children,

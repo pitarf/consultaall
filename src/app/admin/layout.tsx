@@ -7,6 +7,14 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdminMobileMenu } from '@/components/AdminMobileMenu';
 import { cookies } from 'next/headers';
 import PushNotificationManager from '@/components/admin/PushNotificationManager';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminLayout({
   children,
