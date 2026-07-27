@@ -23,7 +23,7 @@ function sanitizeHtmlContent(html: string): string {
   // Limpeza robusta via biblioteca confiável no backend
   const clean = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
+      'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
       'ol', 'ul', 'li', 'a', 'img', 'span', 'div', 'table', 'thead', 'tbody', 
       'tr', 'th', 'td', 'blockquote', 'code', 'pre'
     ],
@@ -507,8 +507,13 @@ export async function saveUploadedImage(base64Data: string, originalName: string
     }
 
     const buffer = Buffer.from(base64Matches[2], 'base64');
+
+    // B. Validação da Assinatura Real do Arquivo (Magic Bytes)
+    if (!validateImageSignature(buffer)) {
+      return { error: 'Assinatura de imagem inválida. O arquivo enviado não é um formato de imagem real e seguro.' };
+    }
     
-    // B. Limite de Tamanho da Imagem (Tamanho máximo de 3MB)
+    // C. Limite de Tamanho da Imagem (Tamanho máximo de 3MB)
     const MAX_SIZE_BYTES = 3 * 1024 * 1024;
     if (buffer.length > MAX_SIZE_BYTES) {
       return { error: 'A imagem excede o limite de tamanho permitido de 3MB.' };
@@ -543,6 +548,51 @@ export async function saveUploadedImage(base64Data: string, originalName: string
     console.error('Erro ao salvar imagem de upload:', err);
     return { error: 'Erro interno ao salvar arquivo no servidor.' };
   }
+}
+
+// Helper para validar assinatura real da imagem (Magic Bytes/Header signature)
+function validateImageSignature(buffer: Buffer): boolean {
+  if (buffer.length < 12) return false;
+
+  // JPEG/JPG: FF D8 FF
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+    return true;
+  }
+
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4E &&
+    buffer[3] === 0x47 &&
+    buffer[4] === 0x0D &&
+    buffer[5] === 0x0A &&
+    buffer[6] === 0x1A &&
+    buffer[7] === 0x0A
+  ) {
+    return true;
+  }
+
+  // GIF: GIF8 (47 49 46 38)
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) {
+    return true;
+  }
+
+  // WebP: RIFF (52 49 46 46) + WEBP (57 45 42 50) at offset 8
+  if (
+    buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+    buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
+  ) {
+    return true;
+  }
+
+  // AVIF: ftypavif (check 'ftypavif' at index 4 to 11)
+  const ftyp = buffer.toString('ascii', 4, 12);
+  if (ftyp === 'ftypavif' || ftyp === 'ftypavis') {
+    return true;
+  }
+
+  return false;
 }
 
 // ==========================================
