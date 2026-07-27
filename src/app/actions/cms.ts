@@ -28,14 +28,17 @@ function sanitizeHtmlContent(html: string): string {
       'tr', 'th', 'td', 'blockquote', 'code', 'pre', 'style',
       'header', 'footer', 'nav', 'main', 'section', 'article', 'aside',
       'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'g', 'defs', 'clipPath',
-      'input', 'button', 'form', 'label', 'textarea', 'select', 'option'
+      'input', 'button', 'form', 'label', 'textarea', 'select', 'option',
+      'details', 'summary'
     ],
     ALLOWED_ATTR: [
       'href', 'src', 'alt', 'title', 'class', 'className', 'target', 'rel', 'style', 'width', 'height',
       'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'viewBox', 'xmlns', 
       'cx', 'cy', 'r', 'x', 'y', 'type', 'placeholder', 'value', 'name', 'required', 'id', 'for', 
-      'maxLength', 'inputMode', 'spellCheck', 'autoComplete', 'autoCapitalize', 'autoCorrect'
+      'maxLength', 'inputMode', 'spellCheck', 'autoComplete', 'autoCapitalize', 'autoCorrect',
+      'open', 'aria-hidden', 'aria-label', 'aria-live', 'aria-current', 'aria-invalid', 'aria-describedby'
     ],
+    ALLOW_DATA_ATTR: true, // Crucial para seletores Tailwind dinâmicos (data-*)
     ADD_ATTR: ['target'],
     LIMIT_ATTR_VALS: ['target'],
   });
