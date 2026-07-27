@@ -50,6 +50,9 @@ export default function NavbarClient({ logoUrl, siteTitle }: NavbarClientProps) 
           <Link href="#faq" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             FAQ
           </Link>
+          <Link href="/blog" className="text-sm font-bold text-slate-600 hover:text-[#2872fa] transition-colors">
+            Blog
+          </Link>
         </nav>
 
         {/* Ações desktop */}
@@ -121,6 +124,13 @@ export default function NavbarClient({ logoUrl, siteTitle }: NavbarClientProps) 
             className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
           >
             FAQ
+          </Link>
+          <Link
+            href="/blog"
+            onClick={() => setIsOpen(false)}
+            className="block text-base font-bold text-slate-600 hover:text-[#2872fa] py-2"
+          >
+            Blog
           </Link>
           
           <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
