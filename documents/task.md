@@ -86,3 +86,16 @@
 - [x] Correção do Bug de Reset de Preços (removendo `price` do update no prisma seed e adicionando revalidação de cache estático na rota principal `/`).
 - [x] Correção Definitiva da Consulta por Nome (ajuste para o Endpoint `api.app` exigido pela DirectData e preenchimento de contrato nulo obrigatório).
 - [x] Bypass do WAF (Cloudflare/Firewall) na Busca por Nome migrando a chamada de `axios` para `fetch` nativo e removendo flag insegura de SSL.
+
+## SPLIT 5: Sistema CMS de Páginas SEO, Blog, 301 Redirects e Sitemap (✅ CONCLUÍDO)
+*Este split foca na indexação orgânica profissional, aquisição de tráfego (SEO) e gerenciamento de conteúdo institucional.*
+- [x] **Modelagem Prisma CMS:** Criação das tabelas `Page`, `Category`, `Article` e `Redirect`.
+- [x] **Gerenciador de Páginas SEO no Admin (`/admin/paginas`):** Criação de CRUD completo com controle de slugs, H1, meta descrições, scripts customizados JSON-LD/OpenGraph e status (rascunho/publicado).
+- [x] **Gerenciador de Blog no Admin (`/admin/blog`):** Cadastro de categorias de artigos e gerenciamento completo de publicações de blog.
+- [x] **Rotas Dinâmicas Públicas:** Renderização automática de páginas na raiz `/[slug]` e feed do blog em `/blog` / `/blog/[slug]`.
+- [x] **Redirecionamento 301 Automático:** Criação automática de redirecionamentos permanentes de slugs antigos ao editar URLs, evitando erros 404 e links quebrados.
+- [x] **Evitação de Redirecionamentos em Cadeia:** Atualização de links históricos redundantes quando um slug já redirecionado é renomeado novamente.
+- [x] **Sitemap.xml e Robots.txt Dinâmicos:** Sitemap síncrono e limpo, contendo apenas URLs válidas e indexáveis. Robots.txt blindando painéis internos (`/admin`, `/dashboard/`), APIs (`/api/`), login, cadastro e URLs com parâmetros (`/*?*`).
+- [x] **Injeção de Metadados e Canonical:** Tags `<link rel="canonical">` auto-referentes injetadas no layout e controle dinâmico da tag `robots` (`noindex, nofollow` em painéis protegidos).
+- [x] **Blocos de Links Internos:** Exibição dinâmica de links de consulta adicionados pelo admin e das últimas 3 postagens do blog diretamente na homepage para indexação natural.
+

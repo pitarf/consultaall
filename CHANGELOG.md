@@ -2,6 +2,25 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.0] - 2026-07-26
+### Adicionado
+- **Gerenciador de Páginas SEO (CMS):**
+  - Criação da tabela `Page` e do CRUD completo no painel de administração (`/admin/paginas`).
+  - Permite configurar slug, título, H1, meta description, conteúdo (HTML rico), imagem OpenGraph e ALT, robots index/noindex, canonical e scripts customizados de JSON-LD e OpenGraph.
+  - Renderização pública automática das páginas criadas através de rotas dinâmicas coringas `/[slug]` com integração ao cabeçalho/rodapé institucionais e metadados dinâmicos.
+- **Gerenciador de Blog & Conteúdo:**
+  - Criação de tabelas `Article` e `Category` com CRUD completo no painel administrativo (`/admin/blog`).
+  - Feed público do blog estruturado e visualmente premium em `/blog` com paginação automática, autores, categorias e cards de visualização.
+  - Páginas de artigos específicos `/blog/[slug]` com injeção automática de schemas estruturados do Google (Article JSON-LD) e links dinâmicos para artigos relacionados.
+- **Redirecionamentos 301 Automáticos em Alteração de Slugs:**
+  - Implementação de tabela `Redirect` para mapear slugs históricos.
+  - Ao alterar o slug de uma página ou artigo, o sistema cria automaticamente um redirecionamento HTTP permanente 301 do endereço antigo para o novo.
+  - Tratamento inteligente de cadeias de redirecionamento (ex: `/a` -> `/b` renomeado para `/c` atualiza o redirecionamento `/a` para apontar diretamente para `/c`).
+- **Sitemap XML e Robots.txt Dinâmicos e Seguros:**
+  - Sitemap em `/sitemap.xml` atualizado automaticamente a cada publicação ou remoção de Páginas e Artigos.
+  - Sitemap configurado para conter apenas URLs indexáveis (`robotsIndex: true`), publicadas, canônicas originais e com status 200, excluindo totalmente rascunhos, noindex, login, cadastro, painel, termos de uso e parâmetros.
+  - Robots.txt configurado para disallow em login, cadastro, esqueci minha senha, painel administrativo, dashboard de usuário, APIs e parâmetros, e apontamento explícito para o sitemap.
+
 ## [0.8.9] - 2026-07-21
 ### Corrigido
 - **Bypass de WAF (Cloudflare/DirectData) na Busca por Nome:**

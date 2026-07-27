@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  let baseUrl = 'https://detetivebuscas.com.br';
+  let baseUrl = 'https://detetivebuscas.com';
 
   try {
     const settings = await prisma.systemSetting.findFirst();
@@ -19,9 +19,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       allow: [
         '/',
         '/home2',
-        '/login',
-        '/cadastro',
-        '/esqueceu-senha',
         '/protecao-de-dados',
         '/termos',
       ],
@@ -30,6 +27,11 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         '/admin-login',
         '/dashboard/',
         '/api/',
+        '/login',
+        '/cadastro',
+        '/esqueceu-senha',
+        '/resetar-senha',
+        '/*?*', // Bloqueia URLs com parâmetros
       ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,

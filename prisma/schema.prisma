@@ -109,3 +109,57 @@ model AdminPushSubscription {
   userId    String?  // Opcional, para atrelar a um admin específico se tivermos login
   createdAt DateTime @default(now())
 }
+
+model Page {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  title           String
+  metaDescription String?
+  h1              String?
+  content         String   @db.Text
+  image           String?
+  imageAlt        String?
+  canonical       String?
+  robotsIndex     Boolean  @default(true)
+  jsonLd          String?  @db.Text
+  openGraph       String?  @db.Text
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  articles  Article[]
+}
+
+model Article {
+  id              String    @id @default(uuid())
+  slug            String    @unique
+  title           String
+  metaDescription String?
+  h1              String?
+  content         String    @db.Text
+  image           String?
+  imageAlt        String?
+  canonical       String?
+  robotsIndex     Boolean   @default(true)
+  jsonLd          String?   @db.Text
+  openGraph       String?   @db.Text
+  published       Boolean   @default(false)
+  author          String    @default("Redação")
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Redirect {
+  id        String   @id @default(uuid())
+  oldSlug   String   @unique
+  newSlug   String
+  type      String   @default("PAGE") // PAGE ou ARTICLE
+  createdAt DateTime @default(now())
+}

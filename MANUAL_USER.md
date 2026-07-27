@@ -29,6 +29,7 @@
 Para proporcionar o maior conforto visual aos usuários e administradores da plataforma, implementamos um sistema dinâmico de temas:
 - **Modo Clean (Claro):** Ideal para uso diurno ou ambientes corporativos, com excelente contraste, fundo branco leve e sombras sutis de design minimalista.
 - **Modo Dark (Escuro):** Ideal para uso noturno ou sessões de busca prolongadas, reduzindo a fadiga ocular com o tradicional design glassmorphism premium.
-- **Como Alternar:** No painel do usuário (`/dashboard`) ou painel de controle do administrador (`/admin`), clique no ícone de Sol ☀️ ou Lua 🌙 localizado no cabeçalho superior (ao lado do saldo da sua carteira). A plataforma memoriza instantaneamente a sua escolha para todas as próximas visitas. O alternador também está disponível no canto superior direito das telas de login e cadastro.
-
-
+- **Como Alternar:** No painel do usuário (`/dashboard`) ou painel de controle do administrador (`/admin`), clique no ícone de Sol ☀️ ou Lua 🌙 localizado no cabeçalho superior (ao lado do saldo da sua carteira). A plataforma memoriza instantaneamente a sua escolha para todas as próximas visitas. O alternador também está disponível no canto superior direito das telas de login e cadastro.## Gestão de Páginas SEO & Blog (Apenas Administradores)
+No painel administrativo, há duas novas ferramentas para gerenciar a indexação orgânica e o tráfego do site:
+- **Páginas SEO:** No menu lateral do admin, clique em "Páginas SEO". Lá você pode criar páginas personalizadas (ex: `/consulta-cpf`). Ao preencher o formulário, o sistema criará as meta tags corretas para o Google, adicionará a página ao Sitemap automático e cuidará dos cabeçalhos. Se você mudar a URL de uma página existente, o sistema fará um redirecionamento 301 automático (impedindo erros 404).
+- **Blog & Conteúdo:** Clique em "Blog" para gerenciar artigos e categorias. Você pode cadastrar categorias de postagens e criar artigos completos informando autor, imagem de capa, descrição meta e o conteúdo em HTML rico. O blog ficará disponível publicamente em `/blog` para atrair tráfego e consolidar a marca de forma orgânica.

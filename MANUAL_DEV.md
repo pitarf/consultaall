@@ -70,10 +70,15 @@ A rota `/api/webhooks/pushinpay` conta com um processamento resiliente e autenti
 - **Segurança de Camada Dupla**: Valida o token `PUSHINPAY_WEBHOOK_TOKEN` que pode vir via Query String (`?token=...`) na URL gerada ou via headers customizados (`x-pushinpay-token` ou `x-pushin-pay-token`).
 - **Mapeamento de Transação Resiliente**: Na geração do Pix, a URL enviada à PushinPay inclui o parâmetro `txId` com o ID interno da transação. Ao receber a notificação, o webhook busca a transação primeiro pelo `txId` e, caso não o encontre, utiliza o `transaction_id` do body da PushinPay como fallback.
 - **Vínculo Dinâmico**: Caso a transação seja encontrada via ID interno mas seu campo `externalId` ainda esteja em branco no banco de dados, o webhook atualiza o campo salvando o ID da PushinPay retroativamente.
-- **Múltiplos Status de Confirmação**: O webhook aceita tanto o status `"paid"` quanto o status `"approved"` como confirmações válidas de Pix pago. Outros status são ignorados retornando HTTP 200 para evitar reenvios.
+- **Múltiplos Status de Confirmação**: O webhook aceita tanto o status `"paid"` quanto o status `"approved"` como confirmações válidas de Pix pago. Outros status são ignorados retornando HTTP 200 para evitar reenvios.## Gerenciador de Páginas SEO & Blog (CMS)
+O sistema conta com um módulo completo de gerenciamento de conteúdo nas tabelas `Page`, `Category`, `Article` e `Redirect`.
+- **Slugs Limpos:** Toda criação ou edição força os slugs a ficarem em caixa baixa, sem caracteres especiais ou espaços e limpa barras redundantes.
+- **Redirecionamento 301 Automático:** Ao modificar o slug de uma página (`Page`) ou artigo (`Article`), uma Server Action insere um mapeamento na tabela `Redirect` (`oldSlug` -> `newSlug`). A rota dinámica `/[slug]` ou `/blog/[slug]` consulta esta tabela no momento do acesso. Se achar um redirecionamento, dispara um redirecionamento HTTP 301 Permanente via `permanentRedirect()`.
+- **Tratamento de Cadeias (Loops):** Se houver uma cadeia de renomeações consecutivas (ex: `/a` renomeia para `/b` e depois `/b` renomeia para `/c`), as Server Actions atualizam recursivamente os registros de redirecionamento antigos para apontarem diretamente para a URL final `/c`, mitigando múltiplos saltos de redirecionamento desfavoráveis ao SEO.
+- **Estruturação JSON-LD e Meta Tags:** Permite injeção de scripts personalizados de JSON-LD e configurações OpenGraph personalizadas, além de injeção automática de schemas do tipo `BlogPosting` para todos os posts de blog.
 
-
-
-
-
+## Sitemap.xml & Robots.txt Dinâmicos
+Ambas as rotas públicas utilizam geração dinâmica e servem arquivos síncronos baseados no banco de dados.
+- **Sitemap (`/sitemap.xml`):** Lista a página inicial, termos de uso, políticas e as páginas e artigos criados pelo admin. Filtra ativamente para remover páginas não-indexáveis (`robotsIndex: false`), páginas não-publicadas (rascunhos), rotas privadas/logadas e redirecionadas.
+- **Robots (`/robots.txt`):** Define diretivas para bots de busca, bloqueando caminhos de administração (`/admin`), área do cliente (`/dashboard/`), APIs (`/api/`), formulários de autenticação (`/login`, `/cadastro`, etc.) e links com query strings/parâmetros (`/*?*`). Contém o apontamento explícito para o sitemap usando o domínio configurado.
 

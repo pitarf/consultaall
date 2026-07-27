@@ -13,20 +13,76 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Erro ao ler sitemap settings:', err);
   }
 
-  const routes = [
+  // 1. Rotas estáticas indexáveis (exclui login, cadastro, painel, etc.)
+  const staticRoutes = [
     '',
     '/home2',
-    '/login',
-    '/cadastro',
-    '/esqueceu-senha',
     '/protecao-de-dados',
     '/termos',
   ];
 
-  return routes.map((route) => ({
+  const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: route === '' ? 'daily' : 'weekly',
     priority: route === '' ? 1.0 : 0.8,
   }));
+
+  try {
+    // 2. Páginas comerciais e institucionais dinâmicas
+    const pages = await prisma.page.findMany({
+      where: {
+        published: true,
+        robotsIndex: true,
+      },
+      select: {
+        slug: true,
+        updatedAt: true,
+        canonical: true,
+      }
+    });
+
+    pages.forEach((page) => {
+      // Se a página tem um canonical externo (aponta para fora do site), não listamos no sitemap
+      if (page.canonical && !page.canonical.startsWith(baseUrl)) {
+        return;
+      }
+      sitemapEntries.push({
+        url: `${baseUrl}/${page.slug}`,
+        lastModified: page.updatedAt,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      });
+    });
+
+    // 3. Artigos de Blog dinâmicos
+    const articles = await prisma.article.findMany({
+      where: {
+        published: true,
+        robotsIndex: true,
+      },
+      select: {
+        slug: true,
+        updatedAt: true,
+        canonical: true,
+      }
+    });
+
+    articles.forEach((article) => {
+      if (article.canonical && !article.canonical.startsWith(baseUrl)) {
+        return;
+      }
+      sitemapEntries.push({
+        url: `${baseUrl}/blog/${article.slug}`,
+        lastModified: article.updatedAt,
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      });
+    });
+
+  } catch (err) {
+    console.error('Erro ao gerar rotas dinâmicas do sitemap:', err);
+  }
+
+  return sitemapEntries;
 }

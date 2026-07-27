@@ -30,9 +30,20 @@ import {
  * 100% otimizado para aprovação do Google Ads.
  */
 export default async function Home() {
-  const [settings, pricings] = await Promise.all([
+  const [settings, pricings, seoPages, latestArticles] = await Promise.all([
     prisma.systemSetting.findFirst(),
-    prisma.modulePricing.findMany()
+    prisma.modulePricing.findMany(),
+    prisma.page.findMany({
+      where: { published: true, robotsIndex: true },
+      select: { title: true, slug: true },
+      orderBy: { title: 'asc' }
+    }),
+    prisma.article.findMany({
+      where: { published: true },
+      take: 3,
+      orderBy: { createdAt: 'desc' },
+      select: { title: true, slug: true, metaDescription: true, createdAt: true }
+    })
   ]);
 
   const getPrice = (id: string, defaultPrice: number) => {
@@ -532,6 +543,81 @@ export default async function Home() {
           </p>
         </div>
       </section>
+
+      {/* ===================== ÚLTIMAS DO BLOG ===================== */}
+      {latestArticles.length > 0 && (
+        <section className="py-16 md:py-24 bg-slate-50 border-t border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-12">
+              <div>
+                <h2 className="text-3xl font-extrabold text-[#243b56] tracking-tight">
+                  Central de Dicas & Conteúdo
+                </h2>
+                <p className="text-slate-500 mt-2 text-sm md:text-base max-w-xl">
+                  Acompanhe as últimas publicações técnicas, tutoriais de conformidade cadastral e novidades de LGPD.
+                </p>
+              </div>
+              <Link 
+                href="/blog" 
+                className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group whitespace-nowrap"
+              >
+                Ver todos os artigos
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {latestArticles.map((article) => (
+                <div key={article.id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest block">
+                      {new Date(article.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    </span>
+                    <h3 className="font-bold text-slate-800 text-lg leading-snug line-clamp-2 hover:text-blue-600 transition-colors">
+                      <Link href={`/blog/${article.slug}`}>
+                        {article.title}
+                      </Link>
+                    </h3>
+                    {article.metaDescription && (
+                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
+                        {article.metaDescription}
+                      </p>
+                    )}
+                  </div>
+                  <Link 
+                    href={`/blog/${article.slug}`}
+                    className="text-xs font-bold text-[#2872fa] hover:text-[#1a5ecd] flex items-center gap-1 mt-6"
+                  >
+                    Ler Artigo Completo →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ===================== LINKS RÁPIDOS DE CONSULTA (SEO) ===================== */}
+      {seoPages.length > 0 && (
+        <section className="py-12 bg-white border-t border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-[#243b56] mb-4">
+              Nossas Consultas Disponíveis
+            </h3>
+            <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-500 font-medium">
+              {seoPages.map((page) => (
+                <Link 
+                  key={page.slug} 
+                  href={`/${page.slug}`} 
+                  className="hover:text-blue-600 transition-colors hover:underline"
+                >
+                  {page.title.split(' - ')[0]}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ===================== FOOTER ===================== */}
       <footer className="bg-[#1c2639] text-slate-400 py-16 border-t border-slate-800">
