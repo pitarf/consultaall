@@ -9,7 +9,6 @@ import {
   Plus, Search, Edit2, Trash2, X, HelpCircle, Save, Loader2, Sparkles, FolderPlus, BookOpen, User, Calendar, ExternalLink, Copy, Upload, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { Tooltip } from '@/components/Tooltip';
-import path from 'path';
 
 interface GerenciadorBlogProps {
   initialArticles: any[];
@@ -290,9 +289,10 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
           ctx.drawImage(img, 0, 0, width, height);
           const webpBase64 = canvas.toDataURL('image/webp', 0.82);
           
+          const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
           setUploadingImage(true);
           toast.promise(
-            saveUploadedImage(webpBase64, `${path.parse(file.name).name}.webp`).then((res) => {
+            saveUploadedImage(webpBase64, `${nameWithoutExt}.webp`).then((res) => {
               if (res.error) throw new Error(res.error);
               if (res.url) {
                 setImage(res.url);

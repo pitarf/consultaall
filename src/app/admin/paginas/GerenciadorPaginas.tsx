@@ -235,9 +235,10 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
           ctx.drawImage(img, 0, 0, width, height);
           const webpBase64 = canvas.toDataURL('image/webp', 0.82);
           
+          const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
           setUploadingImage(true);
           toast.promise(
-            saveUploadedImage(webpBase64, `${path.parse(file.name).name}.webp`).then((res) => {
+            saveUploadedImage(webpBase64, `${nameWithoutExt}.webp`).then((res) => {
               if (res.error) throw new Error(res.error);
               if (res.url) {
                 setImage(res.url);
