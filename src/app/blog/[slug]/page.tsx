@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     robots: {
       index: article.robotsIndex,
-      follow: article.robotsIndex,
+      follow: true, // Garante que robôs sigam links internos mesmo em noindex (noindex, follow)
     },
     openGraph: {
       title: article.title,

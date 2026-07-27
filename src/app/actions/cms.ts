@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import fs from 'fs';
 import path from 'path';
+import DOMPurify from 'isomorphic-dompurify';
 
 // Helper de segurança
 async function checkAdmin() {
@@ -15,13 +16,26 @@ async function checkAdmin() {
   return user;
 }
 
-// 1. SANITIZAÇÃO DE HTML (Bloqueia scripts, head, title, meta, canonical, html, body)
+// 1. SANITIZAÇÃO DE HTML (isomorphic-dompurify com allowlist restrita + RegExp secundária)
 function sanitizeHtmlContent(html: string): string {
   if (!html) return '';
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove <script> totalmente
-    .replace(/<\/?(html|body|head|title|meta|link|canonical)\b[^>]*>/gi, '') // Remove tags banidas
-    .replace(/on\w+\s*=\s*(['"][^'"]*['"]|[^>\s]+)/gi, ''); // Remove inline event handlers (onerror, onload, etc.)
+  
+  // Limpeza robusta via biblioteca confiável no backend
+  const clean = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
+      'ol', 'ul', 'li', 'a', 'img', 'span', 'div', 'table', 'thead', 'tbody', 
+      'tr', 'th', 'td', 'blockquote', 'code', 'pre'
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel', 'style', 'width', 'height'],
+    ADD_ATTR: ['target'],
+    LIMIT_ATTR_VALS: ['target'],
+  });
+
+  // Camada extra via regex para garantir remoção de tags e manipuladores de eventos estruturais
+  return clean
+    .replace(/<\/?(html|body|head|title|meta|link|canonical)\b[^>]*>/gi, '') // Remove tags proibidas
+    .replace(/on\w+\s*=\s*(['"][^'"]*['"]|[^>\s]+)/gi, ''); // Remove onerror, onload, etc.
 }
 
 // 2. NORMALIZAÇÃO DE SLUG (Remove acentos, espaços e maiúsculas)
@@ -31,13 +45,13 @@ function normalizeSlug(slug: string): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-    .replace(/[^a-z0-9-_/]/g, '') // Permite apenas alfanuméricos, hífen, underline e barra
-    .replace(/\s+/g, '-') // Espaços para hífen (caso passe algum)
-    .replace(/-+/g, '-') // Evita múltiplos hífens seguidos
-    .replace(/^\/+|\/+$/g, ''); // Limpa barras no início e no fim
+    .replace(/[^a-z0-9-_/]/g, '') // Apenas alfanuméricos, hífen, underline e barra
+    .replace(/\s+/g, '-') 
+    .replace(/-+/g, '-') 
+    .replace(/^\/+|\/+$/g, ''); 
 }
 
-// Lista de rotas reservadas do sistema que não podem ser sobrescritas por páginas
+// Lista de rotas reservadas do sistema
 const RESERVED_SLUGS = [
   'admin', 'admin-login', 'api', 'dashboard', 'login', 'cadastro', 'esqueceu-senha', 
   'resetar-senha', 'termos', 'protecao-de-dados', 'blog', 'faturas', 'historico', 
@@ -77,7 +91,7 @@ export async function createPage(data: {
   jsonLd?: string | null;
   openGraph?: string | null;
   published: boolean;
-  publishedAt?: string | null; // Recebe string ISO do client
+  publishedAt?: string | null;
 }) {
   await checkAdmin();
   
@@ -87,7 +101,6 @@ export async function createPage(data: {
     return { error: 'Este slug é uma rota reservada do sistema e não pode ser utilizada.' };
   }
 
-  // Valida duplicidade
   const existing = await prisma.page.findUnique({ where: { slug: cleanSlug } });
   if (existing) return { error: 'Uma página com este slug já existe.' };
 
@@ -188,10 +201,10 @@ export async function duplicatePage(id: string) {
     const duplicated = await prisma.page.create({
       data: {
         ...page,
-        id: undefined, // gera novo UUID
+        id: undefined,
         slug: newSlug,
         title: newTitle,
-        published: false, // duplicados começam como rascunho
+        published: false,
         publishedAt: null,
         createdAt: undefined,
         updatedAt: undefined
@@ -231,7 +244,6 @@ export async function deletePage(id: string) {
 
   try {
     await prisma.page.delete({ where: { id } });
-    // Deleta também redirecionamentos que apontavam para ela
     await prisma.redirect.deleteMany({ where: { newSlug: page.slug } });
 
     revalidatePath('/sitemap.xml');
@@ -286,7 +298,7 @@ export async function getArticles(onlyPublished = false) {
           published: true,
           OR: [
             { publishedAt: null },
-            { publishedAt: { lte: now } } // Programado para publicação
+            { publishedAt: { lte: now } }
           ]
         } 
       : {},
@@ -454,7 +466,7 @@ export async function toggleArticlePublish(id: string, published: boolean) {
     revalidatePath('/');
     return { success: true };
   } catch (err) {
-    return { error: 'Erro ao alternar publicação do artigo.' };
+    return { error: 'Erro ao alternar status do artigo.' };
   }
 }
 
@@ -485,22 +497,34 @@ export async function deleteArticle(id: string) {
 export async function saveUploadedImage(base64Data: string, originalName: string) {
   await checkAdmin();
   try {
-    // Limpa metadados do base64 (ex: data:image/webp;base64,)
     const base64Matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    let buffer: Buffer;
-    let extension = 'webp';
-
-    if (base64Matches) {
-      buffer = Buffer.from(base64Matches[2], 'base64');
-      const mime = base64Matches[1];
-      if (mime.includes('png')) extension = 'png';
-      else if (mime.includes('jpeg') || mime.includes('jpg')) extension = 'jpg';
-      else if (mime.includes('avif')) extension = 'avif';
-    } else {
-      buffer = Buffer.from(base64Data, 'base64');
+    if (!base64Matches) {
+      return { error: 'Formato de imagem inválido.' };
     }
 
-    // Normaliza o nome do arquivo para evitar Path Traversal e acentos
+    const mime = base64Matches[1].toLowerCase();
+    const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+    
+    // A. Validação de MIME Type (Rejeita SVG para mitigar riscos de XSS)
+    if (!allowedMimes.includes(mime)) {
+      return { error: 'Formato de arquivo não permitido. Apenas imagens JPG, PNG, WebP, GIF e AVIF são aceitas.' };
+    }
+
+    const buffer = Buffer.from(base64Matches[2], 'base64');
+    
+    // B. Limite de Tamanho da Imagem (Tamanho máximo de 3MB)
+    const MAX_SIZE_BYTES = 3 * 1024 * 1024;
+    if (buffer.length > MAX_SIZE_BYTES) {
+      return { error: 'A imagem excede o limite de tamanho permitido de 3MB.' };
+    }
+
+    let extension = 'webp';
+    if (mime.includes('png')) extension = 'png';
+    else if (mime.includes('gif')) extension = 'gif';
+    else if (mime.includes('avif')) extension = 'avif';
+    else if (mime.includes('jpeg') || mime.includes('jpg')) extension = 'jpg';
+
+    // Normaliza o nome do arquivo para segurança total
     const cleanName = originalName
       .toLowerCase()
       .normalize('NFD')
@@ -511,7 +535,6 @@ export async function saveUploadedImage(base64Data: string, originalName: string
     const filename = `${path.parse(cleanName).name}-${Date.now()}.${extension}`;
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 
-    // Cria diretório se não existir
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -527,20 +550,60 @@ export async function saveUploadedImage(base64Data: string, originalName: string
 }
 
 // ==========================================
-// 6. LOGICA AUXILIAR DE REDIRECIONAMENTOS 301
+// 6. PROTEÇÃO CONTRA LOOPS E REDIRECIONAMENTOS 301 SEGUROS
 // ==========================================
 
 async function create301Redirect(oldSlug: string, newSlug: string, type: 'PAGE' | 'ARTICLE') {
-  try {
-    await prisma.redirect.upsert({
-      where: { oldSlug },
-      update: { newSlug, type },
-      create: { oldSlug, newSlug, type }
+  const cleanOld = oldSlug.trim().toLowerCase();
+  const cleanNew = newSlug.trim().toLowerCase();
+
+  // A. Evita redirecionar para o mesmo slug
+  if (cleanOld === cleanNew) return;
+
+  // B. Bloqueia redirecionamentos externos sem autorização
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
+  if (cleanNew.startsWith('http://') || cleanNew.startsWith('https://') || cleanNew.startsWith('//')) {
+    if (!cleanNew.startsWith(baseUrl)) {
+      console.warn('Bloqueado redirecionamento externo não autorizado:', cleanNew);
+      return; 
+    }
+  }
+
+  // C. Evita loops (ciclos) de redirecionamento (A -> B, B -> A ou A -> B -> C -> A)
+  let currentTarget = cleanNew;
+  const visited = new Set<string>();
+  visited.add(cleanOld);
+
+  while (currentTarget) {
+    if (visited.has(currentTarget)) {
+      console.warn(`Loop de redirecionamento detectado para o slug "${currentTarget}". Abortando operação.`);
+      return; // Interrompe o processo para não quebrar o site
+    }
+    visited.add(currentTarget);
+
+    const nextRedirect = await prisma.redirect.findUnique({
+      where: { oldSlug: currentTarget }
     });
 
+    if (nextRedirect) {
+      currentTarget = nextRedirect.newSlug.trim().toLowerCase();
+    } else {
+      break;
+    }
+  }
+
+  try {
+    // Insere ou atualiza o redirecionamento
+    await prisma.redirect.upsert({
+      where: { oldSlug: cleanOld },
+      update: { newSlug: cleanNew, type },
+      create: { oldSlug: cleanOld, newSlug: cleanNew, type }
+    });
+
+    // Resolve as cadeias existentes para diminuir saltos desnecessários (X -> old e old -> new vira X -> new)
     await prisma.redirect.updateMany({
-      where: { newSlug: oldSlug },
-      data: { newSlug }
+      where: { newSlug: cleanOld },
+      data: { newSlug: cleanNew }
     });
   } catch (err) {
     console.error('Erro ao processar redirecionamento 301:', err);
