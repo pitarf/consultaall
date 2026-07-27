@@ -151,8 +151,9 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
           setModalOpen(false);
         }
       }
-    } catch (err) {
-      toast.error('Erro ao salvar artigo.');
+    } catch (err: any) {
+      console.error('Erro ao salvar artigo:', err);
+      toast.error(`Falha técnica ao salvar: ${err.message || 'Excesso de tamanho do conteúdo ou oscilação de rede.'}`);
     } finally {
       setLoading(false);
     }

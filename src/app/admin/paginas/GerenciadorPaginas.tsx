@@ -140,8 +140,9 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
           setModalOpen(false);
         }
       }
-    } catch (err) {
-      toast.error('Erro ao salvar página.');
+    } catch (err: any) {
+      console.error('Erro ao salvar página:', err);
+      toast.error(`Falha técnica ao salvar: ${err.message || 'Excesso de tamanho do conteúdo ou oscilação de rede.'}`);
     } finally {
       setLoading(false);
     }
