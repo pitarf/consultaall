@@ -161,6 +161,34 @@ export default async function DynamicCoringaPage({ params }: Props) {
     });
   }
 
+  const isCustomLandingPage = page.content.includes('<style>');
+
+  if (isCustomLandingPage) {
+    return (
+      <div className="w-full min-h-screen bg-background antialiased overflow-x-hidden">
+        {/* Renderiza o conteúdo customizado completo da landing page Lovable */}
+        <div dangerouslySetInnerHTML={{ __html: page.content }} />
+
+        {/* Schemas Auto-gerados (SEO) */}
+        {schemas.map((schema, index) => (
+          <script
+            key={`schema-auto-${index}`}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
+
+        {/* Schema JSON-LD Extra (Manual do Admin) */}
+        {page.jsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: page.jsonLd }}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-800 antialiased overflow-x-hidden">
       {/* ===================== NAVBAR ===================== */}

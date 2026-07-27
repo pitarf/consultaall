@@ -25,9 +25,17 @@ function sanitizeHtmlContent(html: string): string {
     ALLOWED_TAGS: [
       'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
       'ol', 'ul', 'li', 'a', 'img', 'span', 'div', 'table', 'thead', 'tbody', 
-      'tr', 'th', 'td', 'blockquote', 'code', 'pre'
+      'tr', 'th', 'td', 'blockquote', 'code', 'pre', 'style',
+      'header', 'footer', 'nav', 'main', 'section', 'article', 'aside',
+      'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'g', 'defs', 'clipPath',
+      'input', 'button', 'form', 'label', 'textarea', 'select', 'option'
     ],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel', 'style', 'width', 'height'],
+    ALLOWED_ATTR: [
+      'href', 'src', 'alt', 'title', 'class', 'className', 'target', 'rel', 'style', 'width', 'height',
+      'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'viewBox', 'xmlns', 
+      'cx', 'cy', 'r', 'x', 'y', 'type', 'placeholder', 'value', 'name', 'required', 'id', 'for', 
+      'maxLength', 'inputMode', 'spellCheck', 'autoComplete', 'autoCapitalize', 'autoCorrect'
+    ],
     ADD_ATTR: ['target'],
     LIMIT_ATTR_VALS: ['target'],
   });
