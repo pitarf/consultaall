@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import NavbarClient from '@/components/NavbarClient';
+import Footer from '@/components/Footer';
 import { registrarOptOut } from '@/app/actions/optout';
 import { 
   ShieldAlert, 
@@ -287,28 +288,7 @@ export default function ProtecaoDeDados() {
       </main>
 
       {/* ===================== FOOTER ===================== */}
-      <footer className="bg-[#1c2639] text-slate-400 py-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-800 text-center md:text-left">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-lg bg-[#2872fa] flex items-center justify-center shadow-md">
-                <Search className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-base font-bold text-white tracking-tight">
-                Detetive<span className="text-[#2872fa]">Buscas</span>
-              </span>
-            </div>
-            <div className="flex gap-6 text-xs font-semibold">
-              <Link href="/" className="hover:text-white transition-colors">Voltar à Home</Link>
-              <Link href="/login" className="hover:text-white transition-colors">Acessar Painel</Link>
-              <Link href="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
-            </div>
-            <p className="text-xs text-slate-500">
-              © {new Date().getFullYear()} Detetive Buscas. Todos os direitos reservados.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );

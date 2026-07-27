@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import NavbarClient from '@/components/NavbarClient';
+import Footer from '@/components/Footer';
 import { Search, Calendar, User, ArrowRight, Tag } from 'lucide-react';
 
 export const revalidate = 0;
@@ -176,51 +177,7 @@ export default async function BlogFeedPage() {
       </main>
 
       {/* ===================== FOOTER ===================== */}
-      <footer className="bg-[#1c2639] text-slate-400 py-16 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 items-center justify-between gap-8 pb-12 border-b border-slate-800 text-center md:text-left">
-            {/* Logo */}
-            <div className="flex items-center justify-center md:justify-start gap-3">
-              {settings?.logoUrl ? (
-                <img 
-                  src={settings.logoUrl} 
-                  alt="Logo" 
-                  className="h-8 w-auto object-contain"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-lg bg-[#2872fa] flex items-center justify-center shadow-md">
-                  <Search className="w-4.5 h-4.5 text-white" />
-                </div>
-              )}
-              <span className="text-lg font-bold text-white tracking-tight">
-                Detetive<span className="text-[#2872fa]">Buscas</span>
-              </span>
-            </div>
-
-            {/* Links rápidos */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm font-semibold">
-              <Link href="/login" className="hover:text-white transition-colors">Entrar</Link>
-              <Link href="/cadastro" className="hover:text-white transition-colors">Cadastrar-se</Link>
-              <Link href="/protecao-de-dados" className="hover:text-white transition-colors text-blue-400">Proteção de Dados (LGPD)</Link>
-              <Link href="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
-            </div>
-
-            {/* Copyright */}
-            <p className="text-xs text-slate-500 text-center md:text-right">
-              © {new Date().getFullYear()} Detetive Buscas. Inteligência de dados e background check.
-            </p>
-          </div>
-
-          <div className="pt-8 text-center text-[10px] text-slate-500 max-w-4xl mx-auto leading-relaxed space-y-2">
-            <p>
-              A Detetive Buscas é uma plataforma tecnológica de enriquecimento cadastral desenvolvida estritamente para uso corporativo (B2B). Nossos relatórios são estruturados a partir do processamento automatizado de bases públicas oficiais e provedores regulamentados sob a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais - LGPD).
-            </p>
-            <p>
-              Garantimos o livre exercício dos direitos dos titulares de dados. Caso deseje solicitar o bloqueio ou a restrição da visualização do seu cadastro em nossa ferramenta de busca, utilize o formulário de Opt-out no nosso canal oficial de Proteção de Dados acima.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer logoUrl={settings?.logoUrl} />
     </div>
   );
 }
