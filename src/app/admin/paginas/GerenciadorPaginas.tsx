@@ -316,7 +316,9 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                 <div>
                   <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     Slug da URL *
-                    <Tooltip content="O endereço final da página. Ex: consulta-cpf" />
+                    <Tooltip text="O endereço final da página. Ex: consulta-cpf">
+                      <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                    </Tooltip>
                   </label>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-400 font-mono text-xs select-none">
@@ -338,7 +340,9 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
               <div>
                 <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   Título Principal H1 (Título Interno do Corpo da Página)
-                  <Tooltip content="Se deixado em branco, o meta title acima será usado como H1 principal." />
+                  <Tooltip text="Se deixado em branco, o meta title acima será usado como H1 principal.">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                  </Tooltip>
                 </label>
                 <input
                   type="text"
@@ -369,7 +373,9 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
               <div>
                 <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   Conteúdo da Página (Suporta Tags HTML) *
-                  <Tooltip content="Você pode escrever conteúdo com tags padrão como <h2>, <p>, <strong>, <ul>, etc." />
+                  <Tooltip text="Você pode escrever conteúdo com tags padrão como <h2>, <p>, <strong>, <ul>, etc.">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                  </Tooltip>
                 </label>
                 <textarea
                   value={content}
@@ -417,7 +423,9 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       URL Canonical Personalizada
-                      <Tooltip content="Se deixado em branco, o sistema preencherá automaticamente com a própria URL da página (autorreferente). Só preencha se desejar apontar para outra página." />
+                      <Tooltip text="Se deixado em branco, o sistema preencherá automaticamente com a própria URL da página (autorreferente). Só preencha se desejar apontar para outra página.">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                      </Tooltip>
                     </label>
                     <input
                       type="text"
@@ -466,7 +474,9 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       JSON-LD (Structured Data Schema.org)
-                      <Tooltip content="Insira o script do schema estruturado. Ex: { '@context': 'https://schema.org', '@type': 'FAQPage', ... }" />
+                      <Tooltip text="Insira o script do schema estruturado. Ex: { '@context': 'https://schema.org', '@type': 'FAQPage', ... }">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                      </Tooltip>
                     </label>
                     <textarea
                       value={jsonLd}
@@ -480,7 +490,9 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       Extra Open Graph Metadata (JSON)
-                      <Tooltip content="Customizações adicionais das meta tags em formato JSON. Ex: { 'og:site_name': 'Detetive Buscas' }" />
+                      <Tooltip text="Customizações adicionais das meta tags em formato JSON. Ex: { 'og:site_name': 'Detetive Buscas' }">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                      </Tooltip>
                     </label>
                     <textarea
                       value={openGraph}

@@ -457,7 +457,9 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
                 <div>
                   <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     Slug da URL *
-                    <Tooltip content="O endereço final do post do blog. Ex: como-evitar-golpes" />
+                    <Tooltip text="O endereço final do post do blog. Ex: como-evitar-golpes">
+                      <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                    </Tooltip>
                   </label>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-400 font-mono text-xs select-none">
@@ -479,7 +481,9 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
               <div>
                 <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   Título Principal H1 (Título Interno do Corpo do Artigo)
-                  <Tooltip content="Se deixado em branco, o título acima será usado como H1." />
+                  <Tooltip text="Se deixado em branco, o título acima será usado como H1.">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                  </Tooltip>
                 </label>
                 <input
                   type="text"
@@ -540,7 +544,9 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
               <div>
                 <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   Conteúdo do Artigo (Suporta Tags HTML) *
-                  <Tooltip content="Escreva seu artigo completo usando tags HTML básicas para formatação (ex: <h2>, <p>, <ul>, etc.)" />
+                  <Tooltip text="Escreva seu artigo completo usando tags HTML básicas para formatação (ex: <h2>, <p>, <ul>, etc.)">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                  </Tooltip>
                 </label>
                 <textarea
                   value={content}
@@ -588,7 +594,9 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       URL Canonical Personalizada
-                      <Tooltip content="Se deixado em branco, o sistema preencherá automaticamente com a própria URL do post (autorreferente)." />
+                      <Tooltip text="Se deixado em branco, o sistema preencherá automaticamente com a própria URL do post (autorreferente).">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                      </Tooltip>
                     </label>
                     <input
                       type="text"
@@ -637,7 +645,9 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       JSON-LD estruturado extra (Script HTML)
-                      <Tooltip content="Adicione scripts adicionais do schema estruturado se necessário." />
+                      <Tooltip text="Adicione scripts adicionais do schema estruturado se necessário.">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                      </Tooltip>
                     </label>
                     <textarea
                       value={jsonLd}
@@ -651,7 +661,9 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       Open Graph Customizado (JSON)
-                      <Tooltip content="Substitua ou acrescente tags Open Graph estruturadas em formato JSON." />
+                      <Tooltip text="Substitua ou acrescente tags Open Graph estruturadas em formato JSON.">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                      </Tooltip>
                     </label>
                     <textarea
                       value={openGraph}
