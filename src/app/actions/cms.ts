@@ -33,15 +33,15 @@ export async function getPageBySlug(slug: string) {
 export async function createPage(data: {
   slug: string;
   title: string;
-  metaDescription?: string;
-  h1?: string;
+  metaDescription?: string | null;
+  h1?: string | null;
   content: string;
-  image?: string;
-  imageAlt?: string;
-  canonical?: string;
+  image?: string | null;
+  imageAlt?: string | null;
+  canonical?: string | null;
   robotsIndex: boolean;
-  jsonLd?: string;
-  openGraph?: string;
+  jsonLd?: string | null;
+  openGraph?: string | null;
   published: boolean;
 }) {
   await checkAdmin();
@@ -73,15 +73,15 @@ export async function createPage(data: {
 export async function updatePage(id: string, data: {
   slug: string;
   title: string;
-  metaDescription?: string;
-  h1?: string;
+  metaDescription?: string | null;
+  h1?: string | null;
   content: string;
-  image?: string;
-  imageAlt?: string;
-  canonical?: string;
+  image?: string | null;
+  imageAlt?: string | null;
+  canonical?: string | null;
   robotsIndex: boolean;
-  jsonLd?: string;
-  openGraph?: string;
+  jsonLd?: string | null;
+  openGraph?: string | null;
   published: boolean;
 }) {
   await checkAdmin();
@@ -190,18 +190,18 @@ export async function getArticleBySlug(slug: string) {
 export async function createArticle(data: {
   slug: string;
   title: string;
-  metaDescription?: string;
-  h1?: string;
+  metaDescription?: string | null;
+  h1?: string | null;
   content: string;
-  image?: string;
-  imageAlt?: string;
-  canonical?: string;
+  image?: string | null;
+  imageAlt?: string | null;
+  canonical?: string | null;
   robotsIndex: boolean;
-  jsonLd?: string;
-  openGraph?: string;
+  jsonLd?: string | null;
+  openGraph?: string | null;
   published: boolean;
   author: string;
-  categoryId?: string;
+  categoryId?: string | null;
 }) {
   await checkAdmin();
 
@@ -231,18 +231,18 @@ export async function createArticle(data: {
 export async function updateArticle(id: string, data: {
   slug: string;
   title: string;
-  metaDescription?: string;
-  h1?: string;
+  metaDescription?: string | null;
+  h1?: string | null;
   content: string;
-  image?: string;
-  imageAlt?: string;
-  canonical?: string;
+  image?: string | null;
+  imageAlt?: string | null;
+  canonical?: string | null;
   robotsIndex: boolean;
-  jsonLd?: string;
-  openGraph?: string;
+  jsonLd?: string | null;
+  openGraph?: string | null;
   published: boolean;
   author: string;
-  categoryId?: string;
+  categoryId?: string | null;
 }) {
   await checkAdmin();
 
