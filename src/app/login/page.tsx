@@ -42,7 +42,11 @@ function LoginContent() {
       <div className="glass-panel w-full max-w-md p-8 rounded-2xl">
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-6">
-            <Database className="text-primary w-8 h-8" />
+            <img 
+              src="/logo.webp" 
+              alt="Logo Detetive Buscas" 
+              className="h-8 w-auto object-contain"
+            />
             <span className="text-2xl font-bold text-slate-900 dark:text-white">Detetive<span className="text-primary">Buscas</span></span>
           </Link>
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Bem-vindo de volta</h2>
