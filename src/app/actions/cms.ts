@@ -198,16 +198,14 @@ export async function duplicatePage(id: string) {
   const newTitle = `${page.title} (Cópia)`;
 
   try {
+    const { id: _, createdAt: __, updatedAt: ___, ...pageData } = page;
     const duplicated = await prisma.page.create({
       data: {
-        ...page,
-        id: undefined,
+        ...pageData,
         slug: newSlug,
         title: newTitle,
         published: false,
-        publishedAt: null,
-        createdAt: undefined,
-        updatedAt: undefined
+        publishedAt: null
       }
     });
     revalidatePath('/');
@@ -430,16 +428,14 @@ export async function duplicateArticle(id: string) {
   const newTitle = `${article.title} (Cópia)`;
 
   try {
+    const { id: _, createdAt: __, updatedAt: ___, ...articleData } = article;
     const duplicated = await prisma.article.create({
       data: {
-        ...article,
-        id: undefined,
+        ...articleData,
         slug: newSlug,
         title: newTitle,
         published: false,
-        publishedAt: null,
-        createdAt: undefined,
-        updatedAt: undefined
+        publishedAt: null
       }
     });
     revalidatePath('/blog');
