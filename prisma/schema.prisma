@@ -111,21 +111,25 @@ model AdminPushSubscription {
 }
 
 model Page {
-  id              String   @id @default(uuid())
-  slug            String   @unique
+  id              String    @id @default(uuid())
+  slug            String    @unique
   title           String
   metaDescription String?
   h1              String?
-  content         String   @db.Text
+  excerpt         String?   @db.Text
+  content         String    @db.Text
   image           String?
   imageAlt        String?
   canonical       String?
-  robotsIndex     Boolean  @default(true)
-  jsonLd          String?  @db.Text
-  openGraph       String?  @db.Text
-  published       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  robotsIndex     Boolean   @default(true)
+  showInMenu      Boolean   @default(false)
+  showInFooter    Boolean   @default(false)
+  jsonLd          String?   @db.Text
+  openGraph       String?   @db.Text
+  published       Boolean   @default(false)
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Category {
@@ -141,6 +145,7 @@ model Article {
   title           String
   metaDescription String?
   h1              String?
+  excerpt         String?   @db.Text
   content         String    @db.Text
   image           String?
   imageAlt        String?
@@ -149,6 +154,7 @@ model Article {
   jsonLd          String?   @db.Text
   openGraph       String?   @db.Text
   published       Boolean   @default(false)
+  publishedAt     DateTime?
   author          String    @default("Redação")
   categoryId      String?
   category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)

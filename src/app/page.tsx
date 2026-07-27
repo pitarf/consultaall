@@ -30,21 +30,47 @@ import {
  * 100% otimizado para aprovação do Google Ads.
  */
 export default async function Home() {
-  const [settings, pricings, seoPages, latestArticles] = await Promise.all([
+  const [settings, pricings, seoPages, latestArticles, menuPages] = await Promise.all([
     prisma.systemSetting.findFirst(),
     prisma.modulePricing.findMany(),
     prisma.page.findMany({
-      where: { published: true, robotsIndex: true },
-      select: { title: true, slug: true },
+      where: {
+        published: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: new Date() } }
+        ]
+      },
+      select: { title: true, slug: true, showInFooter: true },
       orderBy: { title: 'asc' }
     }),
     prisma.article.findMany({
-      where: { published: true },
+      where: {
+        published: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: new Date() } }
+        ]
+      },
       take: 3,
       orderBy: { createdAt: 'desc' },
       select: { title: true, slug: true, metaDescription: true, createdAt: true }
+    }),
+    prisma.page.findMany({
+      where: {
+        published: true,
+        showInMenu: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: new Date() } }
+        ]
+      },
+      select: { title: true, slug: true },
+      orderBy: { title: 'asc' }
     })
   ]);
+
+  const footerPages = seoPages.filter(p => p.showInFooter);
 
   const getPrice = (id: string, defaultPrice: number) => {
     const found = pricings.find(p => p.id === id);
@@ -116,7 +142,7 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-800 antialiased overflow-x-hidden">
       
       {/* ===================== NAVBAR ===================== */}
-      <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} />
+      <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} menuPages={menuPages} />
 
       {/* ===================== HERO SECTION ===================== */}
       <section className="relative py-20 md:py-28 bg-white overflow-hidden border-b border-slate-200">
@@ -598,14 +624,14 @@ export default async function Home() {
       )}
 
       {/* ===================== LINKS RÁPIDOS DE CONSULTA (SEO) ===================== */}
-      {seoPages.length > 0 && (
+      {footerPages.length > 0 && (
         <section className="py-12 bg-white border-t border-slate-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h3 className="text-xs font-extrabold uppercase tracking-widest text-[#243b56] mb-4">
               Nossas Consultas Disponíveis
             </h3>
             <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-500 font-medium">
-              {seoPages.map((page) => (
+              {footerPages.map((page) => (
                 <Link 
                   key={page.slug} 
                   href={`/${page.slug}`} 

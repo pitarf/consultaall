@@ -3,13 +3,21 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import NavbarClient from '@/components/NavbarClient';
 import Link from 'next/link';
-import { Calendar, User, ArrowLeft, Tag, Search, ArrowRight } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Tag, Search, ArrowRight, ChevronRight, Home } from 'lucide-react';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// 1. METADADOS DINÂMICOS DO ARTIGO
+// Helper para verificar se o artigo está em rascunho ou agendado para o futuro
+function isArticleDraft(article: any) {
+  if (!article) return true;
+  if (!article.published) return true;
+  if (article.publishedAt && new Date(article.publishedAt) > new Date()) return true;
+  return false;
+}
+
+// 1. METADADOS DINÂMICOS DO ARTIGO (OG + Twitter Cards)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
@@ -20,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (redirect) return {};
 
   const article = await prisma.article.findUnique({ where: { slug } });
-  if (!article || !article.published) {
+  if (!article || isArticleDraft(article)) {
     return {
       title: 'Artigo não encontrado',
       robots: 'noindex, nofollow',
@@ -30,10 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
   const canonicalUrl = article.canonical || `${baseUrl}/blog/${article.slug}`;
 
-  let otherMetadata = {};
+  let extraOg = {};
   if (article.openGraph) {
     try {
-      otherMetadata = JSON.parse(article.openGraph);
+      extraOg = JSON.parse(article.openGraph);
     } catch (e) {
       console.error(e);
     }
@@ -58,8 +66,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: article.createdAt.toISOString(),
       modifiedTime: article.updatedAt.toISOString(),
       authors: [article.author],
-      ...otherMetadata,
+      ...extraOg,
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.metaDescription || undefined,
+      images: article.image ? [article.image] : undefined,
+    }
   };
 }
 
@@ -76,13 +90,28 @@ export default async function BlogArticleDetailPage({ params }: Props) {
     permanentRedirect(`/blog/${redirectEntry.newSlug}`);
   }
 
-  // Busca o artigo completo com a categoria
-  const article = await prisma.article.findUnique({
-    where: { slug },
-    include: { category: true }
-  });
+  // Busca o artigo e as configurações em paralelo
+  const [article, settings, menuPages] = await Promise.all([
+    prisma.article.findUnique({
+      where: { slug },
+      include: { category: true }
+    }),
+    prisma.systemSetting.findFirst(),
+    prisma.page.findMany({
+      where: {
+        published: true,
+        showInMenu: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: new Date() } }
+        ]
+      },
+      select: { title: true, slug: true },
+      orderBy: { title: 'asc' }
+    })
+  ]);
 
-  if (!article || !article.published) {
+  if (!article || isArticleDraft(article)) {
     notFound();
   }
 
@@ -91,19 +120,51 @@ export default async function BlogArticleDetailPage({ params }: Props) {
     where: {
       published: true,
       categoryId: article.categoryId,
-      id: { not: article.id }
+      id: { not: article.id },
+      OR: [
+        { publishedAt: null },
+        { publishedAt: { lte: new Date() } }
+      ]
     },
     take: 3,
     orderBy: { createdAt: 'desc' },
     include: { category: true }
   });
 
-  const settings = await prisma.systemSetting.findFirst();
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
   const logoUrl = settings?.logoUrl || `${baseUrl}/logo.webp`;
 
-  // Construção do JSON-LD Article Schema
-  const articleSchema = {
+  // Schemas Automáticos (BlogPosting e BreadcrumbList)
+  const schemas: any[] = [];
+
+  // BreadcrumbList Schema
+  schemas.push({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Início",
+        "item": baseUrl
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": `${baseUrl}/blog`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": article.title,
+        "item": `${baseUrl}/blog/${article.slug}`
+      }
+    ]
+  });
+
+  // BlogPosting Schema
+  schemas.push({
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "mainEntityOfPage": {
@@ -127,7 +188,7 @@ export default async function BlogArticleDetailPage({ params }: Props) {
     },
     "datePublished": article.createdAt.toISOString(),
     "dateModified": article.updatedAt.toISOString()
-  };
+  });
 
   const formattedDate = new Date(article.createdAt).toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -144,14 +205,36 @@ export default async function BlogArticleDetailPage({ params }: Props) {
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-800 antialiased overflow-x-hidden">
       {/* ===================== NAVBAR ===================== */}
-      <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} />
+      <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} menuPages={menuPages} />
 
       {/* ===================== ARTICLE CONTAINER ===================== */}
-      <main className="flex-1 py-12 md:py-20 bg-white">
+      <main className="flex-1 py-10 bg-white">
         <article className="max-w-4xl mx-auto px-4 sm:px-6">
           
+          {/* Navegação Breadcrumb Física (HTML) */}
+          <nav className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-8 border-b border-slate-100 pb-4">
+            <Link href="/" className="hover:text-blue-600 flex items-center gap-1 transition-colors">
+              <Home className="w-3.5 h-3.5" />
+              Início
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <Link href="/blog" className="hover:text-blue-600 transition-colors">
+              Blog
+            </Link>
+            {article.category && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                <span className="text-slate-500 font-semibold">{article.category.name}</span>
+              </>
+            )}
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <span className="text-slate-600 truncate max-w-[200px]">
+              {article.title}
+            </span>
+          </nav>
+
           {/* Link voltar */}
-          <div className="mb-8">
+          <div className="mb-6">
             <Link 
               href="/blog" 
               className="text-xs font-bold text-slate-500 hover:text-blue-600 flex items-center gap-2 transition-colors w-fit group"
@@ -178,6 +261,12 @@ export default async function BlogArticleDetailPage({ params }: Props) {
               <h1 className="text-3xl md:text-5xl font-extrabold text-[#243b56] tracking-tight leading-tight">
                 {article.title}
               </h1>
+            )}
+
+            {article.excerpt && (
+              <p className="text-slate-500 text-lg leading-relaxed pt-2">
+                {article.excerpt}
+              </p>
             )}
 
             {/* Autor e Datas */}
@@ -222,11 +311,14 @@ export default async function BlogArticleDetailPage({ params }: Props) {
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
 
-          {/* JSON-LD Dinâmico */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-          />
+          {/* Schemas Auto-gerados */}
+          {schemas.map((schema, index) => (
+            <script
+              key={`schema-auto-${index}`}
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+            />
+          ))}
 
           {/* Artigo JSON-LD Customizado */}
           {article.jsonLd && (
@@ -265,7 +357,7 @@ export default async function BlogArticleDetailPage({ params }: Props) {
                     className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-4"
                   >
                     Ler artigo
-                    <ArrowRight className="w-3 h-3" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               ))}

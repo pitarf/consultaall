@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { createPage, updatePage, deletePage } from '@/app/actions/cms';
+import { createPage, updatePage, deletePage, duplicatePage, togglePagePublish, saveUploadedImage } from '@/app/actions/cms';
 import { toast } from 'sonner';
 import { 
-  Plus, Search, Edit2, Trash2, Eye, ExternalLink, X, HelpCircle, Save, Loader2, Sparkles, Check, Globe
+  Plus, Search, Edit2, Trash2, Eye, ExternalLink, X, HelpCircle, Save, Loader2, Sparkles, Check, Globe, Copy, Upload, ToggleLeft, ToggleRight, Calendar
 } from 'lucide-react';
 import { Tooltip } from '@/components/Tooltip';
 
@@ -16,6 +16,7 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
   const [pages, setPages] = useState<any[]>(initialPages);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<any | null>(null);
 
@@ -24,14 +25,18 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
   const [slug, setSlug] = useState('');
   const [h1, setH1] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
+  const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
   const [imageAlt, setImageAlt] = useState('');
   const [canonical, setCanonical] = useState('');
   const [robotsIndex, setRobotsIndex] = useState(true);
+  const [showInMenu, setShowInMenu] = useState(false);
+  const [showInFooter, setShowInFooter] = useState(false);
   const [jsonLd, setJsonLd] = useState('');
   const [openGraph, setOpenGraph] = useState('');
   const [published, setPublished] = useState(false);
+  const [publishedAt, setPublishedAt] = useState('');
 
   const filteredPages = pages.filter(p => 
     p.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -44,14 +49,18 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
     setSlug('');
     setH1('');
     setMetaDescription('');
+    setExcerpt('');
     setContent(`<h2>Título de Seção</h2>\n<p>Escreva o conteúdo da sua página aqui em formato HTML...</p>`);
     setImage('');
     setImageAlt('');
     setCanonical('');
     setRobotsIndex(true);
+    setShowInMenu(false);
+    setShowInFooter(false);
     setJsonLd('');
     setOpenGraph('');
     setPublished(true);
+    setPublishedAt('');
     setModalOpen(true);
   };
 
@@ -61,14 +70,26 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
     setSlug(page.slug);
     setH1(page.h1 || '');
     setMetaDescription(page.metaDescription || '');
+    setExcerpt(page.excerpt || '');
     setContent(page.content);
     setImage(page.image || '');
     setImageAlt(page.imageAlt || '');
     setCanonical(page.canonical || '');
     setRobotsIndex(page.robotsIndex);
+    setShowInMenu(page.showInMenu);
+    setShowInFooter(page.showInFooter);
     setJsonLd(page.jsonLd || '');
     setOpenGraph(page.openGraph || '');
     setPublished(page.published);
+    
+    // Formata data ISO para datetime-local
+    if (page.publishedAt) {
+      const date = new Date(page.publishedAt);
+      const isoString = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
+      setPublishedAt(isoString.slice(0, 16));
+    } else {
+      setPublishedAt('');
+    }
     setModalOpen(true);
   };
 
@@ -85,19 +106,22 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
       slug,
       h1: h1 || null,
       metaDescription: metaDescription || null,
+      excerpt: excerpt || null,
       content,
       image: image || null,
       imageAlt: imageAlt || null,
       canonical: canonical || null,
       robotsIndex,
+      showInMenu,
+      showInFooter,
       jsonLd: jsonLd || null,
       openGraph: openGraph || null,
-      published
+      published,
+      publishedAt: publishedAt ? new Date(publishedAt).toISOString() : null
     };
 
     try {
       if (editingPage) {
-        // Editando
         const res = await updatePage(editingPage.id, data);
         if (res.error) {
           toast.error(res.error);
@@ -107,7 +131,6 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
           setModalOpen(false);
         }
       } else {
-        // Criando
         const res = await createPage(data);
         if (res.error) {
           toast.error(res.error);
@@ -143,8 +166,39 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
     }
   };
 
+  const handleDuplicate = async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await duplicatePage(id);
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        toast.success('Página duplicada com sucesso!');
+        if (res.page) setPages([res.page, ...pages]);
+      }
+    } catch (err) {
+      toast.error('Erro ao duplicar página.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTogglePublish = async (id: string, currentStatus: boolean) => {
+    try {
+      const newStatus = !currentStatus;
+      const res = await togglePagePublish(id, newStatus);
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        toast.success(newStatus ? 'Página publicada!' : 'Página definida como rascunho!');
+        setPages(pages.map(p => p.id === id ? { ...p, published: newStatus } : p));
+      }
+    } catch (err) {
+      toast.error('Erro ao alternar status da página.');
+    }
+  };
+
   const handleSlugBlur = () => {
-    // Transforma o título em slug se estiver vazio
     if (!slug && title) {
       const formatted = title.toLowerCase()
         .normalize('NFD')
@@ -153,6 +207,54 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
         .replace(/(^-|-$)+/g, '');
       setSlug(formatted);
     }
+  };
+
+  // Otimização e Conversão de Imagem Cliente-Side para WebP
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const webpBase64 = canvas.toDataURL('image/webp', 0.82);
+          
+          setUploadingImage(true);
+          toast.promise(
+            saveUploadedImage(webpBase64, `${path.parse(file.name).name}.webp`).then((res) => {
+              if (res.error) throw new Error(res.error);
+              if (res.url) {
+                setImage(res.url);
+              }
+            }),
+            {
+              loading: 'Otimizando e enviando imagem (WebP)...',
+              success: 'Imagem otimizada WebP carregada!',
+              error: (err) => `Falha no envio: ${err.message}`,
+              finally: () => setUploadingImage(false)
+            }
+          );
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -174,7 +276,7 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
 
         <button
           onClick={openCreateModal}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-blue-500/10 active:scale-95 cursor-pointer"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-blue-500/10 active:scale-95 cursor-pointer"
         >
           <Plus className="w-4.5 h-4.5" />
           Nova Página SEO
@@ -189,7 +291,7 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
               <tr>
                 <th className="px-6 py-4">Título / H1</th>
                 <th className="px-6 py-4">Slug (URL)</th>
-                <th className="px-6 py-4">Indexação</th>
+                <th className="px-6 py-4">Filtros Meta</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Última Atualização</th>
                 <th className="px-6 py-4 text-right">Ações</th>
@@ -221,27 +323,41 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                       /{page.slug}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold border ${
-                        page.robotsIndex 
-                          ? 'bg-green-500/10 text-green-600 border-green-500/20' 
-                          : 'bg-red-500/10 text-red-600 border-red-500/20'
-                      }`}>
-                        {page.robotsIndex ? 'INDEX, FOLLOW' : 'NOINDEX, NOFOLLOW'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex items-center w-fit gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          page.robotsIndex 
+                            ? 'bg-green-500/10 text-green-600 border-green-500/20' 
+                            : 'bg-red-500/10 text-red-600 border-red-500/20'
+                        }`}>
+                          {page.robotsIndex ? 'INDEX, FOLLOW' : 'NOINDEX, NOFOLLOW'}
+                        </span>
+                        <div className="flex gap-1 text-[9px] font-mono text-slate-400">
+                          {page.showInMenu && <span className="bg-slate-100 dark:bg-white/5 px-1 py-0.5 rounded border border-slate-200 dark:border-white/5">MENU</span>}
+                          {page.showInFooter && <span className="bg-slate-100 dark:bg-white/5 px-1 py-0.5 rounded border border-slate-200 dark:border-white/5">FOOTER</span>}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        page.published 
-                          ? 'bg-emerald-500/20 text-emerald-600' 
-                          : 'bg-amber-500/20 text-amber-600'
-                      }`}>
-                        {page.published ? 'PUBLICADO' : 'RASCUNHO'}
-                      </span>
+                      <button
+                        onClick={() => handleTogglePublish(page.id, page.published)}
+                        className="flex items-center gap-1 cursor-pointer focus:outline-none"
+                        title={page.published ? 'Clique para despublicar (Rascunho)' : 'Clique para publicar'}
+                      >
+                        {page.published ? (
+                          <span className="inline-flex items-center gap-1 bg-emerald-500/25 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded text-[10px] font-black">
+                            PUBLICADO
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-amber-500/25 border border-amber-500/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded text-[10px] font-black">
+                            RASCUNHO
+                          </span>
+                        )}
+                      </button>
                     </td>
                     <td className="px-6 py-4 text-slate-500 dark:text-gray-400 whitespace-nowrap text-xs">
                       {new Date(page.updatedAt).toLocaleDateString('pt-BR')} às {new Date(page.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                     </td>
-                    <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                    <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
                       <a 
                         href={`/${page.slug}`}
                         target="_blank"
@@ -251,6 +367,14 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
+                      <button 
+                        onClick={() => handleDuplicate(page.id)}
+                        disabled={loading}
+                        className="p-2 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10 rounded transition-colors inline-flex"
+                        title="Duplicar Página"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
                       <button 
                         onClick={() => openEditModal(page)}
                         disabled={loading}
@@ -316,7 +440,7 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                 <div>
                   <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                     Slug da URL *
-                    <Tooltip text="O endereço final da página. Ex: consulta-cpf">
+                    <Tooltip text="O endereço final da página. Ex: consulta-cpf (normalizado automaticamente)">
                       <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
                     </Tooltip>
                   </label>
@@ -327,7 +451,7 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                     <input
                       type="text"
                       value={slug}
-                      onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
+                      onChange={(e) => setSlug(e.target.value)}
                       required
                       placeholder="consulta-cpf"
                       className="w-full px-4 py-3 rounded-r-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-semibold transition-all"
@@ -353,6 +477,18 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                 />
               </div>
 
+              {/* Excerpt / Resumo */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">Resumo / Excerpt (Fica no Header da Página)</label>
+                <textarea
+                  value={excerpt}
+                  onChange={(e) => setExcerpt(e.target.value)}
+                  rows={2}
+                  placeholder="Um breve resumo que será exibido abaixo do título principal..."
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-semibold transition-all resize-none"
+                />
+              </div>
+
               {/* Meta Description */}
               <div>
                 <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">Meta Description (Resumo para Google) *</label>
@@ -373,7 +509,7 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
               <div>
                 <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   Conteúdo da Página (Suporta Tags HTML) *
-                  <Tooltip text="Você pode escrever conteúdo com tags padrão como <h2>, <p>, <strong>, <ul>, etc.">
+                  <Tooltip text="Será automaticamente sanitizado para impedir scripts maliciosos. Suporta tags padrão <h2>, <p>, <ul>, etc.">
                     <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
                   </Tooltip>
                 </label>
@@ -387,17 +523,35 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                 />
               </div>
 
-              {/* Imagem e ALT */}
+              {/* Imagem de Destaque com Otimização */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">URL da Imagem de Destaque / OpenGraph</label>
-                  <input
-                    type="text"
-                    value={image}
-                    onChange={(e) => setImage(e.target.value)}
-                    placeholder="Ex: /images/consultacpf.jpg"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-semibold transition-all"
-                  />
+                  <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    Imagem de Destaque / OG
+                  </label>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={image}
+                      onChange={(e) => setImage(e.target.value)}
+                      placeholder="Ex: /uploads/nome-imagem.webp ou URL externa"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-semibold transition-all"
+                    />
+                    
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-white/10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-xs font-bold text-slate-700 dark:text-white cursor-pointer transition-colors shadow-sm">
+                        <Upload className="w-3.5 h-3.5" />
+                        {uploadingImage ? 'Processando...' : 'Fazer Upload e Otimizar (WebP)'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -419,7 +573,8 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                   SEO Avançado & Configurações de Meta Tags
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* URL Canonical */}
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                       URL Canonical Personalizada
@@ -436,6 +591,30 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                     />
                   </div>
 
+                  {/* Publicação Programada */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                      Agendar Publicação (Data e Hora)
+                      <Tooltip text="Selecione data futura para programar a publicação automática. Deixe vazio para publicar imediatamente.">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
+                      </Tooltip>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <Calendar className="w-4 h-4" />
+                      </span>
+                      <input
+                        type="datetime-local"
+                        value={publishedAt}
+                        onChange={(e) => setPublishedAt(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-semibold transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {/* Robots Indexation */}
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">Robots Indexation</label>
                     <div className="flex items-center gap-3 mt-3">
@@ -447,13 +626,48 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                         <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${robotsIndex ? 'left-6' : 'left-1'}`}></div>
                       </button>
                       <span className="text-xs font-bold text-slate-600 dark:text-gray-300">
-                        {robotsIndex ? 'Indexar no Google (INDEX)' : 'Ocultar do Google (NOINDEX)'}
+                        {robotsIndex ? 'INDEX' : 'NOINDEX'}
                       </span>
                     </div>
                   </div>
 
+                  {/* Exibir no Menu */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">Status de Publicação</label>
+                    <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">Exibir no Menu Superior</label>
+                    <div className="flex items-center gap-3 mt-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowInMenu(!showInMenu)}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${showInMenu ? 'bg-green-500' : 'bg-slate-300 dark:bg-white/10'}`}
+                      >
+                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${showInMenu ? 'left-6' : 'left-1'}`}></div>
+                      </button>
+                      <span className="text-xs font-bold text-slate-600 dark:text-gray-300">
+                        {showInMenu ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Exibir no Rodapé */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">Exibir no Rodapé</label>
+                    <div className="flex items-center gap-3 mt-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowInFooter(!showInFooter)}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${showInFooter ? 'bg-green-500' : 'bg-slate-300 dark:bg-white/10'}`}
+                      >
+                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${showInFooter ? 'left-6' : 'left-1'}`}></div>
+                      </button>
+                      <span className="text-xs font-bold text-slate-600 dark:text-gray-300">
+                        {showInFooter ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Status de Publicação */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2">Status Inicial</label>
                     <div className="flex items-center gap-3 mt-3">
                       <button
                         type="button"
@@ -463,7 +677,7 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                         <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${published ? 'left-6' : 'left-1'}`}></div>
                       </button>
                       <span className="text-xs font-bold text-slate-600 dark:text-gray-300">
-                        {published ? 'Disponível Online (PUBLICADO)' : 'Oculto (RASCUNHO)'}
+                        {published ? 'PUBLICADO' : 'RASCUNHO'}
                       </span>
                     </div>
                   </div>
@@ -473,8 +687,8 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                      JSON-LD (Structured Data Schema.org)
-                      <Tooltip text="Insira o script do schema estruturado. Ex: { '@context': 'https://schema.org', '@type': 'FAQPage', ... }">
+                      JSON-LD estruturado extra (FAQ, HowTo, etc.)
+                      <Tooltip text="Os schemas padrão de WebPage e Service são gerados automaticamente. Adicione FAQ ou outros customizados aqui.">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
                       </Tooltip>
                     </label>
@@ -482,14 +696,14 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                       value={jsonLd}
                       onChange={(e) => setJsonLd(e.target.value)}
                       rows={4}
-                      placeholder="Script de Schema JSON-LD..."
+                      placeholder="Script de Schema JSON-LD adicional..."
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                      Extra Open Graph Metadata (JSON)
+                      Open Graph Customizado Extra (JSON)
                       <Tooltip text="Customizações adicionais das meta tags em formato JSON. Ex: { 'og:site_name': 'Detetive Buscas' }">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-help inline-block ml-1" />
                       </Tooltip>
@@ -509,23 +723,39 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
             </form>
 
             {/* Footer com Ações */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 rounded-b-3xl flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setModalOpen(false)}
-                className="px-5 py-3 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading}
-                className="px-6 py-3 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-blue-500/10 disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
-              >
-                {loading ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <Save className="w-4.5 h-4.5" />}
-                {editingPage ? 'Salvar Alterações' : 'Criar Página'}
-              </button>
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 rounded-b-3xl flex justify-between gap-3 items-center">
+              <div>
+                {editingPage && (
+                  <a
+                    href={`/${editingPage.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-xs font-bold text-slate-700 dark:text-white rounded-xl transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    Pré-visualizar Página
+                  </a>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-5 py-3 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={loading || uploadingImage}
+                  className="px-6 py-3 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-blue-500/10 disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
+                >
+                  {loading ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <Save className="w-4.5 h-4.5" />}
+                  {editingPage ? 'Salvar Alterações' : 'Criar Página'}
+                </button>
+              </div>
             </div>
 
           </div>

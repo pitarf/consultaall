@@ -29,22 +29,40 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BlogFeedPage() {
-  const [settings, articles, categories] = await Promise.all([
+  const [settings, articles, categories, menuPages] = await Promise.all([
     prisma.systemSetting.findFirst(),
     prisma.article.findMany({
-      where: { published: true },
+      where: { 
+        published: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: new Date() } }
+        ]
+      },
       orderBy: { createdAt: 'desc' },
       include: { category: true }
     }),
     prisma.category.findMany({
       orderBy: { name: 'asc' }
+    }),
+    prisma.page.findMany({
+      where: {
+        published: true,
+        showInMenu: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: new Date() } }
+        ]
+      },
+      select: { title: true, slug: true },
+      orderBy: { title: 'asc' }
     })
   ]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-800 antialiased overflow-x-hidden">
       {/* ===================== NAVBAR ===================== */}
-      <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} />
+      <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} menuPages={menuPages} />
 
       {/* ===================== HEADER DO BLOG ===================== */}
       <section className="relative py-16 md:py-24 bg-white overflow-hidden border-b border-slate-200">

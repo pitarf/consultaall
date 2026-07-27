@@ -29,11 +29,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   try {
+    const now = new Date();
     // 2. Páginas comerciais e institucionais dinâmicas
     const pages = await prisma.page.findMany({
       where: {
         published: true,
         robotsIndex: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: now } }
+        ]
       },
       select: {
         slug: true,
@@ -60,6 +65,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: {
         published: true,
         robotsIndex: true,
+        OR: [
+          { publishedAt: null },
+          { publishedAt: { lte: now } }
+        ]
       },
       select: {
         slug: true,
