@@ -20,12 +20,21 @@ async function checkAdmin() {
 function sanitizeHtmlContent(html: string): string {
   if (!html) return '';
   
-  // Limpeza robusta via biblioteca confiável no backend
-  const clean = DOMPurify.sanitize(html, {
+  // 1. Extrai todas as tags <style>...</style> para protegê-las do DOMPurify (que remove barras invertidas de seletores CSS)
+  const styleBlocks: string[] = [];
+  const styleRegex = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+  
+  const htmlWithoutStyles = html.replace(styleRegex, (match) => {
+    styleBlocks.push(match);
+    return `__STYLE_BLOCK_PLACEHOLDER_${styleBlocks.length - 1}__`;
+  });
+
+  // 2. Limpeza robusta via biblioteca confiável no backend
+  const clean = DOMPurify.sanitize(htmlWithoutStyles, {
     ALLOWED_TAGS: [
       'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
       'ol', 'ul', 'li', 'a', 'img', 'span', 'div', 'table', 'thead', 'tbody', 
-      'tr', 'th', 'td', 'blockquote', 'code', 'pre', 'style',
+      'tr', 'th', 'td', 'blockquote', 'code', 'pre',
       'header', 'footer', 'nav', 'main', 'section', 'article', 'aside',
       'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'g', 'defs', 'clipPath',
       'input', 'button', 'form', 'label', 'textarea', 'select', 'option',
@@ -43,8 +52,14 @@ function sanitizeHtmlContent(html: string): string {
     LIMIT_ATTR_VALS: ['target'],
   });
 
-  // Camada extra via regex para garantir remoção de tags e manipuladores de eventos estruturais
-  return clean
+  // 3. Restaura as tags <style> originais no HTML limpo
+  let finalHtml = clean;
+  styleBlocks.forEach((styleBlock, index) => {
+    finalHtml = finalHtml.replace(`__STYLE_BLOCK_PLACEHOLDER_${index}__`, styleBlock);
+  });
+
+  // Camada extra via regex para garantir remoção de tags estruturais e manipuladores de eventos
+  return finalHtml
     .replace(/<\/?(html|body|head|title|meta|link|canonical)\b[^>]*>/gi, '') // Remove tags proibidas
     .replace(/on\w+\s*=\s*(['"][^'"]*['"]|[^>\s]+)/gi, ''); // Remove onerror, onload, etc.
 }
