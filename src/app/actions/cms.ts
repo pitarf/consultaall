@@ -32,7 +32,7 @@ function sanitizeHtmlContent(html: string): string {
   // 2. Limpeza robusta via biblioteca confiável no backend
   const clean = DOMPurify.sanitize(htmlWithoutStyles, {
     ALLOWED_TAGS: [
-      'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
       'ol', 'ul', 'li', 'a', 'img', 'span', 'div', 'table', 'thead', 'tbody', 
       'tr', 'th', 'td', 'blockquote', 'code', 'pre',
       'header', 'footer', 'nav', 'main', 'section', 'article', 'aside',
