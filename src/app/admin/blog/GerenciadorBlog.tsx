@@ -690,13 +690,13 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
                 <div className="mt-2.5 flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-black/10 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
                   <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400">
                     <Upload className="w-4 h-4 text-blue-500" />
-                    <span>Importar arquivo HTML completo (.html)?</span>
+                    <span>Importar arquivo HTML completo (.html, .txt)?</span>
                   </div>
                   <label className="cursor-pointer bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1">
                     <span>Escolher Arquivo</span>
                     <input 
                       type="file" 
-                      accept=".html" 
+                      accept=".html,.txt,.htm" 
                       className="hidden" 
                       onChange={(e) => {
                         const file = e.target.files?.[0];
@@ -705,7 +705,7 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
                           reader.onload = (event) => {
                             const text = event.target?.result as string;
                             setContent(text);
-                            toast.success('Arquivo HTML importado com sucesso!');
+                            toast.success('Arquivo importado com sucesso!');
                           };
                           reader.readAsText(file);
                         }
