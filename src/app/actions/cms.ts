@@ -20,17 +20,27 @@ async function checkAdmin() {
 function sanitizeHtmlContent(html: string): string {
   if (!html) return '';
   
-  // 1. Extrai todas as tags <style>...</style> para protegê-las do DOMPurify (que remove barras invertidas de seletores CSS)
+  // 1. Extrai blocos <style> e <script> para protegê-los do DOMPurify
   const styleBlocks: string[] = [];
-  const styleRegex = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+  const scriptBlocks: string[] = [];
   
-  const htmlWithoutStyles = html.replace(styleRegex, (match) => {
+  const styleRegex = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+  
+  // Substitui styles temporariamente
+  let htmlWithoutProtected = html.replace(styleRegex, (match) => {
     styleBlocks.push(match);
     return `__STYLE_BLOCK_PLACEHOLDER_${styleBlocks.length - 1}__`;
   });
 
+  // Substitui scripts temporariamente
+  htmlWithoutProtected = htmlWithoutProtected.replace(scriptRegex, (match) => {
+    scriptBlocks.push(match);
+    return `__SCRIPT_BLOCK_PLACEHOLDER_${scriptBlocks.length - 1}__`;
+  });
+
   // 2. Limpeza robusta via biblioteca confiável no backend
-  const clean = DOMPurify.sanitize(htmlWithoutStyles, {
+  const clean = DOMPurify.sanitize(htmlWithoutProtected, {
     ALLOWED_TAGS: [
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 
       'ol', 'ul', 'li', 'a', 'img', 'span', 'div', 'table', 'thead', 'tbody', 
@@ -52,10 +62,14 @@ function sanitizeHtmlContent(html: string): string {
     LIMIT_ATTR_VALS: ['target'],
   });
 
-  // 3. Restaura as tags <style> originais no HTML limpo
+  // 3. Restaura as tags <style> e <script> originais no HTML limpo
   let finalHtml = clean;
   styleBlocks.forEach((styleBlock, index) => {
     finalHtml = finalHtml.replace(`__STYLE_BLOCK_PLACEHOLDER_${index}__`, styleBlock);
+  });
+
+  scriptBlocks.forEach((scriptBlock, index) => {
+    finalHtml = finalHtml.replace(`__SCRIPT_BLOCK_PLACEHOLDER_${index}__`, scriptBlock);
   });
 
   // Camada extra via regex para garantir remoção de tags estruturais e manipuladores de eventos
