@@ -210,7 +210,145 @@ export default async function BlogArticleDetailPage({ params }: Props) {
 
       {/* ===================== ARTICLE CONTAINER ===================== */}
       <main className="flex-1 py-10 bg-white">
-        <article className="max-w-4xl mx-auto px-4 sm:px-6">
+        {/* Estilos customizados para formatar o artigo do blog e resolver espaçamentos colados */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .article-content {
+            font-size: 17px;
+            line-height: 1.75;
+            color: #334155;
+          }
+
+          .article-content p {
+            margin: 0 0 22px;
+          }
+
+          .article-content h2 {
+            margin-top: 52px;
+            margin-bottom: 18px;
+            font-size: 30px;
+            line-height: 1.25;
+            font-weight: 750;
+            color: #1f3b5b;
+          }
+
+          .article-content h3 {
+            margin-top: 34px;
+            margin-bottom: 14px;
+            font-size: 22px;
+            line-height: 1.35;
+            font-weight: 700;
+            color: #1f3b5b;
+          }
+
+          .article-content ul,
+          .article-content ol {
+            margin: 20px 0 28px;
+            padding-left: 30px;
+          }
+
+          .article-content ul {
+            list-style-type: disc;
+          }
+
+          .article-content ol {
+            list-style-type: decimal;
+          }
+
+          .article-content li {
+            margin-bottom: 10px;
+            line-height: 1.65;
+          }
+
+          .article-content nav.article-index {
+            margin: 34px 0 44px;
+            padding: 24px 28px;
+            border: 1px solid #dbe7f3;
+            border-radius: 16px;
+            background: #f7faff;
+          }
+
+          .article-content nav.article-index p {
+            margin-bottom: 12px;
+          }
+
+          .article-content nav.article-index ul {
+            margin: 0;
+          }
+
+          .article-content .article-cta {
+            margin: 42px 0;
+            padding: 28px;
+            border: 1px solid #cfe0ff;
+            border-radius: 18px;
+            background: #f4f8ff;
+          }
+
+          .article-content .article-cta p {
+            margin-bottom: 14px;
+          }
+
+          .article-content .article-cta p:last-child {
+            margin-bottom: 0;
+          }
+
+          .article-content .cta-title {
+            font-size: 22px;
+            line-height: 1.35;
+            color: #1f3b5b;
+            font-weight: 700;
+          }
+
+          .article-content a {
+            color: #1463df;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+          }
+
+          .article-content blockquote {
+            margin: 32px 0;
+            padding: 20px 24px;
+            border-left: 4px solid #2878f0;
+            background: #f8fafc;
+            border-radius: 0 12px 12px 0;
+          }
+
+          .article-content hr {
+            margin: 48px 0;
+            border: 0;
+            border-top: 1px solid #e2e8f0;
+          }
+
+          @media (max-width: 768px) {
+            .article-content {
+              font-size: 16px;
+              line-height: 1.72;
+            }
+
+            .article-content p {
+              margin-bottom: 20px;
+            }
+
+            .article-content h2 {
+              margin-top: 42px;
+              margin-bottom: 16px;
+              font-size: 25px;
+            }
+
+            .article-content h3 {
+              margin-top: 30px;
+              margin-bottom: 12px;
+              font-size: 20px;
+            }
+
+            .article-content nav.article-index,
+            .article-content .article-cta {
+              margin: 32px 0;
+              padding: 20px;
+            }
+          }
+        ` }} />
+        <article className="max-w-[820px] mx-auto px-6">
           
           {/* Navegação Breadcrumb Física (HTML) */}
           <nav className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-8 border-b border-slate-100 pb-4">
@@ -303,12 +441,7 @@ export default async function BlogArticleDetailPage({ params }: Props) {
 
           {/* Conteúdo HTML Rico */}
           <div 
-            className="prose prose-slate dark:prose-invert max-w-none 
-              prose-headings:text-[#243b56] prose-headings:font-extrabold 
-              prose-p:leading-relaxed prose-p:text-slate-600 prose-p:text-base
-              prose-a:text-blue-600 prose-a:font-semibold hover:prose-a:underline
-              prose-strong:text-[#243b56] prose-strong:font-bold
-              prose-ul:list-disc prose-ol:list-decimal"
+            className="article-content"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
 
