@@ -50,6 +50,7 @@ export function SeoPageContent({ html, isAdminCreated }: SeoPageContentProps) {
         // Define e executa o código do script de forma segura (sem eval)
         script.textContent = oldScript.textContent ?? "";
         console.log(`[SeoPageContent] Executando script #${idx + 1} de tamanho:`, script.textContent.length);
+        console.log(`[SeoPageContent] Script #${idx + 1} código fonte:\n`, script.textContent);
         oldScript.replaceWith(script);
       } catch (err) {
         console.error(`[SeoPageContent] Erro ao executar script #${idx + 1}:`, err);
