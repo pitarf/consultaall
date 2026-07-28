@@ -180,14 +180,19 @@ export default async function DynamicCoringaPage({ params }: Props) {
 
   if (isCustomLandingPage) {
     return (
-      <div className="w-full min-h-screen bg-background antialiased overflow-x-hidden">
+      <div className="flex flex-col min-h-screen bg-background antialiased overflow-x-hidden">
+        {/* ===================== NAVBAR ===================== */}
+        <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} menuPages={menuPages} />
+
         {/* Estilos renderizados no SSR */}
         {styles.map((css, idx) => (
           <style key={`custom-css-${idx}`} dangerouslySetInnerHTML={{ __html: css }} />
         ))}
 
         {/* Renderiza o conteúdo usando o componente SeoPageContent e executa scripts de forma segura */}
-        <SeoPageContent html={cleanHtml} isAdminCreated={true} />
+        <main className="flex-1 w-full">
+          <SeoPageContent html={cleanHtml} isAdminCreated={true} />
+        </main>
 
         {/* Schemas Auto-gerados (SEO) */}
         {schemas.map((schema, index) => (
@@ -205,6 +210,9 @@ export default async function DynamicCoringaPage({ params }: Props) {
             dangerouslySetInnerHTML={{ __html: page.jsonLd }}
           />
         )}
+
+        {/* ===================== FOOTER ===================== */}
+        <Footer logoUrl={settings?.logoUrl} />
       </div>
     );
   }
