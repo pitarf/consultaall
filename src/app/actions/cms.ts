@@ -62,8 +62,14 @@ function sanitizeHtmlContent(html: string): string {
     LIMIT_ATTR_VALS: ['target'],
   });
 
+  // Camada extra via regex para garantir remoção de tags estruturais e manipuladores de eventos
+  // ATENÇÃO: Executado ANTES de restaurar os scripts/styles protegidos para não corromper o código JS/CSS
+  const cleanWithRegex = clean
+    .replace(/<\/?(html|body|head|title|meta|link|canonical)\b[^>]*>/gi, '') // Remove tags proibidas
+    .replace(/on\w+\s*=\s*(['"][^'"]*['"]|[^>\s]+)/gi, ''); // Remove onerror, onload, etc.
+
   // 3. Restaura as tags <style> e <script> originais no HTML limpo
-  let finalHtml = clean;
+  let finalHtml = cleanWithRegex;
   styleBlocks.forEach((styleBlock, index) => {
     finalHtml = finalHtml.replace(`__STYLE_BLOCK_PLACEHOLDER_${index}__`, () => styleBlock);
   });
@@ -72,10 +78,7 @@ function sanitizeHtmlContent(html: string): string {
     finalHtml = finalHtml.replace(`__SCRIPT_BLOCK_PLACEHOLDER_${index}__`, () => scriptBlock);
   });
 
-  // Camada extra via regex para garantir remoção de tags estruturais e manipuladores de eventos
-  return finalHtml
-    .replace(/<\/?(html|body|head|title|meta|link|canonical)\b[^>]*>/gi, '') // Remove tags proibidas
-    .replace(/on\w+\s*=\s*(['"][^'"]*['"]|[^>\s]+)/gi, ''); // Remove onerror, onload, etc.
+  return finalHtml;
 }
 
 // 2. NORMALIZAÇÃO DE SLUG (Remove acentos, espaços e maiúsculas)
