@@ -650,7 +650,7 @@ async function create301Redirect(oldSlug: string, newSlug: string, type: 'PAGE' 
   if (cleanOld === cleanNew) return;
 
   // B. Bloqueia redirecionamentos externos sem autorização
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com';
   if (cleanNew.startsWith('http://') || cleanNew.startsWith('https://') || cleanNew.startsWith('//')) {
     if (!cleanNew.startsWith(baseUrl)) {
       console.warn('Bloqueado redirecionamento externo não autorizado:', cleanNew);

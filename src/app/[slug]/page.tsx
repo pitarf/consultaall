@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com';
   const canonicalUrl = page.canonical || `${baseUrl}/${page.slug}`;
 
   // Processa Open Graph
@@ -111,7 +111,7 @@ export default async function DynamicCoringaPage({ params }: Props) {
     notFound();
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com';
 
   // 3. SCHEMA.ORG AUTOMÁTICO (WebPage, Service se for comercial, e BreadcrumbList)
   const schemas: any[] = [];

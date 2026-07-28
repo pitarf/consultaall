@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com';
   const canonicalUrl = article.canonical || `${baseUrl}/blog/${article.slug}`;
 
   let extraOg = {};
@@ -132,7 +132,7 @@ export default async function BlogArticleDetailPage({ params }: Props) {
     include: { category: true }
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com.br';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://detetivebuscas.com';
   const logoUrl = settings?.logoUrl || `${baseUrl}/logo.webp`;
 
   // Schemas Automáticos (BlogPosting e BreadcrumbList)
