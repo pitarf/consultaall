@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X, Search } from 'lucide-react';
 
 interface NavbarClientProps {
@@ -12,6 +13,12 @@ interface NavbarClientProps {
 
 export default function NavbarClient({ logoUrl, siteTitle, menuPages = [] }: NavbarClientProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Função para retornar o link correto dependendo se o usuário está na Home ou não
+  const getHref = (hash: string) => {
+    return pathname === '/' ? hash : `/${hash}`;
+  };
 
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 transition-all duration-300">
@@ -36,19 +43,19 @@ export default function NavbarClient({ logoUrl, siteTitle, menuPages = [] }: Nav
 
         {/* Links de navegação desktop */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="#recursos" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
+          <Link href={getHref('#recursos')} className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             Recursos
           </Link>
-          <Link href="#como-funciona" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
+          <Link href={getHref('#como-funciona')} className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             Como Funciona
           </Link>
-          <Link href="#precos" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
+          <Link href={getHref('#precos')} className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             Preços
           </Link>
-          <Link href="#aplicacoes" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
+          <Link href={getHref('#aplicacoes')} className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             Aplicações
           </Link>
-          <Link href="#faq" className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
+          <Link href={getHref('#faq')} className="text-sm font-semibold text-slate-600 hover:text-[#2872fa] transition-colors">
             FAQ
           </Link>
           <Link href="/blog" className="text-sm font-bold text-slate-600 hover:text-[#2872fa] transition-colors">
@@ -93,43 +100,43 @@ export default function NavbarClient({ logoUrl, siteTitle, menuPages = [] }: Nav
         </div>
       </div>
 
-      {/* Menu retrátil mobile */}
+      {/* Menu retrátil mobile (Posicionado de forma absoluta para sobrepor o conteúdo e com sombra de destaque) */}
       <div 
-        className={`md:hidden bg-white border-b border-slate-200 overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? 'max-h-[350px]' : 'max-h-0'
+        className={`md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-200 shadow-xl overflow-hidden transition-all duration-300 ease-in-out z-50 ${
+          isOpen ? 'max-h-[500px] opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
         <div className="px-4 pt-2 pb-6 space-y-3">
           <Link
-            href="#recursos"
+            href={getHref('#recursos')}
             onClick={() => setIsOpen(false)}
             className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
           >
             Recursos
           </Link>
           <Link
-            href="#como-funciona"
+            href={getHref('#como-funciona')}
             onClick={() => setIsOpen(false)}
             className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
           >
             Como Funciona
           </Link>
           <Link
-            href="#precos"
+            href={getHref('#precos')}
             onClick={() => setIsOpen(false)}
             className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
           >
             Preços
           </Link>
           <Link
-            href="#aplicacoes"
+            href={getHref('#aplicacoes')}
             onClick={() => setIsOpen(false)}
             className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
           >
             Aplicações
           </Link>
           <Link
-            href="#faq"
+            href={getHref('#faq')}
             onClick={() => setIsOpen(false)}
             className="block text-base font-semibold text-slate-600 hover:text-[#2872fa] py-2"
           >
