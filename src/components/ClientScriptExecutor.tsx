@@ -9,8 +9,8 @@ interface ClientScriptExecutorProps {
 /**
  * Componente cliente para executar scripts extraídos de páginas do CMS dinamicamente.
  * Cria elementos <script> reais no DOM, executa-os na montagem e limpa-os no desmonte.
- * Também vincula automaticamente a máscara de CPF, spinner e comportamento de redicionamento
- * ao formulário de buscas da página.
+ * Também vincula automaticamente a máscara de CPF, spinner e comportamento de redirecionamento
+ * ao formulário de buscas da página como fallback, apenas se a página não tiver scripts próprios.
  */
 export default function ClientScriptExecutor({ scripts }: ClientScriptExecutorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,10 +36,15 @@ export default function ClientScriptExecutor({ scripts }: ClientScriptExecutorPr
       });
     }
 
-    // B. VINCULA COMPORTAMENTO AUTOMÁTICO DE CPF (Garante máscara, loading, 1.2s e CTA)
+    // B. VINCULA COMPORTAMENTO AUTOMÁTICO DE CPF (Como fallback, apenas se não houver scripts)
     let cleanupCpfBehavior: (() => void) | undefined;
 
     const bindCpfFormBehavior = () => {
+      // Se a página já possui scripts próprios executados, não ativa o fallback para evitar duplicidades
+      if (scripts && scripts.length > 0) {
+        return;
+      }
+
       // Busca o campo de input do CPF por classes, placeholders ou atributos comuns
       const cpfInput = document.querySelector(
         'input[placeholder*="000."], input[id*="cpf"], input[name*="cpf"], input[inputmode="numeric"]'

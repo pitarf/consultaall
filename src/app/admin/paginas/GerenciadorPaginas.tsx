@@ -523,6 +523,34 @@ export default function GerenciadorPaginas({ initialPages }: GerenciadorPaginasP
                   placeholder="<h2>Subtítulo</h2><p>Parágrafo explicativo...</p>"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white placeholder-slate-400 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-y"
                 />
+                
+                {/* Upload Direto de Arquivo HTML */}
+                <div className="mt-2.5 flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-black/10 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
+                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400">
+                    <Upload className="w-4 h-4 text-blue-500" />
+                    <span>Importar arquivo HTML completo (.html)?</span>
+                  </div>
+                  <label className="cursor-pointer bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1">
+                    <span>Escolher Arquivo</span>
+                    <input 
+                      type="file" 
+                      accept=".html" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const text = event.target?.result as string;
+                            setContent(text);
+                            toast.success('Arquivo HTML importado com sucesso!');
+                          };
+                          reader.readAsText(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Imagem de Destaque com Otimização */}
