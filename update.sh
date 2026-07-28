@@ -5,8 +5,8 @@ echo "📦 1/4 - Puxando novos arquivos do GitHub..."
 git pull origin main
 
 echo "🗄️  2/4 - Sincronizando Banco de Dados (Prisma)..."
-docker compose run --rm app npx prisma@6.2.1 db push --skip-generate
-docker compose run --rm app npx prisma@6.2.1 db seed
+docker compose run --rm app npx -y prisma@6.2.1 db push --skip-generate
+docker compose run --rm app npx -y prisma@6.2.1 db seed
 
 echo "🏗️  3/4 - Reconstruindo e reiniciando a aplicacao..."
 docker compose up -d --build
