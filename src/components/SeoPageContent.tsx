@@ -25,20 +25,14 @@ export function SeoPageContent({ html, isAdminCreated }: SeoPageContentProps) {
     if (lastAppliedRef.current === html) return;
     lastAppliedRef.current = html;
 
-    // Define o conteúdo HTML
-    console.log("[SeoPageContent] Inicializando HTML. Tamanho:", html.length);
     container.innerHTML = html;
 
     // Executa scripts somente em páginas criadas por administradores autenticados
-    if (!isAdminCreated) {
-      console.log("[SeoPageContent] Ignorando scripts: não criado por admin.");
-      return;
-    }
+    if (!isAdminCreated) return;
 
     const scripts = Array.from(container.querySelectorAll("script"));
-    console.log("[SeoPageContent] Scripts encontrados para execução:", scripts.length);
 
-    scripts.forEach((oldScript, idx) => {
+    scripts.forEach((oldScript) => {
       try {
         const script = document.createElement("script");
 
@@ -49,11 +43,9 @@ export function SeoPageContent({ html, isAdminCreated }: SeoPageContentProps) {
 
         // Define e executa o código do script de forma segura (sem eval)
         script.textContent = oldScript.textContent ?? "";
-        console.log(`[SeoPageContent] Executando script #${idx + 1} de tamanho:`, script.textContent.length);
-        console.log(`[SeoPageContent] Script #${idx + 1} código fonte:\n`, script.textContent);
         oldScript.replaceWith(script);
       } catch (err) {
-        console.error(`[SeoPageContent] Erro ao executar script #${idx + 1}:`, err);
+        console.error("Erro ao executar script embarcado:", err);
       }
     });
 
