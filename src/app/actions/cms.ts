@@ -65,11 +65,11 @@ function sanitizeHtmlContent(html: string): string {
   // 3. Restaura as tags <style> e <script> originais no HTML limpo
   let finalHtml = clean;
   styleBlocks.forEach((styleBlock, index) => {
-    finalHtml = finalHtml.replace(`__STYLE_BLOCK_PLACEHOLDER_${index}__`, styleBlock);
+    finalHtml = finalHtml.replace(`__STYLE_BLOCK_PLACEHOLDER_${index}__`, () => styleBlock);
   });
 
   scriptBlocks.forEach((scriptBlock, index) => {
-    finalHtml = finalHtml.replace(`__SCRIPT_BLOCK_PLACEHOLDER_${index}__`, scriptBlock);
+    finalHtml = finalHtml.replace(`__SCRIPT_BLOCK_PLACEHOLDER_${index}__`, () => scriptBlock);
   });
 
   // Camada extra via regex para garantir remoção de tags estruturais e manipuladores de eventos

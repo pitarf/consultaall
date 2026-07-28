@@ -163,7 +163,7 @@ export default async function DynamicCoringaPage({ params }: Props) {
     });
   }
 
-  const isCustomLandingPage = page.content.includes('<style>');
+  const isCustomLandingPage = /<style\b/i.test(page.content);
 
   // Extrai styles para renderização no SSR (evitando flashes e garantindo CSS inicial)
   const styles: string[] = [];
