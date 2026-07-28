@@ -6,7 +6,7 @@ import {
 } from '@/app/actions/cms';
 import { toast } from 'sonner';
 import { 
-  Plus, Search, Edit2, Trash2, X, HelpCircle, Save, Loader2, Sparkles, FolderPlus, BookOpen, User, Calendar, ExternalLink, Copy, Upload, ToggleLeft, ToggleRight
+  Plus, Search, Edit2, Trash2, X, HelpCircle, Save, Loader2, Sparkles, FolderPlus, BookOpen, User, Calendar, ExternalLink, Copy, Upload, ToggleLeft, ToggleRight, Eye
 } from 'lucide-react';
 import { Tooltip } from '@/components/Tooltip';
 
