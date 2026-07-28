@@ -481,49 +481,31 @@ export default async function Home() {
             * Os dados exibidos nas abas de demonstração acima são estritamente fictícios e conceituais, tendo como propósito exclusivo ilustrar o formato técnico do retorno do nosso motor de dados. Dados reais serão exibidos apenas em consultas reais no painel logado.
           </p>
 
-          {/* Bloco de Links Fortes de SEO (Consultas Disponíveis) */}
-          <div className="mt-16 bg-white border border-slate-200 rounded-2xl p-6 md:p-8 max-w-4xl mx-auto text-left shadow-sm">
-            <h3 className="text-lg font-bold text-[#243b56] mb-3">Consultas Rápidas Disponíveis</h3>
-            <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-              Nosso painel é completo, com página dedicada de{' '}
-              <Link href="/consulta-cpf" className="text-[#2872fa] hover:underline font-bold">
+          {/* Bloco de Links Fortes de SEO (Texto Centralizado Elegante) */}
+          <div className="mt-12 text-center">
+            <p className="text-slate-500 text-sm md:text-base leading-relaxed max-w-4xl mx-auto font-medium">
+              Nosso painel é completo, com página de{' '}
+              <Link href="/consulta-cpf" className="text-[#2872fa] hover:underline font-bold transition-all">
                 consulta cpf
               </Link>
               ,{' '}
-              <Link href="/consulta-telefone" className="text-[#2872fa] hover:underline font-bold">
+              <Link href="/consulta-telefone" className="text-[#2872fa] hover:underline font-bold transition-all">
                 consulta telefone
               </Link>
               ,{' '}
-              <Link href="/consulta-placa" className="text-[#2872fa] hover:underline font-bold">
+              <Link href="/consulta-placa" className="text-[#2872fa] hover:underline font-bold transition-all">
                 consulta placa
               </Link>
               ,{' '}
-              <Link href="/consulta-nome" className="text-[#2872fa] hover:underline font-bold">
+              <Link href="/consulta-nome" className="text-[#2872fa] hover:underline font-bold transition-all">
                 consulta nome
               </Link>
               {' e '}
-              <Link href="/consulta-cnpj" className="text-[#2872fa] hover:underline font-bold">
+              <Link href="/consulta-cnpj" className="text-[#2872fa] hover:underline font-bold transition-all">
                 consulta cnpj
               </Link>
-              . Explore abaixo as opções de pesquisas individuais mais utilizadas pelos nossos parceiros corporativos:
+              .
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <Link href="/consulta-cpf" className="flex items-center justify-center p-3.5 border border-slate-100 rounded-xl bg-slate-50 hover:bg-blue-50/50 hover:border-blue-200 transition-all font-semibold text-xs md:text-sm text-slate-700 hover:text-[#2872fa] text-center">
-                Consultar CPF
-              </Link>
-              <Link href="/consulta-telefone" className="flex items-center justify-center p-3.5 border border-slate-100 rounded-xl bg-slate-50 hover:bg-blue-50/50 hover:border-blue-200 transition-all font-semibold text-xs md:text-sm text-slate-700 hover:text-[#2872fa] text-center">
-                Consultar Telefone
-              </Link>
-              <Link href="/consulta-placa" className="flex items-center justify-center p-3.5 border border-slate-100 rounded-xl bg-slate-50 hover:bg-blue-50/50 hover:border-blue-200 transition-all font-semibold text-xs md:text-sm text-slate-700 hover:text-[#2872fa] text-center">
-                Consultar Placa
-              </Link>
-              <Link href="/consulta-nome" className="flex items-center justify-center p-3.5 border border-slate-100 rounded-xl bg-slate-50 hover:bg-blue-50/50 hover:border-blue-200 transition-all font-semibold text-xs md:text-sm text-slate-700 hover:text-[#2872fa] text-center">
-                Consultar Nome
-              </Link>
-              <Link href="/consulta-cnpj" className="flex items-center justify-center p-3.5 border border-slate-100 rounded-xl bg-slate-50 hover:bg-blue-50/50 hover:border-blue-200 transition-all font-semibold text-xs md:text-sm text-slate-700 hover:text-[#2872fa] text-center col-span-2 sm:col-span-1">
-                Consultar CNPJ
-              </Link>
-            </div>
           </div>
         </div>
       </section>
