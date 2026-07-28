@@ -94,8 +94,12 @@ export default function GerenciadorBlog({ initialArticles, initialCategories }: 
     // Formata data ISO para datetime-local
     if (article.publishedAt) {
       const date = new Date(article.publishedAt);
-      const isoString = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
-      setPublishedAt(isoString.slice(0, 16));
+      if (!isNaN(date.getTime())) {
+        const isoString = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
+        setPublishedAt(isoString.slice(0, 16));
+      } else {
+        setPublishedAt('');
+      }
     } else {
       setPublishedAt('');
     }
