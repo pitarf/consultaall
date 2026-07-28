@@ -5,52 +5,10 @@ import NavbarClient from '@/components/NavbarClient';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { Search, ChevronRight, Home } from 'lucide-react';
-import ClientScriptExecutor from '@/components/ClientScriptExecutor';
+import { SeoPageContent } from '@/components/SeoPageContent';
 
 interface Props {
   params: Promise<{ slug: string }>;
-}
-
-interface ParsedHtml {
-  bodyContent: string;
-  styles: string[];
-  scripts: string[];
-}
-
-// Helper para extrair body, styles e scripts de um HTML completo no servidor
-function parseHtmlPage(html: string): ParsedHtml {
-  const styles: string[] = [];
-  const scripts: string[] = [];
-
-  // 1. Extrai conteúdo de todas as tags <style>
-  let cleanHtml = html.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (match, css) => {
-    if (css.trim()) styles.push(css.trim());
-    return '';
-  });
-
-  // 2. Extrai conteúdo de todas as tags <script>
-  cleanHtml = cleanHtml.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, (match, js) => {
-    if (js.trim()) scripts.push(js.trim());
-    return '';
-  });
-
-  // 3. Extrai o conteúdo do <body> se houver
-  let bodyContent = cleanHtml;
-  const bodyMatch = cleanHtml.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
-  if (bodyMatch) {
-    bodyContent = bodyMatch[1];
-  }
-
-  // 4. Remove outras tags estruturais
-  bodyContent = bodyContent
-    .replace(/<\/?(html|head|title|meta|link|canonical|!doctype)\b[^>]*>/gi, '')
-    .trim();
-
-  return {
-    bodyContent,
-    styles,
-    scripts
-  };
 }
 
 // Helper para verificar se a página deve ser considerada rascunho (não publicada ou agendada para o futuro)
@@ -205,22 +163,31 @@ export default async function DynamicCoringaPage({ params }: Props) {
     });
   }
 
-  const { bodyContent, styles, scripts } = parseHtmlPage(page.content);
-  const isCustomLandingPage = styles.length > 0 || page.content.includes('<style>');
+  const isCustomLandingPage = page.content.includes('<style>');
+
+  // Extrai styles para renderização no SSR (evitando flashes e garantindo CSS inicial)
+  const styles: string[] = [];
+  page.content.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (match, css) => {
+    if (css.trim()) styles.push(css.trim());
+    return '';
+  });
+
+  // Limpa tags estruturais para não renderizá-las literalmente
+  const cleanHtml = page.content
+    .replace(/<!DOCTYPE html>/gi, '')
+    .replace(/<\/?(html|head|body)\b[^>]*>/gi, '')
+    .trim();
 
   if (isCustomLandingPage) {
     return (
       <div className="w-full min-h-screen bg-background antialiased overflow-x-hidden">
-        {/* Estilos embutidos renderizados nativamente */}
+        {/* Estilos renderizados no SSR */}
         {styles.map((css, idx) => (
           <style key={`custom-css-${idx}`} dangerouslySetInnerHTML={{ __html: css }} />
         ))}
 
-        {/* Renderiza apenas o conteúdo do body customizado completo */}
-        <div dangerouslySetInnerHTML={{ __html: bodyContent }} />
-
-        {/* Executador de scripts reais e ligador de comportamentos */}
-        <ClientScriptExecutor scripts={scripts} />
+        {/* Renderiza o conteúdo usando o componente SeoPageContent e executa scripts de forma segura */}
+        <SeoPageContent html={cleanHtml} isAdminCreated={true} />
 
         {/* Schemas Auto-gerados (SEO) */}
         {schemas.map((schema, index) => (
