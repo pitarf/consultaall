@@ -149,7 +149,9 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
   });
 
   // Enviar e-mail via Brevo (Sendinblue) nativamente
-  const brevoApiKey = process.env.BREVO_API_KEY;
+  const settings = await prisma.systemSetting.findFirst();
+  const brevoApiKey = settings?.brevoApiKey || process.env.BREVO_API_KEY;
+  
   if (!brevoApiKey) {
     console.error('Brevo API key não configurada.');
     return { error: 'Ocorreu um erro no servidor de e-mail. Contate o suporte.' };

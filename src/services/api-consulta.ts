@@ -1,4 +1,5 @@
 import sampleResponse from './api-sample-response.json';
+import { prisma } from '@/lib/prisma';
 
 export interface ConsultaParams {
   target: string;
@@ -8,7 +9,8 @@ export interface ConsultaParams {
 }
 
 export async function fazerConsultaAPI(params: ConsultaParams) {
-  const token = process.env.API_CONSULTA_TOKEN;
+  const settings = await prisma.systemSetting.findFirst();
+  const token = settings?.apiConsultaToken || process.env.API_CONSULTA_TOKEN;
 
   if (!token) {
     throw new Error('Token da API não configurado.');
@@ -16,7 +18,7 @@ export async function fazerConsultaAPI(params: ConsultaParams) {
 
   // Se NÃO for teste, chama a API Real
   if (!params.isTest) {
-    const apiUrl = process.env.API_CONSULTA_URL || 'https://services.apiconsultabrasil.com/';
+    const apiUrl = settings?.apiConsultaUrl || process.env.API_CONSULTA_URL || 'https://services.apiconsultabrasil.com/';
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {

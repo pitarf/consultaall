@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSystemSettings, updateSystemSettings } from '@/app/actions/admin';
-import { Save, Globe, MessageSquare, Loader2, Info, Image, ExternalLink, Scale, CreditCard, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Save, Globe, MessageSquare, Loader2, Info, Image, ExternalLink, Scale, CreditCard, Eye, EyeOff, ShieldCheck, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**
@@ -14,6 +14,9 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [showPushinToken, setShowPushinToken] = useState(false);
   const [showWebhookToken, setShowWebhookToken] = useState(false);
+  const [showBrevoToken, setShowBrevoToken] = useState(false);
+  const [showDirectToken, setShowDirectToken] = useState(false);
+  const [showConsultaToken, setShowConsultaToken] = useState(false);
   const [settings, setSettings] = useState({
     siteTitle: '',
     siteDescription: '',
@@ -27,6 +30,12 @@ export default function AdminSettingsPage() {
     companyEmail: '',
     pushinpayToken: '',
     pushinpayWebhookToken: '',
+    brevoApiKey: '',
+    directDataToken: '',
+    directDataBaseUrl: '',
+    directDataV3Url: '',
+    apiConsultaToken: '',
+    apiConsultaUrl: '',
   });
 
   useEffect(() => {
@@ -46,6 +55,12 @@ export default function AdminSettingsPage() {
           companyEmail: data.companyEmail || '',
           pushinpayToken: data.pushinpayToken || '',
           pushinpayWebhookToken: data.pushinpayWebhookToken || '',
+          brevoApiKey: data.brevoApiKey || '',
+          directDataToken: data.directDataToken || '',
+          directDataBaseUrl: data.directDataBaseUrl || '',
+          directDataV3Url: data.directDataV3Url || '',
+          apiConsultaToken: data.apiConsultaToken || '',
+          apiConsultaUrl: data.apiConsultaUrl || '',
         });
       } catch {
         toast.error('Erro ao carregar configurações');
@@ -297,6 +312,137 @@ export default function AdminSettingsPage() {
                 <Info className="w-3 h-3 flex-shrink-0" />
                 Senha de validação inserida na URL do webhook para verificar notificações de pagamento confirmadas.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ====== CONFIGURAÇÕES DE APIS EXTERNAS ====== */}
+        <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
+          <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
+            <div className="p-2 bg-blue-500/20 rounded-lg text-blue-600 dark:text-blue-400">
+              <Settings className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">APIs & Integrações Externas</h2>
+              <p className="text-slate-500 dark:text-gray-400 text-sm">Configure as chaves e endpoints de consulta e comunicação. Se deixados em branco, o sistema usará as chaves padrão do arquivo .env.</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Brevo API Key */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Chave API Brevo (E-mails transacionais)</label>
+                <button
+                  type="button"
+                  onClick={() => setShowBrevoToken(!showBrevoToken)}
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                >
+                  {showBrevoToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showBrevoToken ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+              <input
+                type={showBrevoToken ? "text" : "password"}
+                value={settings.brevoApiKey}
+                onChange={(e) => setSettings({ ...settings, brevoApiKey: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                placeholder="Ex: xkeysib-xxxxxxxx..."
+              />
+              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                <Info className="w-3 h-3 flex-shrink-0" />
+                Chave de API da plataforma Brevo (antiga Sendinblue) para envio automático de e-mails de recuperação de senha.
+              </p>
+            </div>
+
+            <hr className="border-slate-100 dark:border-white/5" />
+
+            {/* Direct Data Section */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-slate-800 dark:text-white">Direct Data (Consultas Avançadas)</h3>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token DirectData (GUID)</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowDirectToken(!showDirectToken)}
+                    className="text-xs text-primary hover:underline flex items-center gap-1"
+                  >
+                    {showDirectToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    {showDirectToken ? 'Ocultar' : 'Mostrar'}
+                  </button>
+                </div>
+                <input
+                  type={showDirectToken ? "text" : "password"}
+                  value={settings.directDataToken}
+                  onChange={(e) => setSettings({ ...settings, directDataToken: e.target.value })}
+                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                  placeholder="Ex: d4b39ad3-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL Base DirectData (V2)</label>
+                  <input
+                    type="text"
+                    value={settings.directDataBaseUrl}
+                    onChange={(e) => setSettings({ ...settings, directDataBaseUrl: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
+                    placeholder="Padrão: https://api.directd.com.br"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL DirectData V3</label>
+                  <input
+                    type="text"
+                    value={settings.directDataV3Url}
+                    onChange={(e) => setSettings({ ...settings, directDataV3Url: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
+                    placeholder="Padrão: https://apiv3.directd.com.br"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-slate-100 dark:border-white/5" />
+
+            {/* API Consulta (Hero) Section */}
+            <div className="space-y-4">
+              <h3 className="text-md font-bold text-slate-800 dark:text-white">API Consulta Brasil (Hero)</h3>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token API Consulta</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowConsultaToken(!showConsultaToken)}
+                    className="text-xs text-primary hover:underline flex items-center gap-1"
+                  >
+                    {showConsultaToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    {showConsultaToken ? 'Ocultar' : 'Mostrar'}
+                  </button>
+                </div>
+                <input
+                  type={showConsultaToken ? "text" : "password"}
+                  value={settings.apiConsultaToken}
+                  onChange={(e) => setSettings({ ...settings, apiConsultaToken: e.target.value })}
+                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                  placeholder="Ex: seu_token_da_api_consulta_brasil..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL da API Consulta</label>
+                <input
+                  type="text"
+                  value={settings.apiConsultaUrl}
+                  onChange={(e) => setSettings({ ...settings, apiConsultaUrl: e.target.value })}
+                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
+                  placeholder="Padrão: https://services.apiconsultabrasil.com/"
+                />
+              </div>
             </div>
           </div>
         </section>

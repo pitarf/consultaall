@@ -71,6 +71,15 @@ model SystemSetting {
   supportWhatsapp       String?  @default("5511999999999")
   pushinpayToken        String?
   pushinpayWebhookToken String?
+  
+  // Chaves de APIs Externas configuráveis
+  brevoApiKey           String?
+  directDataToken       String?
+  directDataBaseUrl     String?
+  directDataV3Url       String?
+  apiConsultaToken      String?
+  apiConsultaUrl        String?
+  
   updatedAt             DateTime @updatedAt
 }
 

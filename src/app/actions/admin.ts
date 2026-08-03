@@ -265,6 +265,12 @@ export async function updateSystemSettings(data: {
   companyEmail?: string;
   pushinpayToken?: string;
   pushinpayWebhookToken?: string;
+  brevoApiKey?: string;
+  directDataToken?: string;
+  directDataBaseUrl?: string;
+  directDataV3Url?: string;
+  apiConsultaToken?: string;
+  apiConsultaUrl?: string;
 }) {
   await checkAdmin();
   

@@ -5,25 +5,30 @@
 
 import axios from 'axios';
 import https from 'https';
+import { prisma } from '@/lib/prisma';
 
-const BASE_URL = process.env.DIRECT_DATA_BASE_URL || 'https://api.directd.com.br';
-const V3_URL = process.env.DIRECT_DATA_V3_URL || 'https://apiv3.directd.com.br';
-const TOKEN = process.env.DIRECT_DATA_TOKEN;
+// Helper para buscar as configurações da Direct Data dinamicamente do banco
+async function getDirectDataConfig() {
+  let token = process.env.DIRECT_DATA_TOKEN;
+  let baseUrl = process.env.DIRECT_DATA_BASE_URL || 'https://api.directd.com.br';
+  let v3Url = process.env.DIRECT_DATA_V3_URL || 'https://apiv3.directd.com.br';
 
-// Agente para ignorar erros de SSL na V2 (devido a erro de principal no certificado deles)
-const axiosV2 = axios.create({
-  baseURL: 'https://api.directd.com.br',
-  headers: { 
-    'Content-Type': 'application/json',
-    'Token': TOKEN,
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-  },
-  httpsAgent: new https.Agent({ rejectUnauthorized: false })
-});
+  try {
+    const settings = await prisma.systemSetting.findFirst();
+    if (settings) {
+      if (settings.directDataToken?.trim()) token = settings.directDataToken.trim();
+      if (settings.directDataBaseUrl?.trim()) baseUrl = settings.directDataBaseUrl.trim();
+      if (settings.directDataV3Url?.trim()) v3Url = settings.directDataV3Url.trim();
+    }
+  } catch (err) {
+    console.error('Erro ao ler configuracoes do DirectData no banco:', err);
+  }
+
+  return { token, baseUrl, v3Url };
+}
 
 // Agente para ignorar erros de SSL na V3 (para compatibilidade completa de certificados em containers)
 const axiosV3 = axios.create({
-  baseURL: V3_URL,
   httpsAgent: new https.Agent({ rejectUnauthorized: false })
 });
 
@@ -32,10 +37,11 @@ const axiosV3 = axios.create({
 // -----------------------------------------------------------------------------
 
 export async function consultaVeicular(placa: string, selectedModules: string[] = []) {
-  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const { token, v3Url } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   
   const cleanPlaca = placa.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-  const url = `${V3_URL}/api/ConsultaVeicular?TOKEN=${TOKEN}&PLACA=${cleanPlaca}`;
+  const url = `${v3Url}/api/ConsultaVeicular?TOKEN=${token}&PLACA=${cleanPlaca}`;
 
   try {
     const response = await axiosV3.get(url);
@@ -122,7 +128,8 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
 // -----------------------------------------------------------------------------
 
 export async function performSmartSearch(type: 'email' | 'phone' | 'name', query: string, selectedModules: string[] = [], state?: string) {
-  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const { token, v3Url } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   
   let url = '';
   const cleanQuery = query.trim();
@@ -176,10 +183,10 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
 
     // Busca síncrona V3 para celular e e-mail (mais econômica e rápida)
     if (type === 'email') {
-      url = `${V3_URL}/api/EnriquecimentoLead?TOKEN=${TOKEN}&EMAIL=${encodeURIComponent(cleanQuery)}`;
+      url = `${v3Url}/api/EnriquecimentoLead?TOKEN=${token}&EMAIL=${encodeURIComponent(cleanQuery)}`;
     } else if (type === 'phone' || type === 'telefone' as any) {
       const phone = cleanQuery.replace(/\D/g, '');
-      url = `${V3_URL}/api/EnriquecimentoLead?TOKEN=${TOKEN}&CELULAR=${phone}`;
+      url = `${v3Url}/api/EnriquecimentoLead?TOKEN=${token}&CELULAR=${phone}`;
     }
 
     const response = await axiosV3.get(url);
@@ -217,9 +224,10 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
 // -----------------------------------------------------------------------------
 
 export async function consultaCpfPlus(cpf: string, selectedModules: string[] = []) {
-  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const { token, v3Url } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   const cleanCpf = cpf.replace(/\D/g, '');
-  const url = `${V3_URL}/api/CadastroPessoaFisicaPlus?TOKEN=${TOKEN}&CPF=${cleanCpf}`;
+  const url = `${v3Url}/api/CadastroPessoaFisicaPlus?TOKEN=${token}&CPF=${cleanCpf}`;
 
   try {
     const response = await axiosV3.get(url);
@@ -312,7 +320,11 @@ export async function filterNaturalPerson(filters: {
   state?: string;
   city?: string;
 }) {
-  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const { token, baseUrl } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  
+  const activeBaseUrl = baseUrl === 'https://api.directd.com.br' ? 'https://api.app.directd.com.br' : baseUrl;
+  
   try {
     const payload = {
       fullName: filters.fullName || "",
@@ -335,12 +347,12 @@ export async function filterNaturalPerson(filters: {
       receiveSeguroDefeso: null
     };
 
-    const response = await fetch('https://api.app.directd.com.br/api/AdvancedSearch/FilterNaturalPerson', {
+    const response = await fetch(`${activeBaseUrl}/api/AdvancedSearch/FilterNaturalPerson`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'accept': 'application/json',
-        'Token': TOKEN,
+        'Token': token,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
       body: JSON.stringify(payload)
@@ -361,14 +373,18 @@ export async function filterNaturalPerson(filters: {
 }
 
 export async function processingIds(listIds: string[], searchName: string = 'Consulta ALL') {
-  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const { token, baseUrl } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  
+  const activeBaseUrl = baseUrl === 'https://api.directd.com.br' ? 'https://api.app.directd.com.br' : baseUrl;
+  
   try {
-    const response = await fetch('https://api.app.directd.com.br/api/AdvancedSearch/ProcessingIds', {
+    const response = await fetch(`${activeBaseUrl}/api/AdvancedSearch/ProcessingIds`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'accept': 'application/json',
-        'Token': TOKEN,
+        'Token': token,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
       body: JSON.stringify({ listIds, searchName })
@@ -386,14 +402,18 @@ export async function processingIds(listIds: string[], searchName: string = 'Con
 }
 
 export async function viewSearch(searchUid: string) {
-  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const { token, baseUrl } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  
+  const activeBaseUrl = baseUrl === 'https://api.directd.com.br' ? 'https://api.app.directd.com.br' : baseUrl;
+  
   try {
-    const response = await fetch('https://api.app.directd.com.br/api/AdvancedSearch/ViewSearch', {
+    const response = await fetch(`${activeBaseUrl}/api/AdvancedSearch/ViewSearch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'accept': 'application/json',
-        'Token': TOKEN,
+        'Token': token,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
       body: JSON.stringify({ searchUid })
@@ -482,9 +502,10 @@ function transformDirectDataAdvanced(rawResponse: any, selectedModules: string[]
 // -----------------------------------------------------------------------------
 
 export async function consultaCnpjPlus(cnpj: string, selectedModules: string[] = []) {
-  if (!TOKEN) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  const { token, v3Url } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   const cleanCnpj = cnpj.replace(/\D/g, '');
-  const url = `${V3_URL}/api/CadastroPessoaJuridicaPlus?TOKEN=${TOKEN}&CNPJ=${cleanCnpj}`;
+  const url = `${v3Url}/api/CadastroPessoaJuridicaPlus?TOKEN=${token}&CNPJ=${cleanCnpj}`;
 
   try {
     const response = await axiosV3.get(url);
