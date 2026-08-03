@@ -14,8 +14,8 @@ export async function gerarPixRecarga(amount: number) {
     return { error: 'Usuário não autenticado.' };
   }
 
-  if (amount < 0.50) {
-    return { error: 'O valor mínimo para recarga é R$ 0,50.' };
+  if (amount < 5.00) {
+    return { error: 'O valor mínimo para recarga é R$ 5,00.' };
   }
 
   try {

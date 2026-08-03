@@ -66,8 +66,8 @@ export default function FaturasClient({ initialUser, initialDeposits }: FaturasC
 
   const handleGeneratePix = async () => {
     const val = parseFloat(amount.replace(',', '.'));
-    if (isNaN(val) || val < 0.5) {
-      toast.error('Valor inválido. Mínimo R$ 0,50');
+    if (isNaN(val) || val < 5.0) {
+      toast.error('Valor inválido. Mínimo R$ 5,00');
       return;
     }
 
