@@ -4,6 +4,8 @@ import NavbarClient from '@/components/NavbarClient';
 import Footer from '@/components/Footer';
 import HomeTabs from '@/components/HomeTabs';
 import FaqAccordion from '@/components/FaqAccordion';
+import HomeSearchBox from '@/components/HomeSearchBox';
+import { Metadata } from 'next';
 import { 
   ShieldCheck, 
   Search, 
@@ -23,6 +25,42 @@ import {
   CreditCard,
   Users
 } from 'lucide-react';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const title = "Consulta CPF, Telefone, CNPJ e Placa | Detetive Buscas";
+  const description = "Consulte CPF, telefone, CNPJ, nome e placa em uma plataforma online com módulos avulsos, preços transparentes e pagamento via Pix. Acesse o Detetive Buscas.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: "https://detetivebuscas.com/"
+    },
+    robots: "index, follow, max-image-preview:large",
+    openGraph: {
+      title,
+      description,
+      url: "https://detetivebuscas.com/",
+      siteName: "Detetive Buscas",
+      images: [
+        {
+          url: "https://detetivebuscas.com/og-detetive-buscas.jpg",
+          width: 1200,
+          height: 630,
+          alt: "Detetive Buscas - Plataforma de consultas online"
+        }
+      ],
+      type: "website",
+      locale: "pt_BR",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://detetivebuscas.com/og-detetive-buscas.jpg"]
+    }
+  };
+}
 
 /**
  * Nova Landing Page Whitelist Principal do Detetive Buscas
@@ -158,46 +196,27 @@ export default async function Home() {
               {/* Badge Whitelist */}
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200/50 text-[#2872fa] text-xs font-semibold tracking-wider uppercase">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Plataforma Corporativa B2B
+                Plataforma de consultas online
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#243b56] tracking-tight leading-[1.1]">
-                Consulte CPF, Telefone e Placa <span className="text-[#2872fa]">em Segundos</span>
+                Consulte CPF, Telefone, CNPJ e Placa Online <br className="hidden md:block" />
+                <span className="text-[#2872fa] font-bold">em uma única plataforma</span>
               </h1>
               
               <p className="text-base md:text-lg text-slate-600 leading-relaxed max-w-2xl">
-                Tenha acesso rápido a informações cadastrais, telefones, placas e vínculos através da nossa plataforma online.
+                Acesse diferentes módulos de consulta cadastral em uma única plataforma. Consulte informações relacionadas a CPF, telefone, CNPJ, nome e veículos, pagando somente pelos módulos utilizados.
               </p>
 
               <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
-                Nosso painel é completo, com página de{' '}
-                <Link href="/consulta-cpf" className="text-[#2872fa] hover:underline font-semibold">
-                  consulta cpf
-                </Link>
-                ,{' '}
-                <Link href="/consulta-telefone" className="text-[#2872fa] hover:underline font-semibold">
-                  consulta telefone
-                </Link>
-                ,{' '}
-                <Link href="/consulta-placa" className="text-[#2872fa] hover:underline font-semibold">
-                  consulta placa
-                </Link>
-                ,{' '}
-                <Link href="/consulta-nome" className="text-[#2872fa] hover:underline font-semibold">
-                  consulta nome
-                </Link>
-                {' e '}
-                <Link href="/consulta-cnpj" className="text-[#2872fa] hover:underline font-semibold">
-                  consulta cnpj
-                </Link>
-                .
+                Escolha abaixo o tipo de consulta desejada ou acesse o painel para realizar verificações de forma rápida, organizada e responsável.
               </p>
 
               {/* Ações */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <Link
                   href="/cadastro"
-                  className="bg-[#2872fa] hover:bg-[#1a5ecd] text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-[#2872fa]/10 flex items-center justify-center gap-2 group transition-all active:scale-95 text-base animate-pulse"
+                  className="bg-[#2872fa] hover:bg-[#1a5ecd] text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-[#2872fa]/10 flex items-center justify-center gap-2 group transition-all active:scale-95 text-base"
                 >
                   Consultar Agora 🔎
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -227,58 +246,147 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* Ilustração/Mockup Hero */}
-            <div className="lg:col-span-5 hidden lg:block">
-              <div className="relative">
-                {/* Elementos flutuantes simulando dados */}
-                <div className="absolute -top-6 -left-6 bg-white p-4 rounded-xl border border-slate-200 shadow-md flex items-center gap-3 animate-bounce" style={{ animationDuration: '4s' }}>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-[10px] text-slate-400 font-bold">STATUS</div>
-                    <div className="text-xs font-bold text-[#243b56]">Valido (100%)</div>
-                  </div>
-                </div>
+            {/* Box de Pesquisa Interativo (Alta Conversão) */}
+            <div className="lg:col-span-5 w-full">
+              <HomeSearchBox />
+            </div>
+          </div>
+        </div>
+      </section>
 
-                <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl border border-slate-200 shadow-md flex items-center gap-3 animate-bounce" style={{ animationDuration: '6s', animationDelay: '1s' }}>
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-[#2872fa]">
-                    <Zap className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-[10px] text-slate-400 font-bold">SPEED</div>
-                    <div className="text-xs font-bold text-[#243b56]">240ms</div>
-                  </div>
-                </div>
+      {/* ===================== ESCOLHA O TIPO DE CONSULTA ===================== */}
+      <section id="escolha-consulta" className="py-20 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
+            <span className="text-[#2872fa] text-xs font-bold uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full">
+              Módulos Específicos
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#243b56]">
+              Escolha o tipo de consulta
+            </h2>
+            <p className="text-slate-600 text-sm md:text-base max-w-2xl mx-auto">
+              Acesse a página correspondente ao tipo de informação que deseja verificar. Cada consulta possui módulos específicos, valores individuais e explicações sobre os dados que podem aparecer.
+            </p>
+          </div>
 
-                {/* Dashboard Mockup Central */}
-                <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-                  <div className="w-full h-3 border-b border-slate-200 pb-3 flex items-center gap-1.5 mb-5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                  </div>
-
-                  <div className="space-y-4 text-left">
-                    <div className="h-6 w-1/3 bg-slate-200 rounded-lg animate-pulse" />
-                    <div className="h-4 w-3/4 bg-slate-200 rounded-md animate-pulse" />
-                    <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div className="h-16 bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between">
-                        <span className="h-2 w-1/2 bg-slate-100 rounded animate-pulse" />
-                        <span className="h-3 w-3/4 bg-slate-200 rounded animate-pulse" />
-                      </div>
-                      <div className="h-16 bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between">
-                        <span className="h-2 w-1/2 bg-slate-100 rounded animate-pulse" />
-                        <span className="h-3 w-2/3 bg-slate-200 rounded animate-pulse" />
-                      </div>
-                    </div>
-                    <div className="h-20 bg-white border border-slate-200 rounded-xl p-4 space-y-2">
-                      <span className="block h-2.5 w-full bg-slate-200 rounded animate-pulse" />
-                      <span className="block h-2.5 w-5/6 bg-slate-200 rounded animate-pulse" />
-                      <span className="block h-2.5 w-2/3 bg-slate-100 rounded animate-pulse" />
-                    </div>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            {/* Card 1: CPF */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between hover:border-[#2872fa]/40 hover:shadow-lg transition-all text-left group">
+              <div className="space-y-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#2872fa] flex items-center justify-center">
+                  <UserCheck className="w-5 h-5" />
                 </div>
+                <h3 className="text-lg font-bold text-[#243b56] group-hover:text-[#2872fa] transition-colors">
+                  Consulta de CPF
+                </h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Consulte informações cadastrais disponíveis relacionadas a um CPF, como dados básicos, telefones, endereços e outros módulos disponíveis na plataforma.
+                </p>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/consulta-cpf"
+                  className="w-full bg-white hover:bg-[#2872fa] hover:text-white border border-slate-300 hover:border-[#2872fa] text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  Consultar CPF
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 2: Telefone */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between hover:border-[#2872fa]/40 hover:shadow-lg transition-all text-left group">
+              <div className="space-y-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#2872fa] flex items-center justify-center">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-[#243b56] group-hover:text-[#2872fa] transition-colors">
+                  Consulta de telefone
+                </h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Pesquise informações disponíveis relacionadas a números de telefone nacionais e verifique possíveis vínculos cadastrais.
+                </p>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/consulta-telefone"
+                  className="w-full bg-white hover:bg-[#2872fa] hover:text-white border border-slate-300 hover:border-[#2872fa] text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  Consultar telefone
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 3: Placa */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between hover:border-[#2872fa]/40 hover:shadow-lg transition-all text-left group">
+              <div className="space-y-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#2872fa] flex items-center justify-center">
+                  <Car className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-[#243b56] group-hover:text-[#2872fa] transition-colors">
+                  Consulta de placa
+                </h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Consulte dados básicos e informações disponíveis relacionadas a veículos por meio da placa informada.
+                </p>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/consulta-placa"
+                  className="w-full bg-white hover:bg-[#2872fa] hover:text-white border border-slate-300 hover:border-[#2872fa] text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  Consultar placa
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 4: CNPJ */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between hover:border-[#2872fa]/40 hover:shadow-lg transition-all text-left group">
+              <div className="space-y-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#2872fa] flex items-center justify-center">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-[#243b56] group-hover:text-[#2872fa] transition-colors">
+                  Consulta de CNPJ
+                </h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Verifique informações cadastrais disponíveis sobre empresas, incluindo situação cadastral, atividade e dados empresariais.
+                </p>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/consulta-cnpj"
+                  className="w-full bg-white hover:bg-[#2872fa] hover:text-white border border-slate-300 hover:border-[#2872fa] text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  Consultar CNPJ
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 5: Nome */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between hover:border-[#2872fa]/40 hover:shadow-lg transition-all text-left group">
+              <div className="space-y-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#2872fa] flex items-center justify-center">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-[#243b56] group-hover:text-[#2872fa] transition-colors">
+                  Consulta por nome
+                </h3>
+                <p className="text-slate-500 text-xs leading-relaxed">
+                  Utilize nome e sobrenome para pesquisar resultados cadastrais disponíveis e refinar a busca por uma pessoa.
+                </p>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/consulta-nome"
+                  className="w-full bg-white hover:bg-[#2872fa] hover:text-white border border-slate-300 hover:border-[#2872fa] text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  Consultar nome
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
           </div>
@@ -290,10 +398,10 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: "99.9%", label: "Uptime do Motor" },
-              { value: "24/7", label: "Monitoramento Ativo" },
-              { value: "0ms", label: "Latência Reduzida" },
-              { value: "100%", label: "Conforme com LGPD" },
+              { value: "24 horas", label: "Plataforma disponível online" },
+              { value: "Pagamento via Pix", label: "Liberação automática do saldo" },
+              { value: "Sem mensalidade", label: "Pagamento por módulo utilizado" },
+              { value: "Consultas organizadas", label: "Resultados separados por categoria" },
             ].map((metric) => (
               <div key={metric.label} className="space-y-1">
                 <p className="text-3xl font-extrabold text-[#243b56]">
@@ -314,10 +422,10 @@ export default async function Home() {
               Processo Simples
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-[#243b56]">
-              Como Funciona a Validação?
+              Como funcionam as consultas?
             </h2>
             <p className="text-slate-600 text-sm md:text-base">
-              Simplificamos o enriquecimento cadastral em três etapas práticas e automatizadas.
+              O processo foi organizado para que o usuário selecione o tipo de pesquisa, escolha os módulos desejados e visualize os resultados disponíveis dentro do painel.
             </p>
           </div>
 
@@ -328,18 +436,18 @@ export default async function Home() {
             {[
               { 
                 step: "01", 
-                title: "Parâmetros de Entrada", 
-                desc: "Informe a chave de pesquisa (CPF, CNPJ, telefone, e-mail ou placa de veículo) de forma isolada." 
+                title: "Escolha o tipo de consulta", 
+                desc: "Selecione uma consulta de CPF, telefone, CNPJ, nome ou placa e informe corretamente o dado solicitado." 
               },
               { 
                 step: "02", 
-                title: "Varredura Automatizada", 
-                desc: "Nosso motor realiza o processamento em milissegundos cruzando dezenas de bases de dados integradas." 
+                title: "Selecione os módulos", 
+                desc: "Visualize os módulos disponíveis, confira os respectivos valores e escolha somente as informações necessárias para sua finalidade." 
               },
               { 
                 step: "03", 
-                title: "Relatório de Resultados", 
-                desc: "Receba os dados cadastrais estruturados e formatados, prontos para análise comercial ou de conformidade." 
+                title: "Acesse os resultados", 
+                desc: "Após a confirmação, os resultados disponíveis serão apresentados de forma organizada dentro do painel." 
               },
             ].map((item, index) => (
               <div key={index} className="bg-slate-50 border border-slate-200/60 rounded-3xl p-8 space-y-5 text-center shadow-sm hover:shadow-md transition-shadow">
@@ -354,16 +462,55 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ===================== USO RESPONSÁVEL ===================== */}
+      <section id="uso-responsavel" className="py-20 bg-slate-50 border-b border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+          <div className="space-y-4">
+            <span className="text-[#2872fa] text-xs font-bold uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full">
+              Termos e Conduta
+            </span>
+            <h2 className="text-3xl font-extrabold text-[#243b56]">
+              Uso responsável das consultas
+            </h2>
+          </div>
+
+          <div className="text-left bg-white border border-slate-200 rounded-3xl p-8 md:p-10 space-y-6 shadow-sm text-sm text-slate-600 leading-relaxed">
+            <p>
+              O Detetive Buscas deve ser utilizado exclusivamente para finalidades legítimas e de acordo com a legislação aplicável. O usuário é responsável pelas informações pesquisadas, pela finalidade da consulta e pelo uso realizado a partir dos resultados apresentados.
+            </p>
+            <p>
+              A plataforma não deve ser utilizada para perseguição, ameaça, discriminação, fraude, extorsão, invasão de privacidade ou qualquer outra finalidade ilícita. Também não é permitido utilizar as informações obtidas para constranger pessoas, tomar decisões discriminatórias ou praticar atos que violem direitos de terceiros.
+            </p>
+            <p>
+              Os resultados podem variar conforme a disponibilidade, a atualização e a abrangência das fontes consultadas. A presença ou ausência de uma informação não deve ser interpretada isoladamente como confirmação absoluta de identidade, propriedade, vínculo ou situação cadastral.
+            </p>
+            <p>
+              Antes de realizar qualquer consulta, o usuário deve verificar se possui uma finalidade legítima e uma base adequada para tratar as informações pesquisadas.
+            </p>
+          </div>
+
+          <div className="flex justify-center gap-6 text-sm font-bold">
+            <Link href="/politica-de-privacidade" className="text-[#2872fa] hover:underline">
+              Política de Privacidade
+            </Link>
+            <span className="text-slate-300">|</span>
+            <Link href="/termos" className="text-[#2872fa] hover:underline">
+              Termos de Uso
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ===================== TABELA DE PREÇOS E MÓDULOS (PREÇOS) ===================== */}
       <section id="precos" className="py-20 bg-white border-b border-slate-200 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
             <span className="text-emerald-600 bg-emerald-50 border border-emerald-200/60 text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-              Preços Transparentes & Sem Mensalidade
+              Preços transparentes & sem mensalidade
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#243b56] tracking-tight">
-              Pague Apenas Pelo Que Consultar
+              Pague apenas pelo que consultar
             </h2>
             <p className="text-slate-600 text-sm md:text-base max-w-2xl mx-auto">
               Sem taxas ocultas, contratos de fidelidade ou mensalidades. Adicione saldo via Pix e consulte os dados que precisar em tempo real.
@@ -466,7 +613,7 @@ export default async function Home() {
               Inteligência de Dados
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-[#243b56]">
-              Fontes de Consultas Disponíveis
+              Fontes de consultas disponíveis
             </h2>
             <p className="text-slate-600 text-sm md:text-base">
               Selecione o tipo de validação para visualizar a estrutura dos dados retornados pela plataforma.
@@ -518,7 +665,7 @@ export default async function Home() {
               Aplicações Práticas
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-[#243b56]">
-              Casos de Uso da Plataforma
+              Casos de uso da plataforma
             </h2>
             <p className="text-slate-600 text-sm md:text-base">
               Descubra como o motor Detetive Buscas ajuda diferentes verticais corporativas a mitigarem riscos e otimizarem cadastros.
@@ -573,6 +720,29 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ===================== PLATAFORMA DE CONSULTAS (SEO TEXT) ===================== */}
+      <section id="seo-explicativo" className="py-20 bg-white border-b border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <h2 className="text-3xl font-extrabold text-[#243b56]">
+            Plataforma de consultas cadastrais online
+          </h2>
+          <div className="text-left text-sm text-slate-600 leading-relaxed space-y-4">
+            <p>
+              O Detetive Buscas reúne diferentes tipos de consulta em um único painel online. Por meio da plataforma, o usuário pode acessar páginas específicas de <Link href="/consulta-cpf" className="text-[#2872fa] hover:underline font-semibold">consulta de CPF</Link>, <Link href="/consulta-telefone" className="text-[#2872fa] hover:underline font-semibold">consulta de telefone</Link>, <Link href="/consulta-cnpj" className="text-[#2872fa] hover:underline font-semibold">consulta de CNPJ</Link>, <Link href="/consulta-placa" className="text-[#2872fa] hover:underline font-semibold">consulta de placa</Link> e <Link href="/consulta-nome" className="text-[#2872fa] hover:underline font-semibold">consulta por nome</Link>.
+            </p>
+            <p>
+              Cada página foi organizada para explicar como a respectiva consulta funciona, quais informações podem estar disponíveis e quais cuidados devem ser adotados durante a utilização. Dessa forma, o usuário pode escolher o serviço mais adequado antes de criar uma conta ou utilizar o saldo disponível.
+            </p>
+            <p>
+              A consulta de CPF é indicada para verificações cadastrais relacionadas a pessoas físicas. A consulta de telefone permite pesquisar informações disponíveis vinculadas a um número nacional. A consulta de CNPJ apresenta dados empresariais e cadastrais disponíveis. Já a consulta de placa é direcionada à verificação de informações relacionadas a veículos.
+            </p>
+            <p>
+              Também é possível utilizar a consulta por nome para refinar pesquisas quando o usuário dispõe apenas do nome ou do nome completo da pessoa pesquisada. Os resultados podem variar e dependem da precisão das informações informadas e da disponibilidade dos dados.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ===================== FAQ SECTION ===================== */}
       <section id="faq" className="py-20 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -581,7 +751,7 @@ export default async function Home() {
               Dúvidas Frequentes
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-[#243b56]">
-              Perguntas e Respostas Institucionais
+              Perguntas e respostas institucionais
             </h2>
             <p className="text-slate-600 text-sm md:text-base">
               Encontre respostas para as principais questões cadastrais, LGPD e de faturamento da nossa plataforma B2B.
@@ -597,7 +767,7 @@ export default async function Home() {
         <div className="absolute inset-0 bg-[#2872fa]/5 -z-10" />
         <div className="max-w-5xl mx-auto px-4 text-center space-y-8">
           <h2 className="text-3xl md:text-5xl font-extrabold text-[#243b56] tracking-tight leading-tight">
-            Comece a Validar Seus Cadastro <br className="hidden md:block"/> de Forma Profissional
+            Comece a realizar suas consultas <br className="hidden md:block"/> de forma profissional
           </h2>
           <p className="text-slate-600 text-base md:text-lg max-w-2xl mx-auto">
             Integre consultas rápidas, reduza custos operacionais com nosso cache interno e tenha conformidade de proteção de dados e privacidade em todas as buscas.
@@ -629,7 +799,7 @@ export default async function Home() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-12">
               <div>
                 <h2 className="text-3xl font-extrabold text-[#243b56] tracking-tight">
-                  Central de Dicas & Conteúdo
+                  Central de dicas & conteúdo
                 </h2>
                 <p className="text-slate-500 mt-2 text-sm md:text-base max-w-xl">
                   Acompanhe as últimas publicações técnicas, tutoriais de conformidade cadastral e novidades de LGPD.
@@ -696,6 +866,111 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      {/* ===================== SCHEMAS JSON-LD ===================== */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Detetive Buscas",
+            "url": "https://detetivebuscas.com",
+            "logo": "https://detetivebuscas.com/logo.webp"
+          })
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Detetive Buscas",
+            "url": "https://detetivebuscas.com",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://detetivebuscas.com/cadastro?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Quais tipos de consulta estão disponíveis?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A plataforma possui páginas e módulos relacionados à consulta de CPF, telefone, CNPJ, nome e placa de veículo. A disponibilidade de informações pode variar conforme o tipo de pesquisa e o módulo selecionado."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Preciso pagar mensalidade para usar o Detetive Buscas?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Não há mensalidade obrigatória. O usuário pode adicionar saldo ao painel e pagar somente pelas consultas e módulos utilizados."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Como o pagamento é realizado?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "O saldo pode ser adicionado por meio de Pix. Após a confirmação do pagamento, o valor é disponibilizado no painel conforme as regras da plataforma."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Os resultados são sempre completos?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Não. A quantidade e a precisão das informações podem variar conforme os dados informados, a disponibilidade das fontes e a atualização dos registros."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Posso consultar qualquer pessoa?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "As consultas devem ser realizadas somente para finalidades legítimas e de acordo com a legislação aplicável. O usuário é responsável pela pesquisa realizada e pelo uso das informações obtidas."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "É necessário informar a senha da pessoa pesquisada?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Não. A plataforma não solicita senhas de redes sociais, contas bancárias, e-mails ou outros serviços pertencentes à pessoa pesquisada."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Como escolho a consulta correta?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Acesse as páginas de consulta de CPF, telefone, CNPJ, nome ou placa e confira a explicação sobre os dados e módulos disponíveis em cada categoria."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Como entro em contato com o suporte?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "O atendimento deve ser solicitado pelos canais oficiais apresentados na página de contato ou dentro do painel do usuário."
+                }
+              }
+            ]
+          })
+        }}
+      />
 
       {/* ===================== FOOTER ===================== */}
       <Footer logoUrl={settings?.logoUrl} />

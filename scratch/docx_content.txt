@@ -1,0 +1,843 @@
+MELHORIAS SITES 
+DETETIVE
+1° adicionar na 
+dash
+ admin valor gasto com api, e ROI do mês e do dia (igual a dashboard da 
+utmify
+)
+2° corrigir a % que mostra de faturamento comparado com o dia anterior, pois tem vezes que buga 
+DETETIVE
+1° - 
+historico
+ de quem 
+foi
+ os 
+usuarios
+ que fez os 
+ultimos
+ 
+depositos
+ (igual tem nos sites de 
+sms
+) 
+2° 
+historico
+ de quais consultas foram feitas no dia (exemplo 5 de telefone, 3 de 
+cpf
+, 1 de placa) atualmente 
+so
+ tem as consultas feitas no mês
+3° corrigir a consulta por nome. as vezes na direct data mostra mais de 1 opção 
+pra
+ aquele nome, a pessoa precisa escolher qual quer. precisa ser assim no detetive também (nos sites de 
+sms
+ 
+tambem
+)
+4° mudar o 
+inicio
+ do site, voltar com o campo de pesquisa aonde o 
+usuario
+ digita o 
+cpf
+/placa/telefone e diz que apareceu resultado 
+elogo
+ em seguida botão 
+pra
+ ele se cadastrar
+5° 
+horario
+ de reset dos faturamentos 
+nao
+ está em 
+gmt
+ 
+horario
+ de 
+brasilia
+MELHORIAS DE SEO — HOMEPAGE DETETIVE BUSCAS
+Página:
+ 
+https://detetivebuscas.com/
+Objetivo:
+ melhorar o SEO técnico, a relevância semântica, a distribuição de autoridade para as páginas de consulta, a confiança da marca e a conversão da homepage.
+1. ALTERAR O TITLE DA HOMEPAGE
+Substituir o 
+title
+ atual:
+&lt;
+title
+&gt;Detetive Buscas - Consultas CPF, Telefone e Veículos&lt;/
+title
+&gt;
+Por:
+&lt;
+title
+&gt;Consulta CPF, Telefone, CNPJ e Placa | Detetive Buscas&lt;/
+title
+&gt;
+O 
+title
+ precisa permanecer exclusivo para a homepage.
+2. ALTERAR A META DESCRIPTION
+Substituir a meta 
+description
+ atual por:
+&lt;meta 
+name
+="
+description
+" 
+content
+="Consulte CPF, telefone, CNPJ, nome e placa em uma plataforma online com módulos avulsos, preços transparentes e pagamento via Pix. Acesse o Detetive Buscas."&gt;
+Não repetir essa mesma 
+description
+ nas páginas internas.
+Cada página, como 
+/consulta-
+cpf
+, 
+/consulta-telefone
+ e 
+/consulta-placa
+, deve possuir uma meta 
+description
+ própria.
+3. REMOVER A META KEYWORDS
+Remover completamente a 
+tag
+:
+&lt;meta 
+name
+="
+keywords
+" 
+content
+="..."&gt;
+A meta 
+keywords
+ não contribui atualmente para o ranqueamento no Google e não precisa permanecer no código.
+4. ADICIONAR CANONICAL
+Adicionar dentro do 
+&lt;
+head
+&gt;
+ da homepage:
+&lt;link 
+rel
+="canonical" 
+href
+="https://detetivebuscas.com/"&gt;
+Todas as páginas internas também devem possuir canonical autorreferente.
+Exemplos:
+&lt;link 
+rel
+="canonical" 
+href
+="https://detetivebuscas.com/consulta-
+cpf
+"&gt;
+&lt;link 
+rel
+="canonical" 
+href
+="https://detetivebuscas.com/consulta-telefone"&gt;
+&lt;link 
+rel
+="canonical" 
+href
+="https://detetivebuscas.com/consulta-placa"&gt;
+&lt;link 
+rel
+="canonical" 
+href
+="https://detetivebuscas.com/consulta-
+cnpj
+"&gt;
+&lt;link 
+rel
+="canonical" 
+href
+="https://detetivebuscas.com/consulta-nome"&gt;
+Não criar canonical de todas as páginas apontando para a homepage.
+5. ADICIONAR META ROBOTS
+Adicionar dentro do 
+&lt;
+head
+&gt;
+:
+&lt;meta 
+name
+="
+robots
+" 
+content
+="index, follow, 
+max-image-preview:large
+"&gt;
+Também confirmar que:
+a homepage não contém 
+noindex
+;
+a homepage não está bloqueada no 
+robots.txt
+;
+a página retorna código HTTP 200;
+o 
+sitemap
+ contém a homepage e as páginas estratégicas;
+não existem versões duplicadas 
+da mesma
+ URL.
+6. MELHORAR AS TAGS OPEN GRAPH
+Manter 
+og:title
+, 
+og:description
+, 
+og:locale
+ e 
+og:type
+, mas adicionar:
+&lt;meta 
+property
+="
+og:url
+" 
+content
+="https://detetivebuscas.com/"&gt;
+&lt;meta 
+property
+="
+og:site_name
+" 
+content
+="Detetive Buscas"&gt;
+&lt;meta 
+property
+="
+og:image
+" 
+content
+="https://detetivebuscas.com/og-detetive-buscas.jpg"&gt;
+&lt;meta 
+property
+="
+og:image:width
+" 
+content
+="1200"&gt;
+&lt;meta 
+property
+="
+og:image:height
+" 
+content
+="630"&gt;
+&lt;meta 
+property
+="
+og:image:alt
+" 
+content
+="Detetive Buscas - Plataforma de consultas online"&gt;
+Criar uma imagem própria para compartilhamento com tamanho recomendado de 1200 × 630 pixels.
+Alterar:
+&lt;meta 
+name
+="
+twitter:card
+" 
+content
+="
+summary
+"&gt;
+Para:
+&lt;meta 
+name
+="
+twitter:card
+" 
+content
+="
+summary_large_image
+"&gt;
+Adicionar:
+&lt;meta 
+name
+="
+twitter:image
+" 
+content
+="https://detetivebuscas.com/og-detetive-buscas.jpg"&gt;
+7. ALTERAR O H1 PRINCIPAL
+Substituir o H1 atual:
+Consulte CPF, Telefone e Placa em Segundos
+Por:
+Consulte CPF, Telefone, CNPJ e Placa Online
+O H1 precisa continuar sendo o único H1 da homepage.
+A expressão visual destacada em azul pode ser:
+em uma única plataforma
+Exemplo completo:
+&lt;h1&gt;
+  Consulte CPF, Telefone, CNPJ e Placa
+  &lt;
+span
+&gt;em uma única plataforma&lt;/
+span
+&gt;
+&lt;/h1&gt;
+8. ALTERAR O TEXTO PRINCIPAL ABAIXO DO H1
+Substituir o primeiro parágrafo atual por:
+Acesse diferentes módulos de consulta cadastral em uma única plataforma. Consulte informações relacionadas a CPF, telefone, CNPJ, nome e veículos, pagando somente pelos módulos utilizados.
+O segundo parágrafo deve ser substituído por:
+Escolha abaixo o tipo de consulta desejada ou acesse o painel para realizar verificações de forma rápida, organizada e responsável.
+Evitar colocar todos os links das páginas estratégicas espremidos dentro de um único parágrafo pequeno.
+Esses links deverão aparecer em uma seção própria de cards, conforme a próxima solicitação.
+9. MANTER OS BOTÕES PRINCIPAIS DO HERO
+Manter dois botões principais:
+Botão principal:
+Consultar agora
+Link:
+https://detetivebuscas.com/cadastro
+Botão secundário:
+Entrar no painel
+Link:
+https://detetivebuscas.com/login
+Retirar a animação contínua 
+animate
+-pulse
+ do botão principal.
+O botão pode ter um pequeno efeito no 
+hover
+, mas não deve ficar piscando permanentemente, pois isso pode reduzir a aparência profissional da página.
+10. 
+CRIAR UMA NOVA
+ SEÇÃO LOGO ABAIXO DO HERO
+Adicionar uma seção imediatamente depois do hero e antes dos indicadores numéricos.
+Título da seção
+Escolha o tipo de consulta
+Texto introdutório
+Acesse a página correspondente ao tipo de informação que deseja verificar. Cada consulta possui módulos específicos, valores individuais e explicações sobre os dados que podem aparecer.
+Criar cinco cards.
+CARD 1 — CONSULTA DE CPF
+Título:
+Consulta de CPF
+Descrição:
+Consulte informações cadastrais disponíveis relacionadas a um CPF, como dados básicos, telefones, endereços e outros módulos disponíveis na plataforma.
+Botão:
+Consultar CPF
+Link:
+https://detetivebuscas.com/consulta-cpf
+CARD 2 — CONSULTA DE TELEFONE
+Título:
+Consulta de telefone
+Descrição:
+Pesquise informações disponíveis relacionadas a números de telefone nacionais e verifique possíveis vínculos cadastrais.
+Botão:
+Consultar telefone
+Link:
+https://detetivebuscas.com/consulta-telefone
+CARD 3 — CONSULTA DE PLACA
+Título:
+Consulta de placa
+Descrição:
+Consulte dados básicos e informações disponíveis relacionadas a veículos por meio da placa informada.
+Botão:
+Consultar placa
+Link:
+https://detetivebuscas.com/consulta-placa
+CARD 4 — CONSULTA DE CNPJ
+Título:
+Consulta de CNPJ
+Descrição:
+Verifique informações cadastrais disponíveis sobre empresas, incluindo situação cadastral, atividade e dados empresariais.
+Botão:
+Consultar CNPJ
+Link:
+https://detetivebuscas.com/consulta-cnpj
+CARD 5 — CONSULTA POR NOME
+Título:
+Consulta por nome
+Descrição:
+Utilize nome e sobrenome para pesquisar resultados cadastrais disponíveis e refinar a busca por uma pessoa.
+Botão:
+Consultar nome
+Link:
+https://detetivebuscas.com/consulta-nome
+Regras técnicas para esses cards
+Os títulos dos cards devem usar 
+&lt;h3&gt;
+.
+Os links devem ser links HTML reais com atributo 
+href
+.
+Não usar botões executados apenas por 
+JavaScript
+.
+As descrições devem estar visíveis no HTML renderizado.
+Não aplicar 
+nofollow
+ nesses links.
+Não abrir esses links em uma nova aba.
+Os cards devem aparecer também no mobile.
+Priorizar layout de uma coluna no celular.
+Não esconder os textos dos cards apenas para mecanismos de busca.
+11. ALTERAR A SEÇÃO DE NÚMEROS E INDICADORES
+A seção atual possui afirmações como:
+99,9% de 
+uptime
+;
+monitoramento 24/7;
+0 
+ms
+ de latência;
+100% conforme com a LGPD.
+Remover qualquer número ou promessa que não possa ser comprovada.
+Especialmente, remover:
+0ms Latência Reduzida
+A afirmação de 0 
+ms
+ não é realista e entra em contradição com outros números apresentados na página.
+Substituir os quatro indicadores atuais pelos seguintes:
+Indicador 1
+Texto principal:
+24 horas
+Texto complementar:
+Plataforma disponível online
+Indicador 2
+Texto principal:
+Pagamento via Pix
+Texto complementar:
+Liberação automática do saldo
+Indicador 3
+Texto principal:
+Sem mensalidade
+Texto complementar:
+Pagamento por módulo utilizado
+Indicador 4
+Texto principal:
+Consultas organizadas
+Texto complementar:
+Resultados separados por categoria
+Não utilizar “100% seguro”, “100% legal” ou “100% conforme com a LGPD” sem documentação que sustente integralmente a afirmação.
+12. ALTERAR O SELO NO TOPO
+Substituir:
+Plataforma Corporativa B2B
+Por:
+Plataforma de consultas online
+Essa definição é mais coerente com o público atual da página.
+Caso o site queira manter um posicionamento exclusivamente empresarial, todo o restante do conteúdo precisará ser ajustado para linguagem B2B, incluindo os usos permitidos, exemplos e 
+CTAs
+.
+13. ALTERAR A SEÇÃO “COMO FUNCIONA”
+Substituir o título:
+Como Funciona a Validação?
+Por:
+Como funcionam as consultas no Detetive Buscas?
+Substituir o texto introdutório por:
+O processo foi organizado para que o usuário selecione o tipo de pesquisa, escolha os módulos desejados e visualize os resultados disponíveis dentro do painel.
+Alterar os três passos.
+Passo 1
+Título:
+Escolha o tipo de consulta
+Texto:
+Selecione uma consulta de CPF, telefone, CNPJ, nome ou placa e informe corretamente o dado solicitado.
+Passo 2
+Título:
+Selecione os módulos
+Texto:
+Visualize os módulos disponíveis, confira os respectivos valores e escolha somente as informações necessárias para sua finalidade.
+Passo 3
+Título:
+Acesse os resultados
+Texto:
+Após a confirmação, os resultados disponíveis serão apresentados de forma organizada dentro do painel.
+Remover ou reformular a frase:
+cruzando dezenas de bases de dados integradas
+Essa afirmação só deve permanecer caso seja verdadeira, documentada e possa ser comunicada legalmente.
+14. ADICIONAR UMA SEÇÃO SOBRE USO RESPONSÁVEL
+Adicionar essa seção depois de “Como funciona” e antes da seção de preços.
+H2
+Uso responsável das consultas
+Texto completo
+O Detetive Buscas deve ser utilizado exclusivamente para finalidades legítimas e de acordo com a legislação aplicável. O usuário é responsável pelas informações pesquisadas, pela finalidade da consulta e pelo uso realizado a partir dos resultados apresentados.
+A plataforma não deve ser utilizada para perseguição, ameaça, discriminação, fraude, extorsão, invasão de privacidade ou qualquer outra finalidade ilícita. Também não é permitido utilizar as informações obtidas para constranger pessoas, tomar decisões discriminatórias ou praticar atos que violem direitos de terceiros.
+Os resultados podem variar conforme a disponibilidade, a atualização e a abrangência das fontes consultadas. A presença ou ausência de uma informação não deve ser interpretada isoladamente como confirmação absoluta de identidade, propriedade, vínculo ou situação cadastral.
+Antes de realizar qualquer consulta, o usuário deve verificar se possui uma finalidade legítima e uma base adequada para tratar as informações pesquisadas.
+Adicionar abaixo do texto dois links:
+Política de Privacidade
+Termos de Uso
+17. ADICIONAR TEXTO SEO ANTES DA SEÇÃO DE FAQ
+Adicionar uma nova seção de conteúdo antes do FAQ.
+H2
+Plataforma de consultas cadastrais online
+Texto
+O Detetive Buscas reúne diferentes tipos de consulta em um único painel online. Por meio da plataforma, o usuário pode acessar páginas específicas de consulta de CPF, consulta de telefone, consulta de CNPJ, consulta de placa e consulta por nome.
+Cada página foi organizada para explicar como a respectiva consulta funciona, quais informações podem estar disponíveis e quais cuidados devem ser adotados durante a utilização. Dessa forma, o usuário pode escolher o serviço mais adequado antes de criar uma conta ou utilizar o saldo disponível.
+A consulta de CPF é indicada para verificações cadastrais relacionadas a pessoas físicas. A consulta de telefone permite pesquisar informações disponíveis vinculadas a um número nacional. A consulta de CNPJ apresenta dados empresariais e cadastrais disponíveis. Já a consulta de placa é direcionada à verificação de informações relacionadas a veículos.
+Também é possível utilizar a consulta por nome para refinar pesquisas quando o usuário dispõe apenas do nome ou do nome completo da pessoa pesquisada. Os resultados podem variar e dependem da precisão das informações informadas e da disponibilidade dos dados.
+Links obrigatórios dentro do texto
+Na primeira vez em que aparecer cada termo, adicionar o respectivo link:
+“consulta de CPF” → 
+/consulta-
+cpf
+“consulta de telefone” → 
+/consulta-telefone
+“consulta de CNPJ” → 
+/consulta-
+cnpj
+“consulta de placa” → 
+/consulta-placa
+“consulta por nome” → 
+/consulta-nome
+Não repetir o link em todas as ocorrências da mesma palavra.
+18. FAQ RECOMENDADO PARA A HOMEPAGE
+Manter uma seção de FAQ com perguntas gerais.
+Pergunta 1
+Quais tipos de consulta estão disponíveis?
+A plataforma possui páginas e módulos relacionados à consulta de CPF, telefone, CNPJ, nome e placa de veículo. A disponibilidade de informações pode variar conforme o tipo de pesquisa e o módulo selecionado.
+Pergunta 2
+Preciso pagar mensalidade para usar o Detetive Buscas?
+Não há mensalidade obrigatória. O usuário pode adicionar saldo ao painel e pagar somente pelas consultas e módulos utilizados.
+Pergunta 3
+Como o pagamento é realizado?
+O saldo pode ser adicionado por meio de Pix. Após a confirmação do pagamento, o valor é disponibilizado no painel conforme as regras da plataforma.
+Pergunta 4
+Os resultados são sempre completos?
+Não. A quantidade e a precisão das informações podem variar conforme os dados informados, a disponibilidade das fontes e a atualização dos registros.
+Pergunta 5
+Posso consultar qualquer pessoa?
+As consultas devem ser realizadas somente para finalidades legítimas e de acordo com a legislação aplicável. O usuário é responsável pela pesquisa realizada e pelo uso das informações obtidas.
+Pergunta 6
+É necessário informar a senha da pessoa pesquisada?
+Não. A plataforma não solicita senhas de redes sociais, contas bancárias, e-mails ou outros serviços pertencentes à pessoa pesquisada.
+Pergunta 7
+Como escolho a consulta correta?
+Acesse as páginas de consulta de CPF, telefone, CNPJ, nome ou placa e confira a explicação sobre os dados e módulos disponíveis em cada categoria.
+Pergunta 8
+Como entro em contato com o suporte?
+O atendimento deve ser solicitado pelos canais oficiais apresentados na página de contato ou dentro do painel do usuário.
+19. IMPLEMENTAR SCHEMA ORGANIZATION E WEBSITE
+Adicionar na homepage um JSON-LD semelhante ao modelo abaixo.
+Substituir a URL da logo pela URL pública definitiva.
+&lt;script 
+type
+="
+application
+/
+ld+json
+"&gt;
+{
+  "@
+context
+": "https://schema.org",
+  "@
+graph
+": [
+    {
+      "@
+type
+": "
+Organization
+",
+      "@id": "https://detetivebuscas.com/#organization",
+      "
+name
+": "Detetive Buscas",
+      "
+url
+": "https://detetivebuscas.com/",
+      "logo": {
+        "@
+type
+": "
+ImageObject
+",
+        "
+url
+": "https://detetivebuscas.com/tl.png"
+      }
+    },
+    {
+      "@
+type
+": "
+WebSite
+",
+      "@id": "https://detetivebuscas.com/#website",
+      "
+url
+": "https://detetivebuscas.com/",
+      "
+name
+": "Detetive Buscas",
+      "
+inLanguage
+": "
+pt
+-BR",
+      "
+publisher
+": {
+        "@id": "https://detetivebuscas.com/#organization"
+      }
+    }
+  ]
+}
+&lt;/script&gt;
+Não inserir dados empresariais falsos dentro do 
+schema
+.
+20. IMPLEMENTAR SCHEMA FAQPAGE
+Caso as perguntas e respostas estejam visíveis na página, adicionar o 
+schema
+ correspondente.
+&lt;script 
+type
+="
+application
+/
+ld+json
+"&gt;
+{
+  "@
+context
+": "https://schema.org",
+  "@
+type
+": "
+FAQPage
+",
+  "
+mainEntity
+": [
+    {
+      "@
+type
+": "
+Question
+",
+      "
+name
+": "Quais tipos de consulta estão disponíveis?",
+      "
+acceptedAnswer
+": {
+        "@
+type
+": "
+Answer
+",
+        "
+text
+": "A plataforma possui páginas e módulos relacionados à consulta de CPF, telefone, CNPJ, nome e placa de veículo. A disponibilidade de informações pode variar conforme o tipo de pesquisa e o módulo selecionado."
+      }
+    },
+    {
+      "@
+type
+": "
+Question
+",
+      "
+name
+": "Preciso pagar mensalidade para usar o Detetive Buscas?",
+      "
+acceptedAnswer
+": {
+        "@
+type
+": "
+Answer
+",
+        "
+text
+": "Não há mensalidade obrigatória. O usuário pode adicionar saldo ao painel e pagar somente pelas consultas e módulos utilizados."
+      }
+    },
+    {
+      "@
+type
+": "
+Question
+",
+      "
+name
+": "Os resultados são sempre completos?",
+      "
+acceptedAnswer
+": {
+        "@
+type
+": "
+Answer
+",
+        "
+text
+": "Não. A quantidade e a precisão das informações podem variar conforme os dados informados, a disponibilidade das fontes e a atualização dos registros."
+      }
+    },
+    {
+      "@
+type
+": "
+Question
+",
+      "
+name
+": "Posso consultar qualquer pessoa?",
+      "
+acceptedAnswer
+": {
+        "@
+type
+": "
+Answer
+",
+        "
+text
+": "As consultas devem ser realizadas somente para finalidades legítimas e de acordo com a legislação aplicável. O usuário é responsável pela pesquisa realizada e pelo uso das informações obtidas."
+      }
+    }
+  ]
+}
+&lt;/script&gt;
+As perguntas incluídas no 
+schema
+ precisam ser iguais às perguntas visíveis para o usuário.
+21. CORRIGIR O ALT DA LOGO
+Substituir:
+alt
+="Logo"
+Por:
+alt
+="Logo do Detetive Buscas"
+Não colocar uma lista de palavras-chave no atributo 
+alt
+.
+22. CRIAR PÁGINAS INSTITUCIONAIS REAIS
+No HTML atual, alguns links institucionais levam novamente para a homepage.
+Criar páginas reais para:
+/sobre
+/contato
+/suporte
+/termos
+/
+politica
+-de-privacidade
+/
+politica
+-de-cookies
+/
+protecao
+-
+de-dados
+Somente criar 
+/status
+ caso exista uma página real de status dos serviços.
+Se não existir monitoramento público, remover o link “Status”.
+23. CORRIGIR OS LINKS DO RODAPÉ
+Os links do rodapé não podem levar todos para a homepage.
+Estrutura recomendada:
+Institucional
+Sobre o Detetive Buscas → 
+/sobre
+Contato → 
+/contato
+Suporte → 
+/suporte
+Blog → 
+/blog
+Consultas
+Consulta CPF → 
+/consulta-
+cpf
+Consulta telefone → 
+/consulta-telefone
+Consulta placa → 
+/consulta-placa
+Consulta CNPJ → 
+/consulta-
+cnpj
+Consulta por nome → 
+/consulta-nome
+Legal
+Termos de Uso → 
+/termos
+Política de Privacidade → 
+/
+politica
+-de-privacidade
+Política de Cookies → 
+/
+politica
+-de-cookies
+Proteção de Dados → 
+/
+protecao
+-
+de-dados
+25. CORRIGIR ERRO DE PORTUGUÊS
+Localizar o texto:
+Comece a Validar Seus Cadastro de Forma Profissional
+Substituir por:
+Comece a realizar suas consultas de forma profissional
+26. PADRONIZAR OS TÍTULOS EM PORTUGUÊS
+Evitar colocar todas as palavras dos títulos com iniciais maiúsculas.
+Exemplo atual:
+Como Funciona a Validação?
+Alterar para:
+Como funcionam as consultas?
+Exemplo atual:
+Pague Apenas Pelo Que Consultar
+Alterar para:
+Pague apenas pelo que consultar
+Essa padronização deixa o texto mais natural em português.
+30. CHECKLIST TÉCNICO PARA O DESENVOLVEDOR
+Confirmar depois da implementação:
+A homepage retorna código 200.
+Existe apenas um H1.
+O 
+title
+ é exclusivo.
+A meta 
+description
+ é exclusiva.
+Existe canonical autorreferente.
+Não existe 
+noindex
+.
+O robots.txt permite o rastreamento.
+A homepage está no 
+sitemap
+.
+As cinco páginas de consulta estão no 
+sitemap
+.
+Os links internos aparecem no HTML.
+Os links não dependem exclusivamente de 
+JavaScript
+.
+Não existem links institucionais apontando incorretamente para a home.
+O 
+schema
+ passa no validador.
+Não existem dados falsos no 
+schema
+.
+As imagens possuem tamanho definido.
+A imagem Open 
+Graph
+ funciona.
+A página está responsiva no mobile.
+Não existe texto cortado ou escondido.
+O botão principal funciona.
+O botão de login funciona.
+Os cards das consultas funcionam.
+Não existem redirecionamentos em loop.
+As versões com e sem barra final seguem um padrão.
+HTTP redireciona corretamente para HTTPS.
+Versões alternativas do domínio redirecionam para uma versão principal.
+O conteúdo principal aparece no HTML renderizado.
+A página não apresenta erro no Google Search Console.

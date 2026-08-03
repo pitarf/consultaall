@@ -33,3 +33,26 @@ Para proporcionar o maior conforto visual aos usuários e administradores da pla
 No painel administrativo, há duas novas ferramentas para gerenciar a indexação orgânica e o tráfego do site:
 - **Páginas SEO:** No menu lateral do admin, clique em "Páginas SEO". Lá você pode criar páginas personalizadas (ex: `/consulta-cpf`). Ao preencher o formulário, o sistema criará as meta tags corretas para o Google, adicionará a página ao Sitemap automático e cuidará dos cabeçalhos. Se você mudar a URL de uma página existente, o sistema fará um redirecionamento 301 automático (impedindo erros 404).
 - **Blog & Conteúdo:** Clique em "Blog" para gerenciar artigos e categorias. Você pode cadastrar categorias de postagens e criar artigos completos informando autor, imagem de capa, descrição meta e o conteúdo em HTML rico. O blog ficará disponível publicamente em `/blog` para atrair tráfego e consolidar a marca de forma orgânica.
+
+## Novidades da Versão (v0.9.1)
+
+### 1. Teste de Busca Interativo na Homepage
+Agora você pode experimentar a ferramenta antes mesmo de se cadastrar:
+- Na página inicial do site, digite um CPF, Placa de Veículo ou Telefone no campo de busca.
+- A plataforma simulará o processo de checagem em tempo real e exibirá uma prévia resumida (com dados parcialmente ocultos/mascarados) mostrando o que foi localizado.
+- Para revelar o relatório completo, basta clicar no botão de revelação e criar sua conta grátis.
+
+### 2. Busca Segura por Nome (Escolha de Homônimo)
+Ao pesquisar por Nome e Sobrenome, o sistema exibe uma tela com os homônimos encontrados (com dados parciais mascarados de Nascimento e Mãe para identificação):
+- A pesquisa inicial é inteiramente gratuita e serve para você confirmar que achou a pessoa certa.
+- O seu saldo só será consumido no momento em que você clicar no perfil correspondente e confirmar a abertura da consulta detalhada.
+
+### 3. Links Rápidos de Consulta
+Na página inicial do site, você encontra atalhos diretos para as páginas explicativas de cada tipo de pesquisa:
+- Consulta de CPF
+- Consulta de telefone
+- Consulta de placa
+- Consulta de CNPJ
+- Consulta por nome
+Cada uma destas páginas explica o funcionamento técnico de cada consulta e a finalidade recomendada para cada busca.
+

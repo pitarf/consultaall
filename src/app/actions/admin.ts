@@ -196,7 +196,7 @@ export async function getDashboardMetrics() {
   });
   const todayRevenue = todayDeposits.reduce((sum, tx) => sum + tx.amount, 0);
 
-  // Consultas de Hoje
+  // Consultas de Hoje (agrupadas por target)
   const todaySearchesByTarget = await prisma.searchHistory.groupBy({
     by: ['target'],
     where: {
@@ -210,6 +210,12 @@ export async function getDashboardMetrics() {
   const todayPixFees = todayDeposits.length * pixFee;
   const todayCost = todayPixFees + todayApiCost;
   const todayProfit = todayRevenue - todayCost;
+  const todayRoi = todayCost > 0 ? (todayProfit / todayCost) * 100 : 0;
+
+  const todayQueriesList = todaySearchesByTarget.map(q => ({
+    target: q.target,
+    count: q._count.id
+  }));
 
   // Depósitos de Ontem
   const yesterdayDeposits = await prisma.transaction.findMany({
@@ -242,12 +248,16 @@ export async function getDashboardMetrics() {
   const yesterdayPixFees = yesterdayDeposits.length * pixFee;
   const yesterdayCost = yesterdayPixFees + yesterdayApiCost;
   const yesterdayProfit = yesterdayRevenue - yesterdayCost;
+  const yesterdayRoi = yesterdayCost > 0 ? (yesterdayProfit / yesterdayCost) * 100 : 0;
 
+  // Correção da % de variação para evitar divisões por zero ou bugs de sinal
   let changePercentage = 0;
   if (yesterdayRevenue > 0) {
     changePercentage = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100;
   } else if (todayRevenue > 0) {
     changePercentage = 100;
+  } else {
+    changePercentage = 0;
   }
 
   // Custos acumulados históricos (Pix Fees + API Costs de todas as consultas com status SUCCESS)
@@ -263,6 +273,7 @@ export async function getDashboardMetrics() {
   
   const totalCost = totalPixFees + totalApiCost;
   const totalProfit = totalRevenue - totalCost;
+  const totalRoi = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
   return { 
     totalRevenue, 
@@ -273,12 +284,18 @@ export async function getDashboardMetrics() {
     todayRevenue,
     todayCost,
     todayProfit,
+    todayRoi,
+    todayApiCost,
+    todayQueriesList,
     yesterdayRevenue,
     yesterdayCost,
     yesterdayProfit,
+    yesterdayRoi,
+    yesterdayApiCost,
     changePercentage,
     totalCost,
     totalProfit,
+    totalRoi,
     pixFee
   };
 }
@@ -657,11 +674,15 @@ export async function getAdvancedMetrics(period: string = 'month') {
     };
   }).sort((a, b) => b.faturamento - a.faturamento);
 
+  const monthlyRoi = monthlyCosts > 0 ? (monthlyProfit / monthlyCosts) * 100 : 0;
+
   return {
     monthlyRevenue,
     monthlyCosts,
     monthlyProfit,
     monthlyQueries,
+    monthlyRoi,
+    monthlyApiCosts,
     chartData,
     attributionTable
   };

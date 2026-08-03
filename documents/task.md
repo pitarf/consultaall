@@ -99,3 +99,15 @@
 - [x] **Injeção de Metadados e Canonical:** Tags `<link rel="canonical">` auto-referentes injetadas no layout e controle dinâmico da tag `robots` (`noindex, nofollow` em painéis protegidos).
 - [x] **Blocos de Links Internos:** Exibição dinâmica de links de consulta adicionados pelo admin e das últimas 3 postagens do blog diretamente na homepage para indexação natural.
 
+## SPLIT 6: Reestruturação Comercial, Páginas Institucionais e Busca por Nome (✅ CONCLUÍDO)
+*Este split foca no aumento da taxa de conversão cadastral (CRO), conformidade jurídica avançada e refinamento das buscas por nome.*
+- [x] **Campo de Busca Interativo no Hero (Teaser):** Simulação de busca com loading de conformidade e preview mascarado para atrair cadastros (componente `HomeSearchBox`).
+- [x] **Cards de Links Rápidos (CRO/SEO):** Inclusão de 5 cards na Home apontando para as páginas de pesquisas (CPF, Telefone, Placa, CNPJ, Nome).
+- [x] **Indicadores Comerciais Reais:** Atualização da faixa de métricas com indicadores focados (24h online, Pix imediato, sem mensalidade, organização por categorias).
+- [x] **Páginas Institucionais Legais:** Rotas e páginas estáticas `/sobre`, `/contato`, `/suporte`, `/politica-de-privacidade` e `/politica-de-cookies`.
+- [x] **Footer Global Corrigido:** Ajuste dos links e descrições no rodapé para apontar para as novas rotas.
+- [x] **SEO Avançado e Schemas JSON-LD:** Configuração de injeção dos metadados Open Graph e schemas JSON-LD `Organization`, `WebSite` e `FAQPage` estruturados.
+- [x] **Busca por Nome com Homônimos (Multi-Candidato):** Listagem inicial de candidatos de forma gratuita, permitindo o consumo de saldo somente após confirmação do perfil correto.
+- [x] **Métricas Financeiras do Admin:** Exibição do ROI (%), custo da API, histórico dos últimos depósitos aprovados e contagem de buscas do dia por categoria.
+
+

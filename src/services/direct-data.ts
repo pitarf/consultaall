@@ -127,7 +127,13 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
 // SEÇÃO: PESQUISA AVANÇADA (V3) - NOME, TELEFONE, EMAIL (SÍNCRONO)
 // -----------------------------------------------------------------------------
 
-export async function performSmartSearch(type: 'email' | 'phone' | 'name', query: string, selectedModules: string[] = [], state?: string) {
+export async function performSmartSearch(
+  type: 'email' | 'phone' | 'name', 
+  query: string, 
+  selectedModules: string[] = [], 
+  state?: string,
+  candidateId?: string
+) {
   const { token, v3Url } = await getDirectDataConfig();
   if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
   
@@ -136,49 +142,61 @@ export async function performSmartSearch(type: 'email' | 'phone' | 'name', query
 
   try {
     if (type === 'name' || type === 'nome' as any) {
-      // Fluxo V2: Pesquisa Avançada (Filtro -> Processamento -> Polling)
-      const filterRes = await filterNaturalPerson({ fullName: cleanQuery, state });
-      if (!filterRes.success || !filterRes.listFilters || filterRes.listFilters.length === 0) {
-        const errorMsg = filterRes.error?.message || filterRes.metaDados?.mensagem || 'Nenhum registro encontrado.';
-        return { success: false, message: errorMsg };
-      }
+      if (candidateId) {
+        // Fluxo de processamento de um candidato selecionado
+        const procRes = await processingIds([candidateId], `Busca por Nome: ${cleanQuery}`);
+        if (!procRes.success || !procRes.searchUid) {
+          const errorMsg = procRes.error?.message || procRes.metaDados?.mensagem || 'Falha ao iniciar processamento do candidato.';
+          return { success: false, message: errorMsg };
+        }
 
-      const bestMatch = pickBestCandidate(filterRes.listFilters);
-      if (!bestMatch) {
-        return { success: false, message: 'Nenhum candidato válido identificado.' };
-      }
+        const searchUid = procRes.searchUid;
 
-      const procRes = await processingIds([bestMatch.id], `Busca por Nome: ${cleanQuery}`);
-      if (!procRes.success || !procRes.searchUid) {
-        const errorMsg = procRes.error?.message || procRes.metaDados?.mensagem || 'Falha ao iniciar processamento do candidato.';
-        return { success: false, message: errorMsg };
-      }
-
-      const searchUid = procRes.searchUid;
-
-      // Polling rápido para obter o resultado em estado terminal (10 tentativas, 2s de intervalo)
-      let attempts = 0;
-      while (attempts < 10) {
-        attempts++;
-        await new Promise(r => setTimeout(r, 2000));
-        
-        const viewRes = await viewSearch(searchUid);
-        if (viewRes.success && viewRes.viewSearch) {
-          const item = viewRes.viewSearch.searchItems?.[0];
-          if (item && [4, 5, 6, 7].includes(item.resultId)) {
-            if (item.resultId === 6) {
-              return { success: false, message: item.result || 'Falha no processamento da consulta de nome.' };
+        // Polling rápido para obter o resultado em estado terminal (10 tentativas, 2s de intervalo)
+        let attempts = 0;
+        while (attempts < 10) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 2000));
+          
+          const viewRes = await viewSearch(searchUid);
+          if (viewRes.success && viewRes.viewSearch) {
+            const item = viewRes.viewSearch.searchItems?.[0];
+            if (item && [4, 5, 6, 7].includes(item.resultId)) {
+              if (item.resultId === 6) {
+                return { success: false, message: item.result || 'Falha no processamento da consulta de nome.' };
+              }
+              return {
+                success: true,
+                data: transformDirectDataAdvanced(item.returnJson || {}, selectedModules),
+                message: item.result || 'Consulta realizada com sucesso.'
+              };
             }
-            return {
-              success: true,
-              data: transformDirectDataAdvanced(item.returnJson || {}, selectedModules),
-              message: item.result || 'Consulta realizada com sucesso.'
-            };
           }
         }
-      }
 
-      return { success: false, message: 'O processamento levou mais tempo que o esperado. Tente novamente.' };
+        return { success: false, message: 'O processamento levou mais tempo que o esperado. Tente novamente.' };
+      } else {
+        // Etapa 1: Obter lista de candidatos
+        const filterRes = await filterNaturalPerson({ fullName: cleanQuery, state });
+        if (!filterRes.success || !filterRes.listFilters || filterRes.listFilters.length === 0) {
+          const errorMsg = filterRes.error?.message || filterRes.metaDados?.mensagem || 'Nenhum registro encontrado.';
+          return { success: false, message: errorMsg };
+        }
+
+        return {
+          success: true,
+          isMultiple: true,
+          candidates: filterRes.listFilters.map((c: any) => ({
+            id: c.id,
+            name: c.fullName || c.name || cleanQuery,
+            dateOfBirth: c.dateOfBirth,
+            motherName: c.motherName,
+            taxIdNumber: c.taxIdNumber, // CPF mascarado
+            state: c.state,
+            city: c.city
+          }))
+        };
+      }
     }
 
     // Busca síncrona V3 para celular e e-mail (mais econômica e rápida)

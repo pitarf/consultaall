@@ -38,7 +38,7 @@ export default function NavbarClient({ logoUrl, siteTitle, menuPages = [] }: Nav
           {logoUrl ? (
             <img 
               src={logoUrl} 
-              alt="Logo" 
+              alt="Logo do Detetive Buscas" 
               className="h-8 w-auto object-contain"
             />
           ) : (

@@ -13,32 +13,36 @@ export default function FaqAccordion() {
 
   const faqs: FaqItem[] = [
     {
-      question: 'O que é o Detetive Buscas?',
-      answer: 'O Detetive Buscas é uma plataforma corporativa B2B de enriquecimento cadastral, validação de leads e inteligência de dados. Auxiliamos empresas no processo de Background Check (checagem de histórico), mitigação de fraudes, validação de CPFs/CNPJs e localização de informações cadastrais atualizadas para contatos ou análises de risco.'
+      question: 'Quais tipos de consulta estão disponíveis?',
+      answer: 'A plataforma possui páginas e módulos relacionados à consulta de CPF, telefone, CNPJ, nome e placa de veículo. A disponibilidade de informações pode variar conforme o tipo de pesquisa e o módulo selecionado.'
     },
     {
-      question: 'De onde vêm os dados exibidos na plataforma?',
-      answer: 'Nosso motor de buscas consolida e cruza informações provenientes de dezenas de fontes de dados públicas, registros oficiais, juntas comerciais e provedores cadastrais consolidados. Todo o processo de consulta é rigorosamente em conformidade com as bases legais vigentes.'
+      question: 'Preciso pagar mensalidade para usar o Detetive Buscas?',
+      answer: 'Não há mensalidade obrigatória. O usuário pode adicionar saldo ao painel e pagar somente pelas consultas e módulos utilizados.'
     },
     {
-      question: 'Como funciona a precificação das consultas? Existe mensalidade?',
-      answer: 'Não cobramos mensalidades, assinaturas ou taxas de adesão. O Detetive Buscas opera no modelo Pay-per-use (carteira de saldo pré-pago). Você realiza uma recarga via Pix e o saldo é consumido dinamicamente apenas quando você faz buscas. Além disso, a cobrança é modular: você seleciona exatamente quais blocos de informação deseja consultar e só paga por eles.'
+      question: 'Como o pagamento é realizado?',
+      answer: 'O saldo pode ser adicionado por meio de Pix. Após a confirmação do pagamento, o valor é disponibilizado no painel conforme as regras da plataforma.'
     },
     {
-      question: 'O sistema possui mecanismo de prevenção contra gastos duplicados?',
-      answer: 'Sim! Possuímos um sistema inovador de Cache Inteligente de 48 horas. Se você realizar a mesma consulta com os mesmos módulos dentro de um período de 48 horas, o sistema consome os dados salvos em nossa base interna, evitando novas requisições desnecessárias aos provedores externos e economizando seu saldo.'
+      question: 'Os resultados são sempre completos?',
+      answer: 'Não. A quantidade e a precisão das informações podem variar conforme os dados informados, a disponibilidade das fontes e a atualização dos registros.'
     },
     {
-      question: 'Como a plataforma trata o sigilo e a privacidade das consultas?',
-      answer: 'A segurança e a privacidade são nossos pilares. Todas as consultas realizadas são confidenciais e protegidas por criptografia ponta a ponta (SSL/TLS de 256 bits). Os dados consultados não são compartilhados com terceiros e as buscas ficam registradas exclusivamente no painel privado de quem as realizou.'
+      question: 'Posso consultar qualquer pessoa?',
+      answer: 'As consultas devem ser realizadas somente para finalidades legítimas e de acordo com a legislação aplicável. O usuário é responsável pela pesquisa realizada e pelo uso das informações obtidas.'
     },
     {
-      question: 'Em conformidade com a LGPD, os titulares podem solicitar a exclusão de seus dados?',
-      answer: 'Sim! Nós respeitamos integralmente a Lei Geral de Proteção de Dados (LGPD). Qualquer cidadão (titular dos dados) pode fazer uma solicitação formal de exclusão ou bloqueio de visualização de seu CPF nas consultas da nossa plataforma através do canal público de Proteção de Dados (Opt-out) localizado no rodapé da página. O bloqueio é processado e respeitado em nossa base.'
+      question: 'É necessário informar a senha da pessoa pesquisada?',
+      answer: 'Não. A plataforma não solicita senhas de redes sociais, contas bancárias, e-mails ou outros serviços pertencentes à pessoa pesquisada.'
     },
     {
-      question: 'Como posso começar a utilizar a plataforma?',
-      answer: 'O processo é imediato: basta criar uma conta gratuita clicando no botão "Acessar Plataforma". Ao entrar, você poderá recarregar qualquer saldo em sua carteira digital via Pix corporativo e já realizar as primeiras consultas em segundos, com liberação automática de relatórios.'
+      question: 'Como escolho a consulta correta?',
+      answer: 'Acesse as páginas de consulta de CPF, telefone, CNPJ, nome ou placa e confira a explicação sobre os dados e módulos disponíveis em cada categoria.'
+    },
+    {
+      question: 'Como entro em contato com o suporte?',
+      answer: 'O atendimento deve ser solicitado pelos canais oficiais apresentados na página de contato ou dentro do painel do usuário.'
     }
   ];
 

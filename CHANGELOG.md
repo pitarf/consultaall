@@ -2,6 +2,27 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.1] - 2026-08-03
+### Adicionado
+- **Integração de Caixa de Pesquisa Interativa (Hero):**
+  - Criação do componente `HomeSearchBox` (Client-side) que simula o carregamento e varredura de dados de CPF, Placa ou Telefone de forma interativa.
+  - Exibe um relatório mascarado (teaser) e um botão de ação com call-to-action chamando para o `/cadastro`.
+- **Seção de Módulos Rápidos (Home):**
+  - Inclusão dos 5 cards de consulta (CPF, Telefone, Placa, CNPJ, Nome) conectando diretamente às páginas internas de SEO da ferramenta.
+- **Novas Páginas Institucionais e Rodapé Global:**
+  - Criação das páginas e rotas `/sobre`, `/contato`, `/suporte`, `/politica-de-privacidade` e `/politica-de-cookies`.
+  - Mapeamento e unificação dos links do Footer (`Footer.tsx`) apontando corretamente para as rotas e remoção de links mortos.
+- **SEO Otimizado e JSON-LD Schemas:**
+  - Injeção automática das tags JSON-LD para os Schemas `Organization`, `WebSite` e `FAQPage` via metadados.
+  - Inclusão de seções institucionais de SEO e "Uso responsável das consultas".
+  - Correção na descrição e canonical da homepage.
+- **Busca por Nome Gratuita com Multi-Candidatos (DirectData):**
+  - Refatoração da Server Action de consultas para interceptar a pesquisa inicial de Nome, retornando homônimos sem cobrança de saldo.
+  - Consumo de saldo e polling detalhado acionados somente após a seleção do candidato correto pelo usuário.
+- **Métricas Operacionais de ROI e Custos:**
+  - Adicionado ROI (%) e Custos operacionais no Dashboard do Admin.
+  - Tabelas de últimos depósitos do PIX e contadores dinâmicos de consultas realizadas hoje por categoria.
+
 ## [0.9.0] - 2026-07-26
 ### Adicionado
 - **Gerenciador de Páginas SEO (CMS):**

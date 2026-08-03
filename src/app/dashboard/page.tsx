@@ -60,6 +60,7 @@ export default function DashboardPage() {
   
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<any>(null);
+  const [candidates, setCandidates] = useState<any[] | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,6 +168,7 @@ export default function DashboardPage() {
 
     setLoading(true);
     setResultado(null);
+    setCandidates(null);
     
     if (isDemo) {
       toast.info(`Iniciando consulta em modo DEMO (Sem custos)`);
@@ -176,6 +178,55 @@ export default function DashboardPage() {
 
     try {
       const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo);
+      
+      if (res.error) {
+        setError(res.error);
+        if (res.error.toLowerCase().includes('saldo')) {
+          toast.error(res.error, {
+            action: {
+              label: 'Recarregar',
+              onClick: () => handleOpenRecharge()
+            },
+          });
+        } else {
+          toast.error(res.error);
+        }
+      } else if (res.success) {
+        if (res.isMultiple) {
+          setCandidates(res.candidates);
+          toast.success(`${res.candidates.length} perfis correspondentes encontrados.`);
+        } else {
+          if (res.isDemo) {
+            toast.success(`Consulta DEMO realizada com sucesso! Nenhum saldo foi debitado.`);
+          } else if (res.isCached) {
+            toast.success(`Resultado recuperado do cache (Atualizado nas últimas 48h). Saldo preservado!`);
+          } else {
+            toast.success(`Consulta realizada! Debitados: R$ ${totalCost.toFixed(2).replace('.', ',')}. Novo saldo: R$ ${res.newBalance.toFixed(2).replace('.', ',')}`);
+          }
+          setResultado(res.data);
+        }
+      }
+    } catch (err) {
+      toast.error('Erro inesperado ao realizar consulta.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectCandidate = async (candidateId: string) => {
+    setError(null);
+    setCandidates(null);
+    setLoading(true);
+    setResultado(null);
+
+    if (isDemo) {
+      toast.info(`Iniciando consulta do candidato em modo DEMO (Sem custos)`);
+    } else {
+      toast.info(`Consultando candidato... Custo: R$ ${totalCost.toFixed(2).replace('.', ',')}`);
+    }
+
+    try {
+      const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, candidateId);
       
       if (res.error) {
         setError(res.error);
@@ -392,6 +443,47 @@ export default function DashboardPage() {
           {isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${totalCost.toFixed(2).replace('.', ',')})`}
         </button>
       </div>
+
+      {/* Seleção de Múltiplos Candidatos */}
+      {candidates && (
+        <div className="glass-panel p-8 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-lg mt-8 animate-in fade-in duration-500">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Múltiplos Perfis Encontrados</h2>
+              <p className="text-sm text-slate-500">Selecione o perfil desejado para prosseguir com o relatório completo (débito apenas após a seleção).</p>
+            </div>
+            <button 
+              onClick={() => setCandidates(null)}
+              className="text-xs text-red-500 font-bold hover:underline"
+            >
+              Cancelar busca
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {candidates.map((c) => (
+              <div 
+                key={c.id} 
+                className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 dark:hover:border-primary/40 transition-all group"
+              >
+                <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
+                  <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
+                  <p><span className="font-semibold text-slate-400">CPF:</span> {c.taxIdNumber || 'Não informado'}</p>
+                  <p><span className="font-semibold text-slate-400">Nascimento:</span> {c.dateOfBirth ? new Date(c.dateOfBirth).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Não informado'}</p>
+                  <p><span className="font-semibold text-slate-400">Mãe:</span> {c.motherName ? c.motherName.toUpperCase() : 'Não informado'}</p>
+                  <p><span className="font-semibold text-slate-400">Localização:</span> {c.city || 'Desconhecida'} - {c.state || 'XX'}</p>
+                </div>
+                <button
+                  onClick={() => handleSelectCandidate(c.id)}
+                  className="mt-5 w-full bg-primary hover:bg-primary-hover text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                >
+                  Confirmar e Consultar
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Resultado */}
       {resultado && (

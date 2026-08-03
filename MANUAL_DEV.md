@@ -82,3 +82,25 @@ Ambas as rotas públicas utilizam geração dinâmica e servem arquivos síncron
 - **Sitemap (`/sitemap.xml`):** Lista a página inicial, termos de uso, políticas e as páginas e artigos criados pelo admin. Filtra ativamente para remover páginas não-indexáveis (`robotsIndex: false`), páginas não-publicadas (rascunhos), rotas privadas/logadas e redirecionadas.
 - **Robots (`/robots.txt`):** Define diretivas para bots de busca, bloqueando caminhos de administração (`/admin`), área do cliente (`/dashboard/`), APIs (`/api/`), formulários de autenticação (`/login`, `/cadastro`, etc.) e links com query strings/parâmetros (`/*?*`). Contém o apontamento explícito para o sitemap usando o domínio configurado.
 
+## Busca por Nome Otimizada e ROI no Dashboard (v0.9.1)
+
+### 1. Pesquisa por Nome com Homônimos (Multi-Candidato)
+Para evitar o consumo indevido de saldo do usuário ao pesquisar nomes comuns (homônimos), o processo foi dividido em duas etapas:
+- **Etapa 1 (Gratuita)**: A chamada `performSmartSearch(nome)` executa apenas a rota grátis `FilterNaturalPerson` e retorna a lista de candidatos (homônimos encontrados) com dados mascarados (Nome, CPF mascarado, Data de Nascimento, Mãe, Cidade/UF). Nenhum saldo é debitado e nenhum polling de IDs é realizado.
+- **Etapa 2 (Paga)**: Ao escolher e confirmar o candidato desejado pelo ID (`candidateId`), a Server Action de consultas realiza a chamada passando o parâmetro `candidateId`. O saldo é então debitado, e o sistema executa o fluxo completo de processamento e polling da DirectData para retornar os dados completos do candidato.
+
+### 2. ROI e Custos Operacionais no Painel Admin
+O painel administrativo (`/admin`) exibe agora indicadores diários de ROI e Custo de API calculados da seguinte forma:
+- **Custo Operacional de API**: Calculado multiplicando cada consulta de sucesso efetuada pelo custo real cobrado pela API DirectData de acordo com o tipo de consulta.
+- **Lucro Diário/Mensal**: Faturamento total menos custo de API.
+- **ROI (%)**: `((Faturamento - Custo de API) / Custo de API) * 100`. Se o custo de API for zero, o ROI exibe `0%`.
+- **Preenchimento de Lacunas**: A listagem de consultas diárias por categoria faz o pre-fill com zero para categorias sem buscas, evitando furos no layout.
+- **Tabela de Depósitos Recentes**: Exibe a lista cronológica dos depósitos aprovados no dia no formato de hora local de Brasília (`America/Sao_Paulo`).
+
+### 3. SEO Avançado da Homepage e Schemas JSON-LD
+A homepage do sistema (`src/app/page.tsx`) agora possui:
+- Metadados dinâmicos com tags OpenGraph e Twitter configuradas para `summary_large_image` e canonical absoluto.
+- Injeção dinâmica de schemas JSON-LD para os tipos `Organization`, `WebSite` e `FAQPage` estruturados.
+- Componente `HomeSearchBox` integrado para isca de buscas interativa.
+
+

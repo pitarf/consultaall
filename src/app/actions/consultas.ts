@@ -10,7 +10,13 @@ export async function getPricing() {
   return prisma.modulePricing.findMany();
 }
 
-export async function realizarConsulta(target: string, query: string, selectedModules: string[] = [], isTest: boolean = false) {
+export async function realizarConsulta(
+  target: string, 
+  query: string, 
+  selectedModules: string[] = [], 
+  isTest: boolean = false,
+  candidateId?: string
+) {
   const session = await verifySession();
 
   if (!session) {
@@ -55,6 +61,22 @@ export async function realizarConsulta(target: string, query: string, selectedMo
     // Só permite isTest se o usuário for ADMIN
     const effectiveIsTest = isTest && user.role === 'ADMIN';
 
+    // Se for busca por Nome e não forneceu candidateId, retorna a lista de candidatos
+    if (target === 'nome' && !candidateId) {
+      if (effectiveIsTest) {
+        return {
+          success: true,
+          isMultiple: true,
+          candidates: [
+            { id: "demo-1", name: `${cleanQuery.toUpperCase()} CANDIDATO 1`, dateOfBirth: "1985-04-12T00:00:00", motherName: "MARIA DA SILVA DE SOUZA", taxIdNumber: "***.123.456-**", state: "SP", city: "São Paulo" },
+            { id: "demo-2", name: `${cleanQuery.toUpperCase()} CANDIDATO 2`, dateOfBirth: "1990-08-20T00:00:00", motherName: "JOSEFA ALVES DE OLIVEIRA", taxIdNumber: "***.789.012-**", state: "RJ", city: "Rio de Janeiro" }
+          ]
+        };
+      }
+      const apiResult = await performSmartSearch('name', cleanQuery, selectedModules, undefined, undefined);
+      return apiResult;
+    }
+
     // Mapeamento Técnico de Alvos da API
     let apiTarget = '';
     switch (target) {
@@ -77,14 +99,14 @@ export async function realizarConsulta(target: string, query: string, selectedMo
         apiTarget = target;
     }
 
-    // SISTEMA DE CACHE (48 HORAS)
+    // SISTEMA DE CACHE (48 HORAS) - Se for Nome com candidato, ignoramos cache de nome geral
     const sortedModules = [...selectedModules].sort().join(',');
     const quarentaEOitoHorasAtras = new Date(Date.now() - 48 * 60 * 60 * 1000);
-    const cache = await prisma.searchHistory.findFirst({
+    const cache = candidateId ? null : await prisma.searchHistory.findFirst({
       where: {
         target: target,
         query: cleanQuery,
-        modules: sortedModules, // Garante que o cache tenha os mesmos módulos
+        modules: sortedModules,
         status: 'SUCCESS',
         createdAt: { gte: quarentaEOitoHorasAtras }
       },
@@ -149,7 +171,9 @@ export async function realizarConsulta(target: string, query: string, selectedMo
         apiResult = await performSmartSearch(
           target as 'email' | 'phone' | 'name', 
           cleanQuery,
-          selectedModules
+          selectedModules,
+          undefined,
+          candidateId
         );
       } else {
         apiResult = await fazerConsultaAPI({ 

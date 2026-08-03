@@ -20,16 +20,16 @@ export default function Footer({ logoUrl }: FooterProps) {
       { label: 'Consulta por Nome', href: '/consulta-nome' },
     ],
     empresa: [
-      { label: 'Sobre', href: '/' },
-      { label: 'Contato', href: '/' },
-      { label: 'Suporte', href: '/' },
-      { label: 'Status', href: '/' },
+      { label: 'Sobre o Detetive Buscas', href: '/sobre' },
+      { label: 'Contato', href: '/contato' },
+      { label: 'Suporte', href: '/suporte' },
+      { label: 'Blog', href: '/blog' },
     ],
     legal: [
-      { label: 'Termos', href: '/termos' },
-      { label: 'Privacidade', href: '/protecao-de-dados' },
-      { label: 'LGPD', href: '/protecao-de-dados' },
-      { label: 'Cookies', href: '/protecao-de-dados' },
+      { label: 'Termos de Uso', href: '/termos' },
+      { label: 'Política de Privacidade', href: '/politica-de-privacidade' },
+      { label: 'Política de Cookies', href: '/politica-de-cookies' },
+      { label: 'Proteção de Dados', href: '/protecao-de-dados' },
     ]
   };
 
@@ -46,13 +46,13 @@ export default function Footer({ logoUrl }: FooterProps) {
               {logoUrl ? (
                 <img 
                   src={logoUrl} 
-                  alt="Logo Detetive Buscas" 
+                  alt="Logo do Detetive Buscas" 
                   className="h-8 w-auto object-contain" 
                 />
               ) : (
                 <img 
                   src="/logo.webp" 
-                  alt="Logo Detetive Buscas" 
+                  alt="Logo do Detetive Buscas" 
                   className="h-8 w-auto object-contain" 
                 />
               )}
