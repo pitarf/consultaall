@@ -212,6 +212,11 @@ export default async function Home() {
                 Escolha abaixo o tipo de consulta desejada ou acesse o painel para realizar verificações de forma rápida, organizada e responsável.
               </p>
 
+              {/* Box de Pesquisa Interativo (Posicionado estrategicamente abaixo do H1) */}
+              <div className="pt-2">
+                <HomeSearchBox />
+              </div>
+
               {/* Ações */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <Link
@@ -246,9 +251,55 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* Box de Pesquisa Interativo (Alta Conversão) */}
-            <div className="lg:col-span-5 w-full">
-              <HomeSearchBox />
+            {/* Visual Ilustrativo / Mockup do Relatório no Desktop */}
+            <div className="lg:col-span-5 w-full hidden lg:block animate-in fade-in duration-1000 slide-in-from-right-12">
+              <div className="relative">
+                {/* Efeito Glow atrás do card */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#2872fa]/10 to-indigo-500/10 rounded-3xl blur-2xl -z-10" />
+                
+                {/* Mockup Card */}
+                <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xl space-y-6">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#2872fa] flex items-center justify-center font-bold">
+                        🔎
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">Relatório Consolidado</h4>
+                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Detetive Buscas Engine</p>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 rounded-full text-[10px] font-bold">
+                      VERIFICADO
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {[
+                      { label: 'CPF / CNPJ', value: 'Situação REGULAR na RF' },
+                      { label: 'Telefones Vinculados', value: '3 números ativos identificados' },
+                      { label: 'Localização / Endereços', value: 'Histórico de logradouros mapeado' },
+                      { label: 'Vínculos Parentais', value: 'Árvore genealógica de 1º grau' },
+                      { label: 'Restrições & Score', value: 'Análise de restrições ativa' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center text-[9px] font-bold">
+                            ✓
+                          </div>
+                          <span className="text-slate-500 font-medium">{item.label}</span>
+                        </div>
+                        <span className="font-semibold text-slate-800">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
+                    <span>Tempo de varredura: ~1.2s</span>
+                    <span>Fonte: API DirectData</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

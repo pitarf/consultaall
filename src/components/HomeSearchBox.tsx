@@ -119,7 +119,7 @@ export default function HomeSearchBox() {
                   ? 'Digite a Placa (Ex: ABC1D23)'
                   : 'Digite o Telefone com DDD (Ex: 11999999999)'
               }
-              className="w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 focus:border-[#2872fa] focus:ring-2 focus:ring-[#2872fa]/10 outline-none transition-all text-sm font-semibold"
+              className="w-full bg-white border border-slate-200 rounded-2xl pl-5 pr-16 py-4 text-slate-900 focus:border-[#2872fa] focus:ring-2 focus:ring-[#2872fa]/10 outline-none transition-all text-sm font-semibold"
             />
             <button
               type="submit"
