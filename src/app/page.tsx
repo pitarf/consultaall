@@ -184,7 +184,7 @@ export default async function Home() {
       <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} menuPages={menuPages} />
 
       {/* ===================== HERO SECTION ===================== */}
-      <section className="relative py-20 md:py-28 bg-white overflow-hidden border-b border-slate-200">
+      <section className="relative pt-8 pb-16 md:py-28 bg-white overflow-hidden border-b border-slate-200">
         {/* Elementos de background abstratos e elegantes */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-50/40 rounded-full blur-[120px] -z-10" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-slate-50 rounded-full blur-[100px] -z-10" />
