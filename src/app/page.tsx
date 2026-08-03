@@ -204,14 +204,6 @@ export default async function Home() {
                 <span className="text-[#2872fa] font-bold">em uma única plataforma</span>
               </h1>
               
-              <p className="text-base md:text-lg text-slate-600 leading-relaxed max-w-2xl">
-                Acesse diferentes módulos de consulta cadastral em uma única plataforma. Consulte informações relacionadas a CPF, telefone, CNPJ, nome e veículos, pagando somente pelos módulos utilizados.
-              </p>
-
-              <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
-                Escolha abaixo o tipo de consulta desejada ou acesse o painel para realizar verificações de forma rápida, organizada e responsável.
-              </p>
-
               {/* Box de Pesquisa Interativo (Posicionado estrategicamente abaixo do H1) */}
               <div className="pt-2">
                 <HomeSearchBox />
@@ -232,6 +224,16 @@ export default async function Home() {
                 >
                   Entrar no Painel
                 </Link>
+              </div>
+
+              {/* Descrições auxiliares da plataforma */}
+              <div className="space-y-4 pt-2">
+                <p className="text-base md:text-lg text-slate-600 leading-relaxed max-w-2xl">
+                  Acesse diferentes módulos de consulta cadastral em uma única plataforma. Consulte informações relacionadas a CPF, telefone, CNPJ, nome e veículos, pagando somente pelos módulos utilizados.
+                </p>
+                <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
+                  Escolha abaixo o tipo de consulta desejada ou acesse o painel para realizar verificações de forma rápida, organizada e responsável.
+                </p>
               </div>
 
               {/* Trust badges */}
