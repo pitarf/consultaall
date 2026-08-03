@@ -683,6 +683,7 @@ export async function getAdvancedMetrics(period: string = 'month') {
     monthlyQueries,
     monthlyRoi,
     monthlyApiCosts,
+    monthlyPixFees,
     chartData,
     attributionTable
   };

@@ -27,181 +27,225 @@ export default async function AdminDashboardPage({
       default: return 'Período';
     }
   };
+   const newUsersCount = advanced.chartData.reduce((sum, d) => sum + d.users, 0);
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
-      <div className="mb-8 border-b border-slate-200 dark:border-white/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-            <TrendingUp className="text-primary w-8 h-8" />
-            Painel de Inteligência
+    <div className="max-w-6xl mx-auto pb-20 space-y-8">
+      {/* 1. Header Banner */}
+      <div className="bg-gradient-to-r from-[#06241b] to-[#0c3e2f] text-white p-6 md:p-8 rounded-3xl shadow-lg border border-[#0d4a38]/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Dashboard Administrativo
           </h1>
-          <p className="text-slate-500 dark:text-gray-400 mt-2">Visão consolidada de faturamento, lucro e performance.</p>
+          <p className="text-white/70 text-sm font-medium">
+            Visão panorâmica consolidada para o período: <span className="font-bold text-emerald-400">{getPeriodLabel(currentPeriod)}</span>.
+          </p>
         </div>
-        
-        <DashboardClient currentPeriod={currentPeriod} />
+        <div className="shrink-0">
+          <DashboardClient currentPeriod={currentPeriod} />
+        </div>
       </div>
 
-      {/* SEÇÃO 1: DESEMPENHO DE HOJE */}
-      <div className="mb-6">
-        <h2 className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-          Métricas de Hoje (GMT-3)
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-in fade-in duration-500">
-          {/* Faturamento Hoje */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-blue-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-blue-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Faturamento</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  R$ {metrics.todayRevenue.toFixed(2).replace('.', ',')}
-                </h3>
-                {metrics.changePercentage > 0 ? (
-                  <div className="flex items-center gap-1 mt-2 text-green-500 text-[10px] font-bold">
-                    <ArrowUpRight className="w-3 h-3" />
-                    {metrics.changePercentage.toFixed(0)}% vs ontem
-                  </div>
-                ) : metrics.changePercentage < 0 ? (
-                  <div className="flex items-center gap-1 mt-2 text-red-500 text-[10px] font-bold">
-                    <ArrowDownRight className="w-3 h-3" />
-                    {Math.abs(metrics.changePercentage).toFixed(0)}% vs ontem
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 mt-2 text-slate-400 dark:text-gray-500 text-[10px] font-bold">
-                    Igual a ontem
-                  </div>
-                )}
-              </div>
-              <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
-                <DollarSign className="w-5 h-5" />
-              </div>
-            </div>
+      {/* 2. Alternador de Visualização (Layout Match) */}
+      <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="text-left space-y-0.5">
+          <h3 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Alternador de Visualização
+          </h3>
+          <p className="text-slate-400 text-xs font-semibold">Alterne as estatísticas entre SMS e Consultas de Dados.</p>
+        </div>
+        <div className="flex bg-slate-100 dark:bg-black/20 p-1 rounded-xl gap-2 select-none shrink-0">
+          <div className="px-4 py-2 text-xs font-bold text-slate-400 dark:text-gray-500 rounded-lg cursor-not-allowed">
+            SMS Fácil
           </div>
-
-          {/* Custo de API Hoje */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-red-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-red-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Custo de API</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  R$ {metrics.todayApiCost.toFixed(2).replace('.', ',')}
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">Investido em provedores</p>
-              </div>
-              <div className="p-3 bg-red-500/10 rounded-2xl text-red-500">
-                <Activity className="w-5 h-5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Lucro Hoje */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-emerald-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-emerald-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Lucro Líquido</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  R$ {metrics.todayProfit.toFixed(2).replace('.', ',')}
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">Caixa líquido diário</p>
-              </div>
-              <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-            </div>
-          </div>
-
-          {/* ROI Hoje */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-purple-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-purple-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">ROI (Hoje)</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  {metrics.todayRoi.toFixed(0)}%
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">Retorno do dia</p>
-              </div>
-              <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-500">
-                <Users className="w-5 h-5" />
-              </div>
-            </div>
+          <div className="px-4 py-2 text-xs font-bold bg-[#0e7050] text-white rounded-lg shadow-sm">
+            Consulta Dados
           </div>
         </div>
       </div>
 
-      {/* SEÇÃO 2: DESEMPENHO DO PERÍODO SELECIONADO */}
-      <div className="mb-12">
-        <h2 className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          Métricas do Período ({getPeriodLabel(currentPeriod)})
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in duration-500">
-          {/* Faturamento Período */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-blue-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-blue-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Faturamento</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  R$ {advanced.monthlyRevenue.toFixed(2).replace('.', ',')}
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">Pix compensados</p>
-              </div>
-              <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
-                <DollarSign className="w-5 h-5" />
-              </div>
+      {/* 3. Grid de Métricas de Hoje vs Período */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* MÉTRICAS DE HOJE */}
+        <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm p-6 text-left space-y-6">
+          <h2 className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            Métricas de Hoje
+          </h2>
+          <div className="grid grid-cols-3 gap-4 bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center sm:text-left">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Faturamento</p>
+              <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
+                R$ {metrics.todayRevenue.toFixed(2).replace('.', ',')}
+              </p>
+              {metrics.changePercentage > 0 ? (
+                <span className="text-emerald-500 text-[10px] font-bold block mt-1">
+                  +{metrics.changePercentage.toFixed(0)}% vs ontem
+                </span>
+              ) : metrics.changePercentage < 0 ? (
+                <span className="text-red-500 text-[10px] font-bold block mt-1">
+                  {metrics.changePercentage.toFixed(0)}% vs ontem
+                </span>
+              ) : (
+                <span className="text-slate-400 dark:text-gray-500 text-[10px] font-bold block mt-1">0% vs ontem</span>
+              )}
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Custo de APIs</p>
+              <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
+                R$ {metrics.todayApiCost.toFixed(2).replace('.', ',')}
+              </p>
+              <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">SMS + Consultas</span>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">ROI de Hoje</p>
+              <p className={`text-base sm:text-lg font-bold mt-1 ${metrics.todayRoi >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                {metrics.todayRoi >= 0 ? '+' : ''}{metrics.todayRoi.toFixed(0)}%
+              </p>
+              <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">Retorno diário</span>
             </div>
           </div>
+        </div>
 
-          {/* Custo de API Período */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-red-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-red-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Custo de API</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  R$ {advanced.monthlyApiCosts.toFixed(2).replace('.', ',')}
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">Consultas aos provedores</p>
-              </div>
-              <div className="p-3 bg-red-500/10 rounded-2xl text-red-500">
-                <Activity className="w-5 h-5" />
-              </div>
+        {/* MÉTRICAS DO PERÍODO */}
+        <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm p-6 text-left space-y-6">
+          <h2 className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            Métricas do Período
+          </h2>
+          <div className="grid grid-cols-3 gap-4 bg-slate-50 dark:bg-black/25 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center sm:text-left">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Faturamento Pix</p>
+              <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
+                R$ {advanced.monthlyRevenue.toFixed(2).replace('.', ',')}
+              </p>
+              <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">Mês consolidado</span>
             </div>
-          </div>
-
-          {/* Lucro Líquido Período */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-emerald-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-emerald-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Lucro Líquido</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  R$ {advanced.monthlyProfit.toFixed(2).replace('.', ',')}
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">Líquido na conta</p>
-              </div>
-              <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500">
-                <TrendingUp className="w-5 h-5" />
-              </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Custo de APIs</p>
+              <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
+                R$ {advanced.monthlyApiCosts.toFixed(2).replace('.', ',')}
+              </p>
+              <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">SMS + Consultas</span>
             </div>
-          </div>
-
-          {/* ROI Período */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-gradient-to-br dark:from-purple-500/5 dark:to-transparent shadow-sm hover:shadow-md transition-all group hover:border-purple-500/20">
-            <div className="flex justify-between items-start relative z-10">
-              <div>
-                <p className="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">ROI (Período)</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-                  {advanced.monthlyRoi.toFixed(0)}%
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">Retorno do investimento</p>
-              </div>
-              <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-500">
-                <Users className="w-5 h-5" />
-              </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">ROI do Mês</p>
+              <p className={`text-base sm:text-lg font-bold mt-1 ${advanced.monthlyRoi >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                {advanced.monthlyRoi >= 0 ? '+' : ''}{advanced.monthlyRoi.toFixed(0)}%
+              </p>
+              <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">Retorno de invest.</span>
             </div>
           </div>
         </div>
       </div>
 
+      {/* 4. Banner de Fluxo de Caixa Geral */}
+      <div className="bg-[#05241b] dark:bg-[#041c15] text-white p-6 md:p-8 rounded-3xl border border-[#0d4a38]/30 shadow-lg text-left flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+            <span className="text-emerald-500">$</span>
+            Fluxo de Caixa Geral (Pix + Operação)
+          </h3>
+          <p className="text-xs text-white/60 leading-relaxed max-w-xl">
+            Faturamento bruto de depósitos Pix menos taxas do gateway Pix e custo total de consumo de APIs (Hero SMS + DirectData).
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-8 md:gap-12">
+          <div>
+            <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Depósitos Pix (Bruto)</p>
+            <p className="text-lg md:text-xl font-bold mt-1">
+              R$ {advanced.monthlyRevenue.toFixed(2).replace('.', ',')}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest text-red-300">Taxas Pix Descontadas</p>
+            <p className="text-lg md:text-xl font-bold mt-1 text-red-400">
+              -R$ {advanced.monthlyPixFees.toFixed(2).replace('.', ',')}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest text-emerald-300">Lucro Real Operacional</p>
+            <p className="text-lg md:text-xl font-bold mt-1 text-emerald-400">
+              R$ {advanced.monthlyProfit.toFixed(2).replace('.', ',')}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. 5 Cards do Período */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+        {/* Card 1: Faturamento */}
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm text-left flex flex-col justify-between hover:border-primary/25 transition-all">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4">
+            <DollarSign className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Faturamento</p>
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              R$ {advanced.monthlyRevenue.toFixed(2).replace('.', ',')}
+            </h4>
+            <p className="text-[9px] text-slate-400 dark:text-gray-500 mt-2">Volume bruto acumulado</p>
+          </div>
+        </div>
+
+        {/* Card 2: Custo da API */}
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm text-left flex flex-col justify-between hover:border-red-500/25 transition-all">
+          <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center mb-4">
+            <Activity className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Custo da API</p>
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              R$ {advanced.monthlyApiCosts.toFixed(2).replace('.', ',')}
+            </h4>
+            <p className="text-[9px] text-slate-400 dark:text-gray-500 mt-2">Convertido da API DirectData</p>
+          </div>
+        </div>
+
+        {/* Card 3: Lucro Real */}
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200/50 bg-white dark:bg-card shadow-sm text-left flex flex-col justify-between hover:border-emerald-500/25 transition-all">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4">
+            <TrendingUp className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Lucro Real</p>
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              R$ {advanced.monthlyProfit.toFixed(2).replace('.', ',')}
+            </h4>
+            <p className="text-[9px] text-slate-400 dark:text-gray-500 mt-2">Margem de lucro líquida</p>
+          </div>
+        </div>
+
+        {/* Card 4: ROI Comercial */}
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm text-left flex flex-col justify-between hover:border-purple-500/25 transition-all">
+          <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center mb-4">
+            <Globe className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">ROI Comercial</p>
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              {advanced.monthlyRoi.toFixed(0)}%
+            </h4>
+            <p className="text-[9px] text-slate-400 dark:text-gray-500 mt-2">Retorno sobre investimento</p>
+          </div>
+        </div>
+
+        {/* Card 5: Novos Cadastros */}
+        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm text-left flex flex-col justify-between hover:border-blue-500/25 transition-all col-span-2 md:col-span-1">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center mb-4">
+            <Users className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">Novos Cadastros</p>
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              +{newUsersCount}
+            </h4>
+            <p className="text-[9px] text-slate-400 dark:text-gray-500 mt-2">Total ativo: {metrics.totalUsers}</p>
+          </div>
+        </div>
+      </div>       
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-700">
         {/* Gráfico de Faturamento Diário */}
         <div className="lg:col-span-2">
