@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createSession, deleteSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'E-mail inválido.' }),
@@ -67,6 +68,9 @@ export async function register(prevState: any, formData: FormData) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
+    const cookieStore = await cookies();
+    const trafficSource = cookieStore.get('trafficSource')?.value || 'orgânico';
+
     const user = await prisma.user.create({
       data: {
         name,
@@ -74,6 +78,7 @@ export async function register(prevState: any, formData: FormData) {
         passwordHash,
         balance: 0.0, // Saldo inicial zerado
         hasSeenPromoPopup: false, // Força a exibição do popup logo após o cadastro
+        trafficSource,
       },
     });
 

@@ -43,7 +43,7 @@ export default function PerformanceChart({ data }: { data: ChartData[] }) {
       <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-white/5 p-6 shadow-sm">
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Métricas de Crescimento</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Acompanhe o desempenho dos últimos 30 dias</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Acompanhe a evolução temporal de depósitos e cadastros</p>
         </div>
 
         {/* Tabs */}

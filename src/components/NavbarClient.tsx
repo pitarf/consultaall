@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Search } from 'lucide-react';
@@ -14,6 +14,16 @@ interface NavbarClientProps {
 export default function NavbarClient({ logoUrl, siteTitle, menuPages = [] }: NavbarClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const utm = params.get('utm_source') || params.get('ref');
+      if (utm) {
+        document.cookie = `trafficSource=${encodeURIComponent(utm)}; path=/; max-age=2592000; SameSite=Lax`;
+      }
+    }
+  }, []);
 
   // Função para retornar o link correto dependendo se o usuário está na Home ou não
   const getHref = (hash: string) => {

@@ -25,6 +25,7 @@ model User {
   lastActiveAt      DateTime?
   whatsapp          String?
   hasSeenPromoPopup Boolean   @default(true)
+  trafficSource     String?   @default("orgânico")
 
   transactions  Transaction[]
   searches      SearchHistory[]
@@ -71,6 +72,7 @@ model SystemSetting {
   supportWhatsapp       String?  @default("5511999999999")
   pushinpayToken        String?
   pushinpayWebhookToken String?
+  pixFee                Float?   @default(0.95)
   
   // Chaves de APIs Externas configuráveis
   brevoApiKey           String?

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createSession } from '@/lib/session';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -76,6 +77,9 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
+      const cookieStore = await cookies();
+      const trafficSource = cookieStore.get('trafficSource')?.value || 'orgânico';
+
       user = await prisma.user.create({
         data: {
           email,
@@ -83,6 +87,7 @@ export async function GET(request: NextRequest) {
           passwordHash: null, // Sem senha
           balance: 0.0,
           hasSeenPromoPopup: false, // Força a exibição do popup logo após o cadastro
+          trafficSource,
         },
       });
     }

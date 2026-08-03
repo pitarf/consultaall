@@ -30,6 +30,7 @@ export default function AdminSettingsPage() {
     companyEmail: '',
     pushinpayToken: '',
     pushinpayWebhookToken: '',
+    pixFee: 0.95,
     brevoApiKey: '',
     directDataToken: '',
     directDataBaseUrl: '',
@@ -55,6 +56,7 @@ export default function AdminSettingsPage() {
           companyEmail: data.companyEmail || '',
           pushinpayToken: data.pushinpayToken || '',
           pushinpayWebhookToken: data.pushinpayWebhookToken || '',
+          pixFee: data.pixFee ?? 0.95,
           brevoApiKey: data.brevoApiKey || '',
           directDataToken: data.directDataToken || '',
           directDataBaseUrl: data.directDataBaseUrl || '',
@@ -311,6 +313,24 @@ export default function AdminSettingsPage() {
               <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
                 <Info className="w-3 h-3 flex-shrink-0" />
                 Senha de validação inserida na URL do webhook para verificar notificações de pagamento confirmadas.
+              </p>
+            </div>
+
+            {/* Taxa do Gateway Pix */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Taxa do Gateway Pix por Transação (R$)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={settings.pixFee}
+                onChange={(e) => setSettings({ ...settings, pixFee: parseFloat(e.target.value) || 0 })}
+                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                placeholder="Ex: 0.95"
+              />
+              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                <Info className="w-3 h-3 flex-shrink-0" />
+                Valor fixo deduzido de cada recarga Pix aprovada para calcular o Lucro Líquido Real no dashboard (Ex: R$ 0,95).
               </p>
             </div>
           </div>

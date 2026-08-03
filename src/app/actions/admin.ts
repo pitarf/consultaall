@@ -79,6 +79,39 @@ async function checkAdmin() {
   return user;
 }
 
+// Helpers de Custo de API
+function calculateApiCostForSearch(target: string, cost: number): number {
+  const cleanTarget = target.toLowerCase();
+  if (cleanTarget.includes('cpf')) return 0.25;
+  if (cleanTarget.includes('cnpj')) return 0.35;
+  if (cleanTarget.includes('placa') || cleanTarget.includes('veiculo') || cleanTarget.includes('veicular')) return 0.30;
+  if (cleanTarget.includes('telefone') || cleanTarget.includes('email') || cleanTarget.includes('nome') || cleanTarget.includes('smart')) return 0.15;
+  return Number(cost || 0) * 0.4;
+}
+
+function calculateTotalApiCost(searchesByTarget: { target: string; _count: { id: number }; _sum: { cost: number | null } }[]) {
+  let total = 0;
+  searchesByTarget.forEach(g => {
+    const target = g.target;
+    const count = g._count.id;
+    const sumCost = g._sum.cost || 0;
+    const cleanTarget = target.toLowerCase();
+    
+    let unitCost = 0;
+    if (cleanTarget.includes('cpf')) unitCost = 0.25;
+    else if (cleanTarget.includes('cnpj')) unitCost = 0.35;
+    else if (cleanTarget.includes('placa') || cleanTarget.includes('veiculo') || cleanTarget.includes('veicular')) unitCost = 0.30;
+    else if (cleanTarget.includes('telefone') || cleanTarget.includes('email') || cleanTarget.includes('nome') || cleanTarget.includes('smart')) unitCost = 0.15;
+    
+    if (unitCost > 0) {
+      total += count * unitCost;
+    } else {
+      total += sumCost * 0.4;
+    }
+  });
+  return total;
+}
+
 export async function getDashboardMetrics() {
   await checkAdmin();
 
@@ -98,15 +131,17 @@ export async function getDashboardMetrics() {
     console.error('Erro ao corrigir hasSeenPromoPopup de usuários antigos:', err);
   }
 
-  // Receita Total (Soma de transações do tipo DEPOSIT confirmados)
+  // Receita Total Histórica (Soma de transações do tipo DEPOSIT confirmadas)
   const revenueResult = await prisma.transaction.aggregate({
     where: { 
       type: 'DEPOSIT',
       status: 'COMPLETED'
     },
     _sum: { amount: true },
+    _count: { id: true },
   });
   const totalRevenue = revenueResult._sum.amount || 0;
+  const totalDepositsCount = revenueResult._count.id || 0;
 
   // Consultas Realizadas
   const totalQueries = await prisma.searchHistory.count();
@@ -133,28 +168,51 @@ export async function getDashboardMetrics() {
     take: 5,
   });
 
-  // Faturamento de Hoje (UTC-3 / Brasília aproximado)
-  const tzOffset = 3 * 60 * 60 * 1000; // 3 horas em ms
-  const now = new Date();
-  const todayLocal = new Date(now.getTime() - tzOffset);
-  const startOfToday = new Date(todayLocal);
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  // Re-ajusta de volta para UTC para comparar no banco
-  const startOfTodayUTC = new Date(startOfToday.getTime() + tzOffset);
+  // Pegar a taxa Pix das configurações
+  const settings = await prisma.systemSetting.findFirst();
+  const pixFee = settings?.pixFee ?? 0.95;
 
+  // Faturamento e Custos de Hoje e Ontem (usando Brasília/São Paulo UTC-3)
+  const BR_OFFSET_MS = -3 * 60 * 60 * 1000;
+  const now = new Date();
+  const nowBr = new Date(Date.now() + BR_OFFSET_MS);
+
+  // Início do dia de hoje em Brasília (00:00:00.000)
+  const startOfTodayBr = new Date(nowBr);
+  startOfTodayBr.setUTCHours(0, 0, 0, 0);
+  const startOfTodayUTC = new Date(startOfTodayBr.getTime() - BR_OFFSET_MS);
+
+  // Início do dia de ontem em Brasília
   const startOfYesterdayUTC = new Date(startOfTodayUTC.getTime() - 24 * 60 * 60 * 1000);
 
-  const todayRevenueResult = await prisma.transaction.aggregate({
+  // Depósitos de Hoje
+  const todayDeposits = await prisma.transaction.findMany({
     where: {
       type: 'DEPOSIT',
       status: 'COMPLETED',
       createdAt: { gte: startOfTodayUTC }
     },
-    _sum: { amount: true },
+    select: { amount: true }
   });
-  const todayRevenue = todayRevenueResult._sum.amount || 0;
+  const todayRevenue = todayDeposits.reduce((sum, tx) => sum + tx.amount, 0);
 
-  const yesterdayRevenueResult = await prisma.transaction.aggregate({
+  // Consultas de Hoje
+  const todaySearchesByTarget = await prisma.searchHistory.groupBy({
+    by: ['target'],
+    where: {
+      status: 'SUCCESS',
+      createdAt: { gte: startOfTodayUTC }
+    },
+    _count: { id: true },
+    _sum: { cost: true }
+  });
+  const todayApiCost = calculateTotalApiCost(todaySearchesByTarget);
+  const todayPixFees = todayDeposits.length * pixFee;
+  const todayCost = todayPixFees + todayApiCost;
+  const todayProfit = todayRevenue - todayCost;
+
+  // Depósitos de Ontem
+  const yesterdayDeposits = await prisma.transaction.findMany({
     where: {
       type: 'DEPOSIT',
       status: 'COMPLETED',
@@ -163,16 +221,48 @@ export async function getDashboardMetrics() {
         lt: startOfTodayUTC
       }
     },
-    _sum: { amount: true },
+    select: { amount: true }
   });
-  const yesterdayRevenue = yesterdayRevenueResult._sum.amount || 0;
+  const yesterdayRevenue = yesterdayDeposits.reduce((sum, tx) => sum + tx.amount, 0);
+
+  // Consultas de Ontem
+  const yesterdaySearchesByTarget = await prisma.searchHistory.groupBy({
+    by: ['target'],
+    where: {
+      status: 'SUCCESS',
+      createdAt: {
+        gte: startOfYesterdayUTC,
+        lt: startOfTodayUTC
+      }
+    },
+    _count: { id: true },
+    _sum: { cost: true }
+  });
+  const yesterdayApiCost = calculateTotalApiCost(yesterdaySearchesByTarget);
+  const yesterdayPixFees = yesterdayDeposits.length * pixFee;
+  const yesterdayCost = yesterdayPixFees + yesterdayApiCost;
+  const yesterdayProfit = yesterdayRevenue - yesterdayCost;
 
   let changePercentage = 0;
   if (yesterdayRevenue > 0) {
     changePercentage = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100;
   } else if (todayRevenue > 0) {
-    changePercentage = 100; // se ontem foi zero e hoje teve faturamento
+    changePercentage = 100;
   }
+
+  // Custos acumulados históricos (Pix Fees + API Costs de todas as consultas com status SUCCESS)
+  const totalPixFees = totalDepositsCount * pixFee;
+  
+  const searchesByTarget = await prisma.searchHistory.groupBy({
+    by: ['target'],
+    where: { status: 'SUCCESS' },
+    _count: { id: true },
+    _sum: { cost: true }
+  });
+  const totalApiCost = calculateTotalApiCost(searchesByTarget);
+  
+  const totalCost = totalPixFees + totalApiCost;
+  const totalProfit = totalRevenue - totalCost;
 
   return { 
     totalRevenue, 
@@ -181,8 +271,15 @@ export async function getDashboardMetrics() {
     recentSales, 
     topQueries,
     todayRevenue,
+    todayCost,
+    todayProfit,
     yesterdayRevenue,
-    changePercentage
+    yesterdayCost,
+    yesterdayProfit,
+    changePercentage,
+    totalCost,
+    totalProfit,
+    pixFee
   };
 }
 
@@ -265,6 +362,7 @@ export async function updateSystemSettings(data: {
   companyEmail?: string;
   pushinpayToken?: string;
   pushinpayWebhookToken?: string;
+  pixFee?: number;
   brevoApiKey?: string;
   directDataToken?: string;
   directDataBaseUrl?: string;
@@ -305,91 +403,267 @@ export async function getUserAuditData(userId: string) {
   return { history, transactions };
 }
 
-export async function getAdvancedMetrics(monthFilter?: number) {
+export async function getAdvancedMetrics(period: string = 'month') {
   await checkAdmin();
+
+  const settings = await prisma.systemSetting.findFirst();
+  const pixFee = settings?.pixFee ?? 0.95;
+
+  const BR_OFFSET_MS = -3 * 60 * 60 * 1000;
   const now = new Date();
-  const month = monthFilter !== undefined ? monthFilter : now.getMonth();
-  const year = now.getFullYear();
+  const nowBr = new Date(Date.now() + BR_OFFSET_MS);
 
-  const startOfMonth = new Date(year, month, 1);
-  const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59);
+  let startDate: Date | undefined;
+  let endDate: Date = now;
 
-  // Faturamento do Mês Selecionado (DEPOSIT confirmados)
-  const monthlyRevenue = await prisma.transaction.aggregate({
+  if (period === 'today') {
+    const startOfTodayBr = new Date(nowBr);
+    startOfTodayBr.setUTCHours(0, 0, 0, 0);
+    startDate = new Date(startOfTodayBr.getTime() - BR_OFFSET_MS);
+
+    const endOfTodayBr = new Date(nowBr);
+    endOfTodayBr.setUTCHours(23, 59, 59, 999);
+    endDate = new Date(endOfTodayBr.getTime() - BR_OFFSET_MS);
+  } else if (period === 'week') {
+    const startOfBr = new Date(nowBr);
+    startOfBr.setUTCDate(nowBr.getUTCDate() - 6);
+    startOfBr.setUTCHours(0, 0, 0, 0);
+    startDate = new Date(startOfBr.getTime() - BR_OFFSET_MS);
+  } else if (period === 'month') {
+    const startOfBr = new Date(nowBr);
+    startOfBr.setUTCDate(nowBr.getUTCDate() - 29);
+    startOfBr.setUTCHours(0, 0, 0, 0);
+    startDate = new Date(startOfBr.getTime() - BR_OFFSET_MS);
+  } else if (period === 'year') {
+    const startOfBr = new Date(nowBr.getUTCFullYear(), 0, 1, 0, 0, 0, 0);
+    startDate = new Date(startOfBr.getTime() - BR_OFFSET_MS);
+  } else {
+    startDate = undefined;
+  }
+
+  // 1. Faturamento do Período (DEPOSIT confirmados)
+  const monthlyRevenueResult = await prisma.transaction.aggregate({
     where: { 
       type: 'DEPOSIT', 
       status: 'COMPLETED',
-      createdAt: { gte: startOfMonth, lte: endOfMonth }
+      createdAt: startDate ? { gte: startDate, lte: endDate } : { lte: endDate }
     },
-    _sum: { amount: true }
+    _sum: { amount: true },
+    _count: { id: true }
   });
+  const monthlyRevenue = monthlyRevenueResult._sum.amount || 0;
+  const monthlyDepositsCount = monthlyRevenueResult._count.id || 0;
 
-  // Consultas do Mês
+  // 2. Consultas do Período
   const monthlyQueries = await prisma.searchHistory.count({
-    where: { createdAt: { gte: startOfMonth, lte: endOfMonth } }
+    where: { 
+      createdAt: startDate ? { gte: startDate, lte: endDate } : { lte: endDate }
+    }
   });
 
-  // Faturamento por Dia (Últimos 30 dias)
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  const dailyData = await prisma.transaction.findMany({
+  // 3. Custos do Período
+  const searchesByTarget = await prisma.searchHistory.groupBy({
+    by: ['target'],
+    where: { 
+      status: 'SUCCESS',
+      createdAt: startDate ? { gte: startDate, lte: endDate } : { lte: endDate }
+    },
+    _count: { id: true },
+    _sum: { cost: true }
+  });
+  const monthlyApiCosts = calculateTotalApiCost(searchesByTarget);
+  const monthlyPixFees = monthlyDepositsCount * pixFee;
+  const monthlyCosts = monthlyPixFees + monthlyApiCosts;
+  const monthlyProfit = monthlyRevenue - monthlyCosts;
+
+  // 4. Dados para o Gráfico com Pre-fill
+  const dailyTransactions = await prisma.transaction.findMany({
     where: { 
       type: 'DEPOSIT', 
       status: 'COMPLETED',
-      createdAt: { gte: thirtyDaysAgo }
+      createdAt: startDate ? { gte: startDate, lte: endDate } : { lte: endDate }
     },
     select: { amount: true, createdAt: true },
     orderBy: { createdAt: 'asc' }
   });
 
-  // Buscar Novos Usuários (Últimos 30 dias)
   const dailyUsers = await prisma.user.findMany({
-    where: { createdAt: { gte: thirtyDaysAgo } },
+    where: { 
+      createdAt: startDate ? { gte: startDate, lte: endDate } : { lte: endDate }
+    },
     select: { createdAt: true },
     orderBy: { createdAt: 'asc' }
   });
 
-  // Agrupar por dia garantindo que todos os últimos 30 dias estejam presentes em ordem cronológica
-  const chartData: { day: string; amount: number; users: number }[] = [];
-  const statsMap: { [key: string]: { amount: number; users: number } } = {};
-  
-  // Helper para formatar data localmente no formato YYYY-MM-DD e DD/MM
-  const formatDate = (date: Date) => {
-    // Usar fuso do Brasil para agrupar corretamente os dias
-    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  const chartMap = new Map<string, { faturamento: number; cadastros: number }>();
+
+  // Auxiliar para preencher chaves
+  const getLocalDateKey = (date: Date) => {
+    const parts = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      hour: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric'
+    }).formatToParts(date);
+    
+    const getPart = (type: string) => parts.find(p => p.type === type)?.value || '';
+
+    const hour = getPart('hour').padStart(2, '0');
+    const day = getPart('day').padStart(2, '0');
+    const month = getPart('month').padStart(2, '0');
+    const yearShort = getPart('year').slice(-2);
+
+    if (period === 'today') {
+      return `${hour}:00`;
+    } else if (period === 'week' || period === 'month') {
+      return `${day}/${month}`;
+    } else if (period === 'year') {
+      const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      const monthIndex = parseInt(month, 10) - 1;
+      return months[monthIndex] || 'Jan';
+    } else {
+      return `${month}/${yearShort}`;
+    }
   };
 
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = formatDate(d);
-    statsMap[dateStr] = { amount: 0, users: 0 };
-    chartData.push({ day: dateStr, amount: 0, users: 0 });
+  // Inicializar o mapa (Pre-fill com Zero)
+  if (period === 'today') {
+    for (let i = 0; i < 24; i++) {
+      chartMap.set(`${String(i).padStart(2, '0')}:00`, { faturamento: 0, cadastros: 0 });
+    }
+  } else if (period === 'week') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(nowBr.getTime() - BR_OFFSET_MS);
+      d.setDate(d.getDate() - i);
+      chartMap.set(getLocalDateKey(d), { faturamento: 0, cadastros: 0 });
+    }
+  } else if (period === 'month') {
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(nowBr.getTime() - BR_OFFSET_MS);
+      d.setDate(d.getDate() - i);
+      chartMap.set(getLocalDateKey(d), { faturamento: 0, cadastros: 0 });
+    }
+  } else if (period === 'year') {
+    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    for (let i = 0; i < 12; i++) {
+      chartMap.set(months[i], { faturamento: 0, cadastros: 0 });
+    }
+  } else {
+    // 'all' -> de Janeiro de 2026 até hoje
+    const startTemp = new Date(2026, 0, 1);
+    while (startTemp <= now) {
+      chartMap.set(getLocalDateKey(startTemp), { faturamento: 0, cadastros: 0 });
+      startTemp.setMonth(startTemp.getMonth() + 1);
+    }
   }
 
-  dailyData.forEach((t) => {
-    const dateStr = formatDate(t.createdAt);
-    if (statsMap[dateStr]) {
-      statsMap[dateStr].amount += t.amount;
-      const target = chartData.find(item => item.day === dateStr);
-      if (target) target.amount += t.amount;
+  // Preencher faturamento
+  dailyTransactions.forEach(tx => {
+    const key = getLocalDateKey(tx.createdAt);
+    if (chartMap.has(key)) {
+      const data = chartMap.get(key)!;
+      data.faturamento += tx.amount;
     }
   });
 
-  dailyUsers.forEach((u) => {
-    const dateStr = formatDate(u.createdAt);
-    if (statsMap[dateStr]) {
-      statsMap[dateStr].users += 1;
-      const target = chartData.find(item => item.day === dateStr);
-      if (target) target.users += 1;
+  // Preencher cadastros
+  dailyUsers.forEach(user => {
+    const key = getLocalDateKey(user.createdAt);
+    if (chartMap.has(key)) {
+      const data = chartMap.get(key)!;
+      data.cadastros += 1;
     }
   });
+
+  const chartData = Array.from(chartMap.entries()).map(([label, val]) => ({
+    day: label,
+    amount: Number(val.faturamento.toFixed(2)),
+    users: val.cadastros
+  }));
+
+  // 5. Tabela de Atribuição de Tráfego / UTMs
+  const usersWithAttribution = await prisma.user.findMany({
+    select: {
+      id: true,
+      trafficSource: true,
+      transactions: {
+        where: { type: 'DEPOSIT', status: 'COMPLETED' },
+        select: { amount: true }
+      },
+      searches: {
+        where: { status: 'SUCCESS' },
+        select: { target: true, cost: true }
+      }
+    }
+  });
+
+  const trafficStats: {
+    [source: string]: {
+      source: string;
+      usersCount: number;
+      faturamento: number;
+      custos: number;
+      lucro: number;
+      roi: number;
+    }
+  } = {};
+
+  usersWithAttribution.forEach(u => {
+    const source = u.trafficSource || 'orgânico';
+    if (!trafficStats[source]) {
+      trafficStats[source] = { source, usersCount: 0, faturamento: 0, custos: 0, lucro: 0, roi: 0 };
+    }
+    
+    const stats = trafficStats[source];
+    stats.usersCount += 1;
+    
+    const totalDeposits = u.transactions.reduce((sum, tx) => sum + tx.amount, 0);
+    stats.faturamento += totalDeposits;
+
+    const totalPixFees = u.transactions.length * pixFee;
+    
+    const searchesGrouped: { [target: string]: { count: number; sumCost: number } } = {};
+    u.searches.forEach(s => {
+      if (!searchesGrouped[s.target]) {
+        searchesGrouped[s.target] = { count: 0, sumCost: 0 };
+      }
+      searchesGrouped[s.target].count += 1;
+      searchesGrouped[s.target].sumCost += s.cost;
+    });
+
+    const parsedSearches = Object.entries(searchesGrouped).map(([target, info]) => ({
+      target,
+      _count: { id: info.count },
+      _sum: { cost: info.sumCost }
+    }));
+
+    const totalApiCost = calculateTotalApiCost(parsedSearches);
+    const totalCosts = totalPixFees + totalApiCost;
+
+    stats.custos += totalCosts;
+  });
+
+  const attributionTable = Object.values(trafficStats).map(stats => {
+    const lucro = stats.faturamento - stats.custos;
+    const roi = stats.custos > 0 ? (lucro / stats.custos) * 100 : 0;
+    return {
+      source: stats.source,
+      usersCount: stats.usersCount,
+      faturamento: Number(stats.faturamento.toFixed(2)),
+      custos: Number(stats.custos.toFixed(2)),
+      lucro: Number(lucro.toFixed(2)),
+      roi: Number(roi.toFixed(0))
+    };
+  }).sort((a, b) => b.faturamento - a.faturamento);
 
   return {
-    monthlyRevenue: monthlyRevenue._sum.amount || 0,
+    monthlyRevenue,
+    monthlyCosts,
+    monthlyProfit,
     monthlyQueries,
-    chartData
+    chartData,
+    attributionTable
   };
 }
 
