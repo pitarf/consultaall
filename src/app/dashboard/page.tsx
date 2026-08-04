@@ -469,7 +469,7 @@ export default function DashboardPage() {
                 <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
                   <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
                   <p><span className="font-semibold text-slate-400">CPF:</span> {c.taxIdNumber || 'Não informado'}</p>
-                  <p><span className="font-semibold text-slate-400">Nascimento:</span> {c.dateOfBirth ? new Date(c.dateOfBirth).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Não informado'}</p>
+                  <p><span className="font-semibold text-slate-400">Nascimento:</span> {c.dateOfBirth ? (c.dateOfBirth.includes('/') || c.dateOfBirth.includes('*') ? c.dateOfBirth : new Date(c.dateOfBirth).toLocaleDateString('pt-BR', { timeZone: 'UTC' })) : 'Não informado'}</p>
                   <p><span className="font-semibold text-slate-400">Mãe:</span> {c.motherName ? c.motherName.toUpperCase() : 'Não informado'}</p>
                   <p><span className="font-semibold text-slate-400">Localização:</span> {c.city || 'Desconhecida'} - {c.state || 'XX'}</p>
                 </div>

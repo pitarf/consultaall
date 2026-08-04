@@ -191,7 +191,7 @@ export async function performSmartSearch(
             name: c.fullName || c.name || cleanQuery,
             dateOfBirth: c.dateOfBirth,
             motherName: c.motherName,
-            taxIdNumber: c.taxIdNumber, // CPF mascarado
+            taxIdNumber: c.cpf || c.taxIdNumber, // CPF mascarado
             state: c.state,
             city: c.city
           }))
