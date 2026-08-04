@@ -7,6 +7,12 @@ export const dynamic = 'force-dynamic';
 export default async function AdminBloqueiosPage() {
   const blockedList = await getBlockedDataList();
 
+  // Serializa as datas para strings para evitar erros de serialização do Next.js RSC
+  const serializedList = blockedList.map(item => ({
+    ...item,
+    createdAt: item.createdAt.toISOString()
+  }));
+
   return (
     <div className="max-w-4xl mx-auto pb-20 space-y-8">
       {/* Header Banner */}
@@ -22,7 +28,7 @@ export default async function AdminBloqueiosPage() {
         </div>
       </div>
 
-      <BloqueiosClient initialBlockedList={blockedList} />
+      <BloqueiosClient initialBlockedList={serializedList} />
     </div>
   );
 }

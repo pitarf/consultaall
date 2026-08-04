@@ -10,7 +10,7 @@ interface BlockedItem {
   type: string;
   value: string;
   reason: string | null;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export default function BloqueiosClient({ initialBlockedList }: { initialBlockedList: BlockedItem[] }) {
