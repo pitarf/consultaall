@@ -1,7 +1,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { ShieldCheck, LayoutDashboard, Users, Activity, LogOut, ArrowLeft, Settings, DollarSign, Tag, FileText, BookOpen, Globe } from 'lucide-react';
+import { ShieldCheck, LayoutDashboard, Users, Activity, LogOut, ArrowLeft, Settings, DollarSign, Tag, FileText, BookOpen, Globe, Ban } from 'lucide-react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdminMobileMenu } from '@/components/AdminMobileMenu';
@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default async function AdminLayout({
@@ -80,6 +85,10 @@ export default async function AdminLayout({
           <Link href="/admin/traffic" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <Globe className="w-5 h-5" />
             Origem de Clientes
+          </Link>
+          <Link href="/admin/bloqueios" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+            <Ban className="w-5 h-5" />
+            Bloqueios LGPD
           </Link>
           <Link href="/admin/precos" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <Tag className="w-5 h-5" />

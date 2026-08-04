@@ -8,13 +8,13 @@ export const dynamic = 'force-dynamic';
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; start?: string; end?: string }>;
 }) {
-  const { period } = await searchParams;
+  const { period, start, end } = await searchParams;
   const currentPeriod = period || 'month';
   
   const metrics = await getDashboardMetrics();
-  const advanced = await getAdvancedMetrics(currentPeriod);
+  const advanced = await getAdvancedMetrics(currentPeriod, start, end);
 
   // Helper para traduzir o label do período selecionado
   const getPeriodLabel = (p: string) => {
@@ -24,6 +24,13 @@ export default async function AdminDashboardPage({
       case 'month': return 'Últimos 30 Dias';
       case 'year': return 'Ano Atual';
       case 'all': return 'Histórico Completo';
+      case 'custom':
+        if (start && end) {
+          const s = start.split('-').reverse().join('/');
+          const e = end.split('-').reverse().join('/');
+          return `${s} até ${e}`;
+        }
+        return 'Período Personalizado';
       default: return 'Período';
     }
   };
@@ -42,7 +49,7 @@ export default async function AdminDashboardPage({
           </p>
         </div>
         <div className="shrink-0">
-          <DashboardClient currentPeriod={currentPeriod} />
+          <DashboardClient currentPeriod={currentPeriod} initialStart={start} initialEnd={end} />
         </div>
       </div>
 

@@ -8,6 +8,12 @@ import "./globals.css";
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#080b11',
+};
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

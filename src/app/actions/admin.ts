@@ -420,7 +420,7 @@ export async function getUserAuditData(userId: string) {
   return { history, transactions };
 }
 
-export async function getAdvancedMetrics(period: string = 'month') {
+export async function getAdvancedMetrics(period: string = 'month', customStart?: string, customEnd?: string) {
   await checkAdmin();
 
   const settings = await prisma.systemSetting.findFirst();
@@ -454,6 +454,12 @@ export async function getAdvancedMetrics(period: string = 'month') {
   } else if (period === 'year') {
     const startOfBr = new Date(nowBr.getUTCFullYear(), 0, 1, 0, 0, 0, 0);
     startDate = new Date(startOfBr.getTime() - BR_OFFSET_MS);
+  } else if (period === 'custom' && customStart && customEnd) {
+    const startOfBr = new Date(customStart + 'T00:00:00');
+    startDate = new Date(startOfBr.getTime() - BR_OFFSET_MS);
+
+    const endOfBr = new Date(customEnd + 'T23:59:59.999');
+    endDate = new Date(endOfBr.getTime() - BR_OFFSET_MS);
   } else {
     startDate = undefined;
   }
@@ -533,7 +539,7 @@ export async function getAdvancedMetrics(period: string = 'month') {
 
     if (period === 'today') {
       return `${hour}:00`;
-    } else if (period === 'week' || period === 'month') {
+    } else if (period === 'week' || period === 'month' || period === 'custom') {
       return `${day}/${month}`;
     } else if (period === 'year') {
       const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -561,13 +567,20 @@ export async function getAdvancedMetrics(period: string = 'month') {
       d.setDate(d.getDate() - i);
       chartMap.set(getLocalDateKey(d), { faturamento: 0, cadastros: 0 });
     }
+  } else if (period === 'custom' && customStart && customEnd) {
+    const sDate = new Date(customStart + 'T00:00:00');
+    const eDate = new Date(customEnd + 'T00:00:00');
+    const temp = new Date(sDate);
+    while (temp <= eDate) {
+      chartMap.set(getLocalDateKey(temp), { faturamento: 0, cadastros: 0 });
+      temp.setDate(temp.getDate() + 1);
+    }
   } else if (period === 'year') {
     const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     for (let i = 0; i < 12; i++) {
       chartMap.set(months[i], { faturamento: 0, cadastros: 0 });
     }
   } else {
-    // 'all' -> de Janeiro de 2026 até hoje
     const startTemp = new Date(2026, 0, 1);
     while (startTemp <= now) {
       chartMap.set(getLocalDateKey(startTemp), { faturamento: 0, cadastros: 0 });
@@ -1105,4 +1118,105 @@ export async function getTrafficDetailedStats(searchQuery?: string, filterSource
     throw new Error('Falha ao carregar relatório de tráfego');
   }
 }
+
+/**
+ * Retorna todos os dados bloqueados (Bloqueio LGPD)
+ */
+export async function getBlockedDataList() {
+  await checkAdmin();
+  try {
+    return await prisma.blockedData.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.error('Erro ao buscar dados bloqueados:', error);
+    throw new Error('Falha ao carregar lista de bloqueios');
+  }
+}
+
+/**
+ * Adiciona um valor (CPF, Telefone, etc) à lista de bloqueios LGPD
+ */
+export async function addBlockedData(type: 'CPF' | 'TELEFONE' | 'CNPJ' | 'PLACA', value: string, reason?: string) {
+  await checkAdmin();
+
+  if (!value.trim()) {
+    return { error: 'Por favor, insira um valor para bloquear.' };
+  }
+
+  // Higieniza o valor (remove pontuações e espaços para CPF, CNPJ e Telefone)
+  let cleanValue = value.trim();
+  if (type !== 'PLACA') {
+    cleanValue = value.replace(/\D/g, '');
+  } else {
+    cleanValue = value.replace(/-/g, '').toUpperCase();
+  }
+
+  try {
+    const exists = await prisma.blockedData.findUnique({
+      where: { value: cleanValue }
+    });
+
+    if (exists) {
+      return { error: 'Este documento/telefone já está bloqueado no sistema.' };
+    }
+
+    await prisma.blockedData.create({
+      data: {
+        type,
+        value: cleanValue,
+        reason: reason || 'Solicitação LGPD',
+      }
+    });
+
+    // Registra log da ação
+    await prisma.systemLog.create({
+      data: {
+        level: 'WARNING',
+        message: `Admin bloqueou consultas para o ${type}: ${value}`,
+        context: { type, value: cleanValue, reason }
+      }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Erro ao adicionar bloqueio:', error);
+    return { error: error.message || 'Erro ao processar bloqueio.' };
+  }
+}
+
+/**
+ * Remove um registro de bloqueio (desbloqueia consultas)
+ */
+export async function removeBlockedData(id: string) {
+  await checkAdmin();
+  try {
+    const blocked = await prisma.blockedData.findUnique({
+      where: { id }
+    });
+
+    if (!blocked) {
+      return { error: 'Registro de bloqueio não encontrado.' };
+    }
+
+    await prisma.blockedData.delete({
+      where: { id }
+    });
+
+    // Registra log do desbloqueio
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Admin desbloqueou consultas para o ${blocked.type}: ${blocked.value}`,
+        context: { blocked }
+      }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Erro ao remover bloqueio:', error);
+    return { error: error.message || 'Erro ao remover bloqueio.' };
+  }
+}
+
 

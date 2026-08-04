@@ -196,3 +196,12 @@ model Redirect {
   type      String   @default("PAGE") // PAGE ou ARTICLE
   createdAt DateTime @default(now())
 }
+
+model BlockedData {
+  id        String   @id @default(uuid())
+  type      String   // "CPF", "TELEFONE", "CNPJ", "PLACA"
+  value     String   @unique // Valor higienizado/sem pontuação
+  reason    String?
+  createdAt DateTime @default(now())
+}
+

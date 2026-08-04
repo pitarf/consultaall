@@ -30,6 +30,21 @@ export async function realizarConsulta(
     return { error: validation.message };
   }
 
+  // Verifica se o dado está na Blocklist (Bloqueio LGPD)
+  const blocklistValue = target === 'placa' 
+    ? cleanQuery.replace(/-/g, '').toUpperCase() 
+    : cleanQuery.replace(/\D/g, '');
+
+  if (blocklistValue) {
+    const isBlocked = await prisma.blockedData.findFirst({
+      where: { value: blocklistValue }
+    });
+
+    if (isBlocked) {
+      return { error: 'Este registro está indisponível para consulta por solicitação do titular (Direitos LGPD).' };
+    }
+  }
+
   if (!selectedModules || selectedModules.length === 0) {
     return { error: 'Nenhum conjunto de dados selecionado.' };
   }
