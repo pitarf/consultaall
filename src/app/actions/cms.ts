@@ -97,7 +97,7 @@ function normalizeSlug(slug: string): string {
 // Lista de rotas reservadas do sistema
 const RESERVED_SLUGS = [
   'admin', 'admin-login', 'api', 'dashboard', 'login', 'cadastro', 'esqueceu-senha', 
-  'resetar-senha', 'termos', 'protecao-de-dados', 'blog', 'faturas', 'historico', 
+  'resetar-senha', 'blog', 'faturas', 'historico', 
   'empresas', 'veiculos', 'perfil', 'promocoes', 'sw.js', 'sitemap.xml', 'robots.txt'
 ];
 

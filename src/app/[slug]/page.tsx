@@ -88,9 +88,121 @@ export default async function DynamicCoringaPage({ params }: Props) {
     permanentRedirect(`/${redirectEntry.newSlug}`);
   }
 
-  // Busca a página e as configurações em paralelo
-  const [page, settings, menuPages] = await Promise.all([
-    prisma.page.findUnique({ where: { slug } }),
+  let page = await prisma.page.findUnique({ where: { slug } });
+
+  // Auto-seeding dinâmico e auto-curativo das páginas institucionais padrão
+  if (!page) {
+    const defaultPages: Record<string, { title: string; content: string; description: string }> = {
+      'sobre': {
+        title: 'Sobre o Detetive Buscas',
+        description: 'Conheça nossa trajetória, nosso propósito corporativo e como estruturamos a maior plataforma de enriquecimento cadastral do país.',
+        content: `<h2>Quem Somos</h2>
+<p>O <strong>Detetive Buscas</strong> é uma plataforma tecnológica de ponta dedicada ao enriquecimento de dados cadastrais e à facilitação de consultas institucionais. Voltada estritamente para o ambiente de negócios (B2B), a plataforma ajuda empresas na prevenção de fraudes, validação de identidades (KYC - Know Your Customer) e higienização de registros internos.</p>
+<h2>Nossa Missão</h2>
+<p>Nossa missão é democratizar o acesso à inteligência cadastral de forma transparente e flexível. Por meio do modelo pay-per-use, permitimos que negócios de qualquer porte tenham acesso a dados valiosos sem a necessidade de contratos engessados de fidelidade ou taxas fixas mensais.</p>
+<h2>Nossos Valores</h2>
+<ul>
+  <li><strong>Transparência:</strong> Preços claros, sem taxas escondidas ou mensalidades fixas.</li>
+  <li><strong>Privacidade:</strong> Conformidade total com a LGPD e respeito aos direitos dos titulares.</li>
+  <li><strong>Tecnologia:</strong> Consultas em milissegundos e cache inteligente otimizado.</li>
+</ul>`
+      },
+      'contato': {
+        title: 'Fale Conosco',
+        description: 'Precisa de ajuda com o seu saldo, dúvidas sobre os módulos ou deseja fechar uma parceria comercial? Entre em contato por um de nossos canais oficiais.',
+        content: `<h2>Canais Oficiais</h2>
+<p>Precisa de ajuda com o seu saldo, dúvidas sobre os módulos ou deseja fechar uma parceria comercial? Entre em contato por um de nossos canais oficiais abaixo.</p>
+<h3>E-mail de Suporte</h3>
+<p>Envie sua mensagem para: <strong>suporte@detetivebuscas.com</strong></p>
+<h3>Horário de Atendimento</h3>
+<p>Segunda a Sexta-feira • 09:00 às 18:00 (Horário de Brasília).</p>
+<h3>Atendimento 100% Digital</h3>
+<p>Nosso prazo médio de resposta para solicitações via e-mail é de até 24 horas úteis. Tenha sempre em mãos o comprovante de recarga Pix ou o e-mail cadastrado para acelerar o processo.</p>`
+      },
+      'suporte': {
+        title: 'Central de Suporte',
+        description: 'Encontre respostas rápidas para dúvidas frequentes sobre saldos, faturas e consultas.',
+        content: `<h2>Dúvidas Frequentes</h2>
+<p>Encontre respostas para as principais dúvidas sobre o funcionamento da plataforma.</p>
+<h3>Como funcionam as recargas Pix?</h3>
+<p>O valor mínimo de recarga é de R$ 5,00. Assim que o pagamento é efetuado, nosso sistema confirma e libera o saldo em poucos segundos de forma automática.</p>
+<h3>O saldo expira?</h3>
+<p>Não, o saldo depositado não tem prazo de validade e você pode utilizá-lo para consultas a qualquer momento.</p>
+<h3>Como tirar dúvidas sobre consultas?</h3>
+<p>Você pode acessar o histórico de consultas no painel ou entrar em contato com o suporte enviando um e-mail com os dados da transação.</p>`
+      },
+      'termos': {
+        title: 'Termos de Uso',
+        description: 'Estes termos de uso regem a utilização da plataforma Detetive Buscas.',
+        content: `<h2>Termos e Condições Gerais</h2>
+<p>Ao utilizar o site e os serviços do Detetive Buscas, você aceita integralmente as condições descritas nestes Termos de Uso.</p>
+<h3>1. Finalidade Legítima</h3>
+<p>O usuário declara utilizar as ferramentas de consultas de dados cadastrais estritamente para finalidades legítimas, como prevenção de fraudes, validação cadastral ou enriquecimento de dados em conformidade com as legislações pertinentes.</p>
+<h3>2. Responsabilidade pelas Credenciais</h3>
+<p>A segurança de seu usuário e senha é de sua exclusiva responsabilidade. Quaisquer transações ou recargas efetuadas na sua conta serão de sua inteira responsabilidade.</p>
+<h3>3. Política de Cobrança e Reembolsos</h3>
+<p>Os créditos comprados através de recarga Pix destinam-se ao consumo de serviços da plataforma e não possuem direito a reembolso ou saque após confirmados.</p>`
+      },
+      'politica-de-privacidade': {
+        title: 'Política de Privacidade',
+        description: 'Entenda como tratamos e protegemos suas informações de cadastro e transações.',
+        content: `<h2>Tratamento de Dados Pessoais</h2>
+<p>Sua privacidade é prioritária. Esta política descreve quais dados coletamos, armazenamos e tratamos na plataforma.</p>
+<h3>1. Dados Coletados</h3>
+<p>Coletamos seu nome, e-mail e CPF/CNPJ no cadastro para garantir a identificação legal e a integridade financeira das transações.</p>
+<h3>2. Segurança</h3>
+<p>Adotamos criptografia SSL de ponta a ponta e práticas de segurança de bancos de dados para que suas informações e históricos de pesquisas permaneçam confidenciais.</p>
+<h3>3. Direitos de Acesso</h3>
+<p>Você tem o direito de solicitar a alteração ou exclusão de seus dados de cadastro a qualquer momento entrando em contato conosco.</p>`
+      },
+      'politica-de-cookies': {
+        title: 'Política de Cookies',
+        description: 'Saiba como e por que utilizamos cookies no nosso site.',
+        content: `<h2>Uso de Cookies no Site</h2>
+<p>Utilizamos cookies para personalizar a sua experiência e guardar suas preferências.</p>
+<h3>1. O que são cookies?</h3>
+<p>Cookies são pequenos fragmentos de texto enviados ao seu navegador pelo site que você visita para fins de recordação de sessões e dados.</p>
+<h3>2. Tipos de Cookies que Utilizamos</h3>
+<ul>
+  <li><strong>Essenciais:</strong> Mantêm você logado na sua conta com segurança.</li>
+  <li><strong>Atribuição (Marketing/Afiliados):</strong> Rastreiam cliques de links de afiliados pelo período de 30 dias para repasse correto das comissões Pix.</li>
+</ul>`
+      },
+      'protecao-de-dados': {
+        title: 'Proteção de Dados (LGPD)',
+        description: 'Saiba como exercemos a proteção de dados dos cidadãos e a política de opt-out.',
+        content: `<h2>Conformidade com a LGPD</h2>
+<p>O Detetive Buscas preza pelo respeito integral à Lei Geral de Proteção de Dados (Lei nº 13.709/18).</p>
+<h3>1. Direitos dos Cidadãos</h3>
+<p>Garantimos a todo cidadão brasileiro a transparência sobre a existência de dados em nossa plataforma.</p>
+<h3>2. Exclusão e Bloqueio de Dados (Opt-out)</h3>
+<p>Caso você seja titular de um CPF ou Telefone e deseje que o mesmo seja permanentemente bloqueado para pesquisas em nosso site, basta preencher nosso formulário de Opt-out.</p>`
+      }
+    };
+
+    if (defaultPages[slug]) {
+      const def = defaultPages[slug];
+      page = await prisma.page.create({
+        data: {
+          slug,
+          title: def.title,
+          h1: def.title,
+          metaDescription: def.description,
+          content: def.content,
+          published: true,
+          showInMenu: false,
+          showInFooter: true,
+          robotsIndex: true
+        }
+      });
+      const { revalidatePath } = require('next/cache');
+      revalidatePath('/[slug]');
+      revalidatePath('/sitemap.xml');
+    }
+  }
+
+  // Busca configurações e páginas de menu em paralelo
+  const [settings, menuPages] = await Promise.all([
     prisma.systemSetting.findFirst(),
     prisma.page.findMany({
       where: {
