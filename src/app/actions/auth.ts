@@ -189,18 +189,20 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
 
   // Enviar e-mail via Brevo (Sendinblue) nativamente
   const settings = await prisma.systemSetting.findFirst();
-  const brevoApiKey = settings?.brevoApiKey || process.env.BREVO_API_KEY;
+  const rawBrevoKey = settings?.brevoApiKey || process.env.BREVO_API_KEY;
   
-  if (!brevoApiKey) {
+  if (!rawBrevoKey) {
     console.error('Brevo API key não configurada.');
     return { error: 'Ocorreu um erro no servidor de e-mail. Contate o suporte.' };
   }
 
+  const brevoApiKey = rawBrevoKey.trim();
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const resetLink = `${appUrl}/resetar-senha?token=${token}`;
 
-  const senderEmail = settings?.companyEmail || 'brasiltda2012@gmail.com';
-  const senderName = settings?.companyName || 'Detetive Buscas';
+  const senderEmail = (settings?.companyEmail || 'brasiltda2012@gmail.com').trim();
+  const senderName = (settings?.companyName || 'Detetive Buscas').trim();
 
   try {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -212,7 +214,7 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
       },
       body: JSON.stringify({
         sender: { name: senderName, email: senderEmail },
-        to: [{ email, name: user.name || 'Cliente' }],
+        to: [{ email: email.trim(), name: user.name || 'Cliente' }],
         subject: `Recuperação de Senha - ${senderName}`,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
