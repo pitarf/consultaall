@@ -272,7 +272,7 @@ export default function AdminSettingsPage() {
                   {settings.pushinpayToken && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Conectado
+                      Configurado
                     </span>
                   )}
                 </div>
@@ -365,7 +365,7 @@ export default function AdminSettingsPage() {
                   {settings.brevoApiKey && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Conectado
+                      Configurado
                     </span>
                   )}
                 </div>
@@ -404,7 +404,7 @@ export default function AdminSettingsPage() {
                     {settings.directDataToken && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Conectado
+                        Configurado
                       </span>
                     )}
                   </div>
@@ -463,7 +463,7 @@ export default function AdminSettingsPage() {
                     {settings.apiConsultaToken && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Conectado
+                        Configurado
                       </span>
                     )}
                   </div>
