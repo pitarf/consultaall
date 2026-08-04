@@ -36,7 +36,7 @@ export default function PrecosClient({ modulos: modulosIniciais }: Props) {
     setEditando(modulo.id);
     setValores((prev) => ({ 
       ...prev, 
-      [modulo.id]: modulo.price.toString().replace('.', ',') 
+      [modulo.id]: modulo.price.toString() 
     }));
   }
 
@@ -52,10 +52,10 @@ export default function PrecosClient({ modulos: modulosIniciais }: Props) {
    */
   async function salvarPreco(modulo: Modulo) {
     const valorDigitado = valores[modulo.id] || '0';
-    const novoValor = parseFloat(valorDigitado.replace(',', '.'));
+    const novoValor = parseFloat(valorDigitado);
 
     if (isNaN(novoValor) || novoValor < 0) {
-      toast.error('Valor inválido. Digite um número positivo (ex: 2,50)');
+      toast.error('Valor inválido. Digite um número positivo (ex: 2.50)');
       return;
     }
 
@@ -149,8 +149,9 @@ export default function PrecosClient({ modulos: modulosIniciais }: Props) {
                       <div className="flex items-center justify-end gap-1">
                         <span className="text-slate-400 dark:text-gray-400 text-sm">R$</span>
                         <input
-                          type="text"
-                          inputMode="decimal"
+                          type="number"
+                          step="0.01"
+                          min="0"
                           className="w-24 bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-primary/50 rounded-lg px-2 py-1.5 text-sm text-right text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:outline-none focus:border-primary outline-none transition-all"
                           value={valores[modulo.id] ?? ''}
                           onChange={(e) => setValores((prev) => ({ ...prev, [modulo.id]: e.target.value }))}
