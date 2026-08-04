@@ -24,7 +24,7 @@ export default function DashboardClient({ currentPeriod }: { currentPeriod: stri
             onClick={() => router.push(`/admin?period=${p.value}`)}
             className={`px-4 py-2 text-xs font-bold rounded-full transition-all whitespace-nowrap ${
               active
-                ? 'bg-emerald-600 text-white shadow-md'
+                ? 'bg-blue-600 text-white shadow-md'
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
