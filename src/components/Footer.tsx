@@ -1,6 +1,5 @@
-'use client';
-
 import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
 
 interface FooterProps {
   logoUrl?: string | null;
@@ -10,7 +9,35 @@ interface FooterProps {
  * Componente de Rodapé (Footer) unificado e responsivo para o Detetive Buscas.
  * Exibe logo, links de consultas, informações da empresa, políticas legais e selo de status de sistemas.
  */
-export default function Footer({ logoUrl }: FooterProps) {
+export default async function Footer({ logoUrl }: FooterProps) {
+  // Busca dinamicamente no banco as páginas que devem aparecer no rodapé
+  const dbPages = await prisma.page.findMany({
+    where: { 
+      published: true, 
+      showInFooter: true,
+      OR: [
+        { publishedAt: null },
+        { publishedAt: { lte: new Date() } }
+      ]
+    },
+    select: { title: true, slug: true },
+    orderBy: { title: 'asc' }
+  });
+
+  const legalKeywords = ['termo', 'política', 'privacidade', 'cookies', 'proteção', 'lgpd', 'legal', 'reembolso'];
+  const empresaPages: { label: string, href: string }[] = [];
+  const legalPages: { label: string, href: string }[] = [];
+
+  for (const p of dbPages) {
+    const isLegal = legalKeywords.some(kw => p.title.toLowerCase().includes(kw));
+    if (isLegal) {
+      legalPages.push({ label: p.title, href: `/${p.slug}` });
+    } else {
+      empresaPages.push({ label: p.title, href: `/${p.slug}` });
+    }
+  }
+
+  // Links estáticos padrão do sistema
   const footerLinks = {
     consultas: [
       { label: 'Consulta CPF', href: '/consulta-cpf' },
@@ -20,17 +47,10 @@ export default function Footer({ logoUrl }: FooterProps) {
       { label: 'Consulta por Nome', href: '/consulta-nome' },
     ],
     empresa: [
-      { label: 'Sobre o Detetive Buscas', href: '/sobre' },
-      { label: 'Contato', href: '/contato' },
-      { label: 'Suporte', href: '/suporte' },
-      { label: 'Blog', href: '/blog' },
+      ...empresaPages,
+      { label: 'Blog', href: '/blog' }
     ],
-    legal: [
-      { label: 'Termos de Uso', href: '/termos' },
-      { label: 'Política de Privacidade', href: '/politica-de-privacidade' },
-      { label: 'Política de Cookies', href: '/politica-de-cookies' },
-      { label: 'Proteção de Dados', href: '/protecao-de-dados' },
-    ]
+    legal: legalPages
   };
 
   return (
