@@ -7,6 +7,7 @@ import Link from 'next/link';
 export default function HomeSearchBox() {
   const [type, setType] = useState<'cpf' | 'placa' | 'telefone'>('cpf');
   const [value, setValue] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -17,6 +18,52 @@ export default function HomeSearchBox() {
     'Filtrando informações públicas registradas...',
     'Gerando relatório de preview...'
   ];
+
+  const formatCPF = (v: string) => {
+    v = v.replace(/\D/g, '');
+    if (v.length > 11) v = v.slice(0, 11);
+    return v
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  };
+
+  const formatTelefone = (v: string) => {
+    v = v.replace(/\D/g, '');
+    if (v.length > 11) v = v.slice(0, 11);
+    
+    if (v.length <= 2) return v;
+    if (v.length <= 6) return v.replace(/(\d{2})(\d)/, '$1 $2');
+    if (v.length <= 10) {
+      return v
+        .replace(/(\d{2})(\d)/, '$1 $2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    return v
+      .replace(/(\d{2})(\d)/, '$1 $2')
+      .replace(/(\d{5})(\d)/, '$1-$2');
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null);
+    let rawVal = e.target.value;
+
+    if (type === 'cpf') {
+      setValue(formatCPF(rawVal));
+    } else if (type === 'telefone') {
+      setValue(formatTelefone(rawVal));
+    } else if (type === 'placa') {
+      rawVal = rawVal.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      if (rawVal.length > 8) rawVal = rawVal.slice(0, 8);
+      if (rawVal.length === 7 && !rawVal.includes('-')) {
+        const isOldPattern = /^[A-Z]{3}[0-9]{4}$/.test(rawVal);
+        if (isOldPattern) {
+          rawVal = rawVal.replace(/^([A-Z]{3})([0-9]{4})$/, '$1-$2');
+        }
+      }
+      setValue(rawVal);
+    }
+  };
 
   useEffect(() => {
     let interval: any;
@@ -39,7 +86,53 @@ export default function HomeSearchBox() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!value.trim()) return;
+    setError(null);
+
+    const cleanVal = value.replace(/\D/g, '');
+
+    if (type === 'cpf') {
+      if (cleanVal.length !== 11) {
+        setError('Insira um CPF válido.');
+        return;
+      }
+
+      // CPFs inválidos conhecidos
+      const invalidCpfs = [
+        '00000000000', '11111111111', '22222222222', '33333333333', 
+        '44444444444', '55555555555', '66666666666', '77777777777', 
+        '88888888888', '99999999999', '12345678909', '12345678910',
+        '12345678911'
+      ];
+      if (invalidCpfs.includes(cleanVal)) {
+        setError('Insira um CPF válido.');
+        return;
+      }
+    } else if (type === 'telefone') {
+      if (cleanVal.length !== 10 && cleanVal.length !== 11) {
+        setError('Insira um Telefone válido.');
+        return;
+      }
+
+      // Telefones inválidos
+      const invalidTelephones = [
+        '0000000000', '1111111111', '2222222222', '3333333333', '4444444444',
+        '5555555555', '6666666666', '7777777777', '8888888888', '9999999999',
+        '00000000000', '11111111111', '22222222222', '33333333333', '44444444444',
+        '55555555555', '66666666666', '77777777777', '88888888888', '99999999999'
+      ];
+      if (invalidTelephones.includes(cleanVal)) {
+        setError('Insira um Telefone válido.');
+        return;
+      }
+    } else if (type === 'placa') {
+      const cleanPlaca = value.replace(/-/g, '').toUpperCase();
+      const isPlacaValida = /^[A-Z]{3}[0-9]{4}$/.test(cleanPlaca) || /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(cleanPlaca);
+      if (!isPlacaValida) {
+        setError('Insira uma Placa válida (Ex: ABC1D23 ou ABC-1234).');
+        return;
+      }
+    }
+
     setLoading(true);
     setShowResult(false);
   };
@@ -92,6 +185,7 @@ export default function HomeSearchBox() {
             onClick={() => {
               setType(t);
               setValue('');
+              setError(null);
               setShowResult(false);
             }}
             className={`flex-1 py-3 text-xs md:text-sm font-bold rounded-xl transition-all capitalize ${
@@ -111,13 +205,13 @@ export default function HomeSearchBox() {
             <input
               type="text"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={handleInputChange}
               placeholder={
                 type === 'cpf'
                   ? 'Digite o CPF (Ex: 000.000.000-00)'
                   : type === 'placa'
                   ? 'Digite a Placa (Ex: ABC1D23)'
-                  : 'Digite o Telefone com DDD (Ex: 11999999999)'
+                  : 'Digite o Telefone com DDD (Ex: 11 99999-9999)'
               }
               className="w-full bg-white border border-slate-200 rounded-2xl pl-5 pr-16 py-4 text-slate-900 focus:border-[#2872fa] focus:ring-2 focus:ring-[#2872fa]/10 outline-none transition-all text-sm font-semibold"
             />
@@ -129,6 +223,14 @@ export default function HomeSearchBox() {
               <Search className="w-4 h-4" />
             </button>
           </div>
+          
+          {error && (
+            <div className="flex items-center gap-2 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-500/10 p-3.5 rounded-2xl border border-red-200 dark:border-red-500/20 animate-in fade-in slide-in-from-top-1 duration-200">
+              <ShieldAlert className="w-4 h-4 shrink-0 text-red-500" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <p className="text-[11px] text-slate-400 font-semibold text-center uppercase tracking-wider">
             Digite o dado cadastral acima para testar a busca
           </p>
