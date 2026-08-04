@@ -48,7 +48,7 @@ export default async function AdminDashboardPage({
             Visão panorâmica consolidada para o período: <span className="font-bold text-sky-400">{getPeriodLabel(currentPeriod)}</span>.
           </p>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 w-full md:w-auto overflow-hidden">
           <DashboardClient currentPeriod={currentPeriod} initialStart={start} initialEnd={end} />
         </div>
       </div>
@@ -61,7 +61,7 @@ export default async function AdminDashboardPage({
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
             Métricas de Hoje
           </h2>
-          <div className="grid grid-cols-3 gap-4 bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center sm:text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center sm:text-left">
             <div>
               <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Faturamento</p>
               <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
@@ -102,7 +102,7 @@ export default async function AdminDashboardPage({
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
             Métricas do Período
           </h2>
-          <div className="grid grid-cols-3 gap-4 bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center sm:text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center sm:text-left">
             <div>
               <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Faturamento Pix</p>
               <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
@@ -139,7 +139,7 @@ export default async function AdminDashboardPage({
             Faturamento bruto de depósitos Pix menos taxas do gateway Pix e custo total de consumo de APIs da DirectData.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-8 md:gap-12">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-6 sm:gap-8 md:gap-12 mt-6 md:mt-0">
           <div>
             <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Depósitos Pix (Bruto)</p>
             <p className="text-lg md:text-xl font-bold mt-1">
@@ -162,7 +162,7 @@ export default async function AdminDashboardPage({
       </div>
 
       {/* 5. 5 Cards do Período */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         {/* Card 1: Faturamento */}
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm text-left flex flex-col justify-between hover:border-primary/25 transition-all">
           <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-[#2872fa] flex items-center justify-center mb-4">

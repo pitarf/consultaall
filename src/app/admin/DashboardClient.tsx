@@ -34,7 +34,7 @@ export default function DashboardClient({ currentPeriod, initialStart, initialEn
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
       {/* Filtros Rápidos */}
-      <div className="flex items-center bg-black/20 dark:bg-black/35 p-1 rounded-2xl border border-white/10 shadow-inner gap-1 overflow-x-auto no-scrollbar">
+      <div className="flex items-center bg-black/20 dark:bg-black/35 p-1 rounded-2xl border border-white/10 shadow-inner gap-1 overflow-x-auto no-scrollbar w-full max-w-full">
         {PERIODS.map((p) => {
           const active = currentPeriod === p.value;
           return (
