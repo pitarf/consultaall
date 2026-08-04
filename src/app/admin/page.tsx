@@ -79,14 +79,12 @@ export default async function AdminDashboardPage({
                 <span className="text-slate-400 dark:text-gray-500 text-[10px] font-bold block mt-1">0% vs ontem</span>
               )}
             </div>
-            </div>
             <div className="bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl p-4 text-left">
               <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Custo de APIs</p>
               <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
                 R$ {metrics.todayApiCost.toFixed(2).replace('.', ',')}
               </p>
               <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">Consultas</span>
-            </div>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl p-4 text-left">
               <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">ROI de Hoje</p>
@@ -112,14 +110,12 @@ export default async function AdminDashboardPage({
               </p>
               <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">Mês consolidado</span>
             </div>
-            </div>
             <div className="bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl p-4 text-left">
               <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Custo de APIs</p>
               <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
                 R$ {advanced.monthlyApiCosts.toFixed(2).replace('.', ',')}
               </p>
               <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">Consultas</span>
-            </div>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl p-4 text-left">
               <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">ROI do Período</p>
