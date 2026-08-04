@@ -201,7 +201,8 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const resetLink = `${appUrl}/resetar-senha?token=${token}`;
 
-  const senderEmail = (settings?.companyEmail || 'brasiltda2012@gmail.com').trim();
+  const dbEmail = settings?.companyEmail?.trim();
+  const senderEmail = (dbEmail && dbEmail !== 'contato@seusite.com') ? dbEmail : 'brasiltda2012@gmail.com';
   const senderName = (settings?.companyName || 'Detetive Buscas').trim();
 
   try {
