@@ -267,7 +267,15 @@ export default function AdminSettingsPage() {
             {/* Token da API PushinPay */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de API PushinPay (Bearer Token)</label>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de API PushinPay (Bearer Token)</label>
+                  {settings.pushinpayToken && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Conectado
+                    </span>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowPushinToken(!showPushinToken)}
@@ -352,7 +360,15 @@ export default function AdminSettingsPage() {
             {/* Brevo API Key */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Chave API Brevo (E-mails transacionais)</label>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Chave API Brevo (E-mails transacionais)</label>
+                  {settings.brevoApiKey && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Conectado
+                    </span>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowBrevoToken(!showBrevoToken)}
@@ -383,7 +399,15 @@ export default function AdminSettingsPage() {
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token DirectData (GUID)</label>
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token DirectData (GUID)</label>
+                    {settings.directDataToken && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Conectado
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => setShowDirectToken(!showDirectToken)}
@@ -434,7 +458,15 @@ export default function AdminSettingsPage() {
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token API Consulta</label>
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token API Consulta</label>
+                    {settings.apiConsultaToken && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Conectado
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => setShowConsultaToken(!showConsultaToken)}
