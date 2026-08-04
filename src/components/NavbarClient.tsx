@@ -18,9 +18,17 @@ export default function NavbarClient({ logoUrl, siteTitle, menuPages = [] }: Nav
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const utm = params.get('utm_source') || params.get('ref');
-      if (utm) {
-        document.cookie = `trafficSource=${encodeURIComponent(utm)}; path=/; max-age=2592000; SameSite=Lax`;
+      
+      // 1. Origem de Tráfego (utm_source ou src)
+      const source = params.get('src') || params.get('utm_source');
+      if (source) {
+        document.cookie = `trafficSource=${encodeURIComponent(source)}; path=/; max-age=2592000; SameSite=Lax`;
+      }
+      
+      // 2. Sistema de Indicações (ref)
+      const ref = params.get('ref');
+      if (ref) {
+        document.cookie = `referral=${encodeURIComponent(ref)}; path=/; max-age=2592000; SameSite=Lax`;
       }
     }
   }, []);

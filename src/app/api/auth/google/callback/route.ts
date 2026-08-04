@@ -80,6 +80,38 @@ export async function GET(request: NextRequest) {
       const cookieStore = await cookies();
       const trafficSource = cookieStore.get('trafficSource')?.value || 'orgânico';
 
+      // Captura o cookie de indicação (referral)
+      const referralCookie = cookieStore.get('referral')?.value;
+      let referredById: string | null = null;
+      
+      if (referralCookie) {
+        const referrerUser = await prisma.user.findUnique({
+          where: { referralCode: decodeURIComponent(referralCookie) }
+        });
+        if (referrerUser) {
+          referredById = referrerUser.id;
+        }
+      }
+
+      // Gera um código de indicação único para o novo usuário
+      const generateCode = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+
+      let referralCode = generateCode();
+      let attempts = 0;
+      while (attempts < 5) {
+        const codeExists = await prisma.user.findUnique({ where: { referralCode } });
+        if (!codeExists) break;
+        referralCode = generateCode();
+        attempts++;
+      }
+
       user = await prisma.user.create({
         data: {
           email,
@@ -88,6 +120,8 @@ export async function GET(request: NextRequest) {
           balance: 0.0,
           hasSeenPromoPopup: false, // Força a exibição do popup logo após o cadastro
           trafficSource,
+          referralCode,
+          referredById,
         },
       });
     }

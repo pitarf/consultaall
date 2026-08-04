@@ -15,7 +15,8 @@ import {
   LifeBuoy, 
   Code,
   ShieldCheck,
-  Gift
+  Gift,
+  Award
 } from 'lucide-react';
 
 interface SidebarNavProps {
@@ -87,6 +88,11 @@ export function SidebarNav({ isAdmin, whatsappLink }: SidebarNavProps) {
       <Link href="/dashboard/promocoes" className={navItemClass('/dashboard/promocoes')}>
         <Gift className="w-4 h-4" />
         <span className="text-sm">Promoções</span>
+      </Link>
+
+      <Link href="/dashboard/indicacoes" className={navItemClass('/dashboard/indicacoes')}>
+        <Award className="w-4 h-4" />
+        <span className="text-sm">Indique e Ganhe</span>
       </Link>
 
       <Link href="/dashboard/perfil" className={navItemClass('/dashboard/perfil')}>

@@ -26,9 +26,25 @@ model User {
   whatsapp          String?
   hasSeenPromoPopup Boolean   @default(true)
   trafficSource     String?   @default("orgânico")
+  
+  // Sistema de Indicações (Auto-relacionamento)
+  referralCode      String?   @unique // Código de indicação deste usuário (ex: "2YGUTMND")
+  referredById      String?           // ID de quem indicou este usuário
+  referrer          User?     @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals         User[]    @relation("UserReferrals")
 
-  transactions  Transaction[]
-  searches      SearchHistory[]
+  transactions         Transaction[]
+  searches             SearchHistory[]
+  referralTransactions ReferralTransaction[]
+}
+
+model ReferralTransaction {
+  id          String   @id @default(uuid())
+  userId      String   // Usuário que recebeu a comissão (o afiliado)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromUserId  String   // Usuário indicado que gerou a comissão (quem recarregou)
+  amount      Float    // Valor em R$ da comissão
+  createdAt   DateTime @default(now())
 }
 
 model Transaction {

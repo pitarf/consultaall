@@ -146,6 +146,45 @@ export async function POST(req: Request) {
             }
           });
 
+          // Pagar comissão de indicação (referral) se houver
+          if (transaction.user.referredById) {
+            const commissionRate = 0.10; // 10% de comissão padrão
+            const commissionAmount = transaction.amount * commissionRate;
+            
+            if (commissionAmount > 0) {
+              // Incrementa o saldo do afiliado
+              await tx.user.update({
+                where: { id: transaction.user.referredById },
+                data: {
+                  balance: { increment: commissionAmount }
+                }
+              });
+              
+              // Cria o registro da transação de indicação
+              await tx.referralTransaction.create({
+                data: {
+                  userId: transaction.user.referredById,
+                  fromUserId: transaction.userId,
+                  amount: commissionAmount,
+                }
+              });
+
+              // Cria log da comissão
+              await tx.systemLog.create({
+                data: {
+                  level: "INFO",
+                  message: `Comissão de indicação paga (Webhook): R$ ${commissionAmount.toFixed(2)} para usuário ${transaction.user.referredById}`,
+                  context: {
+                    affiliateId: transaction.user.referredById,
+                    referredUserId: transaction.userId,
+                    depositAmount: transaction.amount,
+                    commissionAmount: commissionAmount
+                  }
+                }
+              });
+            }
+          }
+
           // Registra o log de sucesso atômico da recarga
           await tx.systemLog.create({
             data: {

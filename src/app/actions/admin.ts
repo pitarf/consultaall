@@ -764,6 +764,45 @@ export async function approveDepositManual(transactionId: string) {
         }
       });
 
+      // Pagar comissão de indicação (referral) se houver
+      if (transaction.user.referredById) {
+        const commissionRate = 0.10; // 10% de comissão padrão
+        const commissionAmount = transaction.amount * commissionRate;
+        
+        if (commissionAmount > 0) {
+          // Incrementa o saldo do afiliado
+          await tx.user.update({
+            where: { id: transaction.user.referredById },
+            data: {
+              balance: { increment: commissionAmount }
+            }
+          });
+          
+          // Cria o registro da transação de indicação
+          await tx.referralTransaction.create({
+            data: {
+              userId: transaction.user.referredById,
+              fromUserId: transaction.id,
+              amount: commissionAmount,
+            }
+          });
+
+          // Cria log da comissão
+          await tx.systemLog.create({
+            data: {
+              level: 'INFO',
+              message: `Comissão de indicação paga (Aprovado Manualmente): R$ ${commissionAmount.toFixed(2)} para o usuário: ${transaction.user.referredById}`,
+              context: {
+                affiliateId: transaction.user.referredById,
+                referredUserId: transaction.userId,
+                depositAmount: transaction.amount,
+                commissionAmount: commissionAmount
+              }
+            }
+          });
+        }
+      }
+
       // 4. Registra no Log do Sistema a aprovação manual para auditoria
       await tx.systemLog.create({
         data: {
@@ -842,6 +881,45 @@ export async function createAndApproveDepositManual(userId: string, externalId: 
           balance: { increment: amount }
         }
       });
+
+      // Pagar comissão de indicação (referral) se houver
+      if (user.referredById) {
+        const commissionRate = 0.10; // 10% de comissão padrão
+        const commissionAmount = amount * commissionRate;
+        
+        if (commissionAmount > 0) {
+          // Incrementa o saldo do afiliado
+          await tx.user.update({
+            where: { id: user.referredById },
+            data: {
+              balance: { increment: commissionAmount }
+            }
+          });
+          
+          // Cria o registro da transação de indicação
+          await tx.referralTransaction.create({
+            data: {
+              userId: user.referredById,
+              fromUserId: transaction.userId,
+              amount: commissionAmount,
+            }
+          });
+
+          // Cria log da comissão
+          await tx.systemLog.create({
+            data: {
+              level: 'INFO',
+              message: `Comissão de indicação paga (Criado Manualmente): R$ ${commissionAmount.toFixed(2)} para o usuário: ${user.referredById}`,
+              context: {
+                affiliateId: user.referredById,
+                referredUserId: transaction.userId,
+                depositAmount: amount,
+                commissionAmount: commissionAmount
+              }
+            }
+          });
+        }
+      }
 
       // 5. Registra o log no sistema
       await tx.systemLog.create({
