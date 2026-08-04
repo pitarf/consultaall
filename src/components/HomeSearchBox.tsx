@@ -137,43 +137,6 @@ export default function HomeSearchBox() {
     setShowResult(false);
   };
 
-  const getMaskedResult = () => {
-    switch (type) {
-      case 'cpf':
-        return {
-          title: 'Registro de Pessoa Física Encontrado',
-          rows: [
-            { label: 'Nome Completo', value: 'RODRIGO D******** P*****' },
-            { label: 'Data de Nascimento', value: '18/06/198*' },
-            { label: 'Nome da Mãe', value: 'MARIA DA S***** P*****' },
-            { label: 'Situação CPF', value: 'REGULAR (ATIVO)' }
-          ]
-        };
-      case 'placa':
-        return {
-          title: 'Registro de Veículo Encontrado',
-          rows: [
-            { label: 'Marca / Modelo', value: 'FIAT / UNO MIL* ***' },
-            { label: 'Ano de Fabricação', value: '2012 / 2013' },
-            { label: 'Proprietário Atual', value: 'ROB***** S***** DE O*****' },
-            { label: 'UF Licenciamento', value: 'SP (São Paulo)' }
-          ]
-        };
-      case 'telefone':
-        return {
-          title: 'Vínculo Telefônico Encontrado',
-          rows: [
-            { label: 'Proprietário provável', value: 'JULIANA C***** G*****' },
-            { label: 'Operadora', value: 'CLARO (MÓVEL)' },
-            { label: 'Região', value: 'DDD 11 (São Paulo)' },
-            { label: 'Situação da Linha', value: 'ATIVA' }
-          ]
-        };
-    }
-  };
-
-  const currentResult = getMaskedResult();
-
   return (
     <div className="w-full bg-[#f8fafc] border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-xl max-w-xl mx-auto">
       {/* Tabs */}
@@ -254,32 +217,40 @@ export default function HomeSearchBox() {
 
       {showResult && (
         <div className="space-y-6 animate-in fade-in duration-500 text-left">
+          {/* Card de sucesso */}
           <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
-            <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
+            <CheckCircle2 className="w-6.5 h-6.5 text-emerald-500 shrink-0" />
             <div>
-              <h4 className="text-sm font-bold text-emerald-800">Resultado Encontrado!</h4>
-              <p className="text-xs text-emerald-600 font-medium">As bases retornaram o relatório de preview mascarado abaixo.</p>
+              <h4 className="text-sm font-bold text-emerald-800">Informações prontas para consulta</h4>
+              <p className="text-xs text-emerald-600 font-medium">
+                Consulta para {type === 'cpf' ? 'o CPF' : type === 'placa' ? 'a Placa' : 'o Telefone'}: <span className="font-mono font-bold text-slate-900">{value}</span>
+              </p>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-100 rounded-2xl p-5 space-y-3 shadow-xs">
-            <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-2 mb-3">
-              {currentResult.title}
-            </h5>
-            {currentResult.rows.map((row, idx) => (
-              <div key={idx} className="flex justify-between text-xs py-1">
-                <span className="text-slate-500 font-medium">{row.label}:</span>
-                <span className="font-mono font-bold text-slate-900">{row.value}</span>
-              </div>
-            ))}
+          {/* Card informativo e preço */}
+          <div className="bg-white border border-slate-200/60 rounded-2xl p-6 text-center space-y-4 shadow-sm">
+            <p className="text-xs font-semibold text-slate-500 leading-relaxed max-w-sm mx-auto">
+              Crie sua conta para continuar e acessar as opções de consulta disponíveis.
+            </p>
+
+            <div className="border-t border-slate-100 pt-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                VALOR DA CONSULTA
+              </span>
+              <span className="text-3xl font-black text-slate-900">
+                R$ 3,00
+              </span>
+            </div>
           </div>
 
+          {/* CTA e Ações */}
           <div className="space-y-3">
             <Link
-              href="/cadastro"
-              className="w-full bg-[#2872fa] hover:bg-[#1a5ecd] text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-[#2872fa]/20 flex items-center justify-center gap-2 transition-all text-sm uppercase tracking-wider"
+              href={`/cadastro?search=${encodeURIComponent(value)}&type=${type}`}
+              className="w-full bg-[#2872fa] hover:bg-[#1a5ecd] text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-[#2872fa]/20 flex items-center justify-center gap-2 transition-all text-sm uppercase tracking-wider text-center"
             >
-              Revelar Relatório Completo
+              Criar conta e continuar
             </Link>
             <button
               onClick={() => {
