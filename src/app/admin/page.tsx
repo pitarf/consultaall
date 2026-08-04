@@ -39,8 +39,8 @@ export default async function AdminDashboardPage({
   return (
     <div className="max-w-6xl mx-auto pb-20 space-y-8">
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-[#0f1e36] to-[#1e3b5b] text-white p-6 md:p-8 rounded-3xl shadow-lg border border-[#1e3b5b]/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
+      <div className="bg-gradient-to-r from-[#0f1e36] to-[#1e3b5b] text-white p-6 md:p-8 rounded-3xl shadow-lg border border-[#1e3b5b]/30 flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden min-w-0">
+        <div className="space-y-1 min-w-0">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             Dashboard Administrativo
           </h1>
@@ -48,7 +48,7 @@ export default async function AdminDashboardPage({
             Visão panorâmica consolidada para o período: <span className="font-bold text-sky-400">{getPeriodLabel(currentPeriod)}</span>.
           </p>
         </div>
-        <div className="shrink-0 w-full md:w-auto overflow-hidden">
+        <div className="shrink-0 w-full md:w-auto overflow-hidden min-w-0">
           <DashboardClient currentPeriod={currentPeriod} initialStart={start} initialEnd={end} />
         </div>
       </div>
@@ -139,20 +139,20 @@ export default async function AdminDashboardPage({
             Faturamento bruto de depósitos Pix menos taxas do gateway Pix e custo total de consumo de APIs da DirectData.
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:flex sm:flex-row flex-wrap items-start sm:items-center gap-6 sm:gap-8 md:gap-12 mt-6 md:mt-0 w-full md:w-auto">
-          <div>
+        <div className="grid grid-cols-2 sm:flex sm:flex-row flex-wrap items-start sm:items-center gap-6 sm:gap-8 md:gap-12 mt-6 md:mt-0 w-full md:w-auto min-w-0">
+          <div className="min-w-0">
             <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Depósitos Pix (Bruto)</p>
             <p className="text-lg md:text-xl font-bold mt-1">
               R$ {advanced.monthlyRevenue.toFixed(2).replace('.', ',')}
             </p>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest text-red-300">Taxas Pix Descontadas</p>
             <p className="text-lg md:text-xl font-bold mt-1 text-red-400">
               -R$ {advanced.monthlyPixFees.toFixed(2).replace('.', ',')}
             </p>
           </div>
-          <div className="col-span-2 sm:col-span-1">
+          <div className="col-span-2 sm:col-span-1 min-w-0">
             <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest text-sky-300">Lucro Real Operacional</p>
             <p className="text-lg md:text-xl font-bold mt-1 text-sky-400">
               R$ {advanced.monthlyProfit.toFixed(2).replace('.', ',')}

@@ -147,7 +147,7 @@ export default async function AdminLayout({
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
           {children}
         </main>
       </div>
