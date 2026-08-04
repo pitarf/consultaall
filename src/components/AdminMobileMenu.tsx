@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ShieldCheck, LayoutDashboard, Users, Activity, ArrowLeft, Settings, DollarSign, Tag } from 'lucide-react';
+import { Menu, X, ShieldCheck, LayoutDashboard, Users, Activity, ArrowLeft, Settings, DollarSign, Tag, Globe } from 'lucide-react';
 
 /**
  * Componente client-side que implementa a gaveta lateral deslizante de navegação (Mobile Drawer)
@@ -125,6 +125,17 @@ export function AdminMobileMenu() {
               >
                 <DollarSign className="w-5 h-5" />
                 Vendas e Receita
+              </Link>
+              <Link
+                href="/admin/traffic"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  pathname.startsWith('/admin/traffic')
+                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <Globe className="w-5 h-5" />
+                Origem de Clientes
               </Link>
               <Link
                 href="/admin/precos"

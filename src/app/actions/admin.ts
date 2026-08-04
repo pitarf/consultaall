@@ -947,3 +947,162 @@ export async function createAndApproveDepositManual(userId: string, externalId: 
     return { error: error.message || 'Erro interno ao processar criação.' };
   }
 }
+
+/**
+ * Retorna dados detalhados de atribuição de tráfego (origens de canais e UTMs)
+ * para o painel administrativo.
+ */
+export async function getTrafficDetailedStats(searchQuery?: string, filterSource?: string) {
+  const admin = await checkAdmin();
+
+  const settings = await prisma.systemSetting.findFirst();
+  const pixFee = settings?.pixFee ?? 0.95;
+
+  try {
+    // 1. Busca todos os usuários com seus depósitos e buscas
+    const allUsers = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        trafficSource: true,
+        createdAt: true,
+        balance: true,
+        transactions: {
+          where: { type: 'DEPOSIT', status: 'COMPLETED' },
+          select: { amount: true }
+        },
+        searches: {
+          where: { status: 'SUCCESS' },
+          select: { target: true, cost: true }
+        }
+      }
+    });
+
+    // 2. Calcula as estatísticas consolidadas por origem (trafficSource)
+    const trafficStatsMap: {
+      [source: string]: {
+        source: string;
+        usersCount: number;
+        faturamento: number;
+        custos: number;
+        lucro: number;
+        roi: number;
+      }
+    } = {};
+
+    let totalCampaignUsers = 0;
+    let totalCampaignRevenue = 0;
+    let totalCampaignCosts = 0;
+
+    allUsers.forEach(u => {
+      const rawSource = u.trafficSource || 'orgânico';
+      const source = rawSource.trim() === '' ? 'orgânico' : rawSource;
+      
+      const isCampaign = source !== 'orgânico';
+
+      if (!trafficStatsMap[source]) {
+        trafficStatsMap[source] = { source, usersCount: 0, faturamento: 0, custos: 0, lucro: 0, roi: 0 };
+      }
+
+      const stats = trafficStatsMap[source];
+      stats.usersCount += 1;
+
+      const totalDeposits = u.transactions.reduce((sum, tx) => sum + tx.amount, 0);
+      stats.faturamento += totalDeposits;
+
+      const totalPixFees = u.transactions.length * pixFee;
+      
+      // Agrupa buscas para custo da API
+      const searchesGrouped: { [target: string]: { count: number; sumCost: number } } = {};
+      u.searches.forEach(s => {
+        if (!searchesGrouped[s.target]) {
+          searchesGrouped[s.target] = { count: 0, sumCost: 0 };
+        }
+        searchesGrouped[s.target].count += 1;
+        searchesGrouped[s.target].sumCost += s.cost;
+      });
+
+      const parsedSearches = Object.entries(searchesGrouped).map(([target, info]) => ({
+        target,
+        _count: { id: info.count },
+        _sum: { cost: info.sumCost }
+      }));
+
+      const totalApiCost = calculateTotalApiCost(parsedSearches);
+      const totalCosts = totalPixFees + totalApiCost;
+
+      stats.custos += totalCosts;
+
+      if (isCampaign) {
+        totalCampaignUsers += 1;
+        totalCampaignRevenue += totalDeposits;
+        totalCampaignCosts += totalCosts;
+      }
+    });
+
+    const channelsTable = Object.values(trafficStatsMap).map(stats => {
+      const lucro = stats.faturamento - stats.custos;
+      const roi = stats.custos > 0 ? (lucro / stats.custos) * 100 : 0;
+      return {
+        source: stats.source,
+        usersCount: stats.usersCount,
+        faturamento: Number(stats.faturamento.toFixed(2)),
+        custos: Number(stats.custos.toFixed(2)),
+        lucro: Number(lucro.toFixed(2)),
+        roi: Number(roi.toFixed(0))
+      };
+    }).sort((a, b) => b.faturamento - a.faturamento);
+
+    // 3. Mapeia a lista detalhada de usuários
+    let usersList = allUsers.map(u => {
+      const rawSource = u.trafficSource || 'orgânico';
+      const source = rawSource.trim() === '' ? 'orgânico' : rawSource;
+      const totalDeposits = u.transactions.reduce((sum, tx) => sum + tx.amount, 0);
+
+      return {
+        id: u.id,
+        name: u.name || 'Sem nome',
+        email: u.email,
+        source,
+        createdAt: u.createdAt,
+        balance: u.balance,
+        totalDeposited: totalDeposits
+      };
+    });
+
+    // Filtra por busca se houver
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      usersList = usersList.filter(u => 
+        u.name.toLowerCase().includes(q) || 
+        u.email.toLowerCase().includes(q)
+      );
+    }
+
+    // Filtra por origem se houver
+    if (filterSource) {
+      usersList = usersList.filter(u => u.source === filterSource);
+    }
+
+    // Ordena por data de cadastro desc
+    usersList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    const totalCampaignProfit = totalCampaignRevenue - totalCampaignCosts;
+
+    return {
+      kpis: {
+        totalCampaignUsers,
+        totalCampaignRevenue: Number(totalCampaignRevenue.toFixed(2)),
+        totalCampaignProfit: Number(totalCampaignProfit.toFixed(2))
+      },
+      channelsTable,
+      usersList,
+      sourcesList: Object.keys(trafficStatsMap)
+    };
+  } catch (error) {
+    console.error('Erro ao buscar dados detalhados de tráfego:', error);
+    throw new Error('Falha ao carregar relatório de tráfego');
+  }
+}
+
