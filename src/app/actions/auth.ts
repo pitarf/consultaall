@@ -199,6 +199,9 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const resetLink = `${appUrl}/resetar-senha?token=${token}`;
 
+  const senderEmail = settings?.companyEmail || 'brasiltda2012@gmail.com';
+  const senderName = settings?.companyName || 'Detetive Buscas';
+
   try {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -208,14 +211,14 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
         'api-key': brevoApiKey
       },
       body: JSON.stringify({
-        sender: { name: 'Detetive Buscas', email: 'brasiltda2012@gmail.com' },
+        sender: { name: senderName, email: senderEmail },
         to: [{ email, name: user.name || 'Cliente' }],
-        subject: 'Recuperação de Senha - Detetive Buscas',
+        subject: `Recuperação de Senha - ${senderName}`,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
             <h2 style="color: #0b2545;">Recuperação de Senha</h2>
             <p>Olá${user.name ? ' ' + user.name : ''},</p>
-            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <b>Detetive Buscas</b>.</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <b>${senderName}</b>.</p>
             <p>Se você não fez essa solicitação, pode ignorar este e-mail.</p>
             <p>Para criar uma nova senha, clique no botão abaixo:</p>
             <a href="${resetLink}" style="display: inline-block; padding: 12px 24px; margin-top: 10px; background-color: #0ea5e9; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Redefinir Minha Senha</a>
