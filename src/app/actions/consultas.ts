@@ -89,6 +89,9 @@ export async function realizarConsulta(
         };
       }
       const apiResult = await performSmartSearch('name', cleanQuery, selectedModules, undefined, undefined);
+      if (!apiResult.success) {
+        return { error: apiResult.message || 'Erro na busca por candidatos.' };
+      }
       return apiResult;
     }
 
