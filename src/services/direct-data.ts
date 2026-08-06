@@ -365,25 +365,21 @@ export async function filterNaturalPerson(filters: {
       receiveSeguroDefeso: null
     };
 
-    const response = await fetch(`${activeBaseUrl}/api/AdvancedSearch/FilterNaturalPerson`, {
-      method: 'POST',
+    const response = await axiosV3.post(`${activeBaseUrl}/api/AdvancedSearch/FilterNaturalPerson`, payload, {
       headers: {
         'Content-Type': 'application/json',
         'accept': 'application/json',
         'Token': token,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      body: JSON.stringify(payload)
+      }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`DirectData API Error ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error: any) {
+    if (error.response) {
+      const errText = typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data;
+      throw new Error(`DirectData API Error ${error.response.status}: ${errText}`);
+    }
     console.error("FilterNaturalPerson falhou:", error);
     // Preserva a mensagem de ECONNRESET ou repassa o erro da API
     throw new Error(error.message || 'Erro desconhecido ao conectar com DirectData');
@@ -397,24 +393,24 @@ export async function processingIds(listIds: string[], searchName: string = 'Con
   const activeBaseUrl = baseUrl === 'https://api.directd.com.br' ? 'https://api.app.directd.com.br' : baseUrl;
   
   try {
-    const response = await fetch(`${activeBaseUrl}/api/AdvancedSearch/ProcessingIds`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'accept': 'application/json',
-        'Token': token,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      body: JSON.stringify({ listIds, searchName })
-    });
+    const response = await axiosV3.post(`${activeBaseUrl}/api/AdvancedSearch/ProcessingIds`, 
+      { listIds, searchName }, 
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Token': token,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      }
+    );
     
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`DirectData API Error ${response.status}: ${errText}`);
-    }
-    
-    return await response.json();
+    return response.data;
   } catch (error: any) {
+    if (error.response) {
+      const errText = typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data;
+      throw new Error(`DirectData API Error ${error.response.status}: ${errText}`);
+    }
     throw new Error(error.message || 'Erro desconhecido em ProcessingIds');
   }
 }
@@ -426,24 +422,24 @@ export async function viewSearch(searchUid: string) {
   const activeBaseUrl = baseUrl === 'https://api.directd.com.br' ? 'https://api.app.directd.com.br' : baseUrl;
   
   try {
-    const response = await fetch(`${activeBaseUrl}/api/AdvancedSearch/ViewSearch`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'accept': 'application/json',
-        'Token': token,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      body: JSON.stringify({ searchUid })
-    });
+    const response = await axiosV3.post(`${activeBaseUrl}/api/AdvancedSearch/ViewSearch`, 
+      { searchUid },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Token': token,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      }
+    );
     
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`DirectData API Error ${response.status}: ${errText}`);
-    }
-    
-    return await response.json();
+    return response.data;
   } catch (error: any) {
+    if (error.response) {
+      const errText = typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data;
+      throw new Error(`DirectData API Error ${error.response.status}: ${errText}`);
+    }
     throw new Error(error.message || 'Erro desconhecido em ViewSearch');
   }
 }
