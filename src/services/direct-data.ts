@@ -17,8 +17,17 @@ async function getDirectDataConfig() {
     const settings = await prisma.systemSetting.findFirst();
     if (settings) {
       if (settings.directDataToken?.trim()) token = settings.directDataToken.trim();
-      if (settings.directDataBaseUrl?.trim()) baseUrl = settings.directDataBaseUrl.trim();
-      if (settings.directDataV3Url?.trim()) v3Url = settings.directDataV3Url.trim();
+      if (settings.directDataBaseUrl?.trim()) {
+        baseUrl = settings.directDataBaseUrl.trim();
+        // Corrige typos comuns que podem ter sido salvos no painel
+        if (baseUrl.includes('apiv.directd')) baseUrl = baseUrl.replace('apiv.directd', 'api.directd');
+        if (baseUrl.includes('apiv3.directd')) baseUrl = baseUrl.replace('apiv3.directd', 'api.directd');
+      }
+      if (settings.directDataV3Url?.trim()) {
+        v3Url = settings.directDataV3Url.trim();
+        // Corrige typo comum (apiv ao invés de apiv3)
+        if (v3Url.includes('apiv.directd')) v3Url = v3Url.replace('apiv.directd', 'apiv3.directd');
+      }
     }
   } catch (err) {
     console.error('Erro ao ler configuracoes do DirectData no banco:', err);
