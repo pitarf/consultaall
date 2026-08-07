@@ -474,7 +474,12 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Múltiplos Perfis Encontrados</h2>
-              <p className="text-sm text-slate-500">Selecione o perfil desejado para prosseguir com o relatório completo (débito apenas após a seleção).</p>
+              <p className="text-sm text-slate-500">
+                {candidates.length > 5 
+                  ? `Foram encontrados ${candidates.length} perfis. Exibindo os 5 mais prováveis. Selecione para ver o relatório completo.`
+                  : 'Selecione o perfil desejado para prosseguir com o relatório completo (débito apenas após a seleção).'
+                }
+              </p>
             </div>
             <button 
               onClick={() => setCandidates(null)}
@@ -485,7 +490,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {candidates.map((c) => (
+            {candidates.slice(0, 5).map((c) => (
               <div 
                 key={c.id} 
                 className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 dark:hover:border-primary/40 transition-all group"
