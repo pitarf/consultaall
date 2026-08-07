@@ -79,57 +79,35 @@ async function checkAdmin() {
   return user;
 }
 
-// Helpers de Custo de API
-function calculateApiCostForSearch(target: string, cost: number): number {
-  const cleanTarget = target.toLowerCase();
-  if (cleanTarget === 'nome_candidatos') return 0.15;
-  if (
-    cleanTarget.includes('cpf') ||
-    cleanTarget.includes('cnpj') ||
-    cleanTarget.includes('placa') ||
-    cleanTarget.includes('veiculo') ||
-    cleanTarget.includes('veicular') ||
-    cleanTarget.includes('telefone') ||
-    cleanTarget.includes('phone') ||
-    cleanTarget.includes('email') ||
-    cleanTarget === 'nome' ||
-    cleanTarget.includes('smart')
-  ) {
-    return 0.30;
-  }
-  return Number(cost || 0) * 0.4;
+// Helpers de Custo de API - Valores REAIS do painel DirectData (conferidos em 07/08/2026)
+// Cadastro Pessoa Física Plus = R$ 0,36 | Consulta Veicular Nacional = R$ 1,10
+// Enriquecimento de Lead (telefone/email) = R$ 0,16 | Pesquisa Avançada (nome) = R$ 0,36
+// FilterNaturalPerson (listagem candidatos) = GRÁTIS (R$ 0,00)
+function calculateApiCostForSearch(target: string, _cost: number): number {
+  const t = target.toLowerCase();
+  if (t === 'nome_candidatos') return 0;
+  if (t.includes('placa') || t.includes('veiculo') || t.includes('veicular')) return 1.10;
+  if (t.includes('cpf') || t.includes('cnpj')) return 0.36;
+  if (t === 'nome' || t.includes('smart')) return 0.36;
+  if (t.includes('telefone') || t.includes('phone') || t.includes('email')) return 0.16;
+  return 0.30; // fallback seguro
 }
 
 function calculateTotalApiCost(searchesByTarget: { target: string; _count: { id: number }; _sum: { cost: number | null } }[]) {
   let total = 0;
   searchesByTarget.forEach(g => {
-    const target = g.target;
+    const t = g.target.toLowerCase();
     const count = g._count.id;
-    const sumCost = g._sum.cost || 0;
-    const cleanTarget = target.toLowerCase();
     
     let unitCost = 0;
-    if (cleanTarget === 'nome_candidatos') unitCost = 0.15;
-    else if (
-      cleanTarget.includes('cpf') ||
-      cleanTarget.includes('cnpj') ||
-      cleanTarget.includes('placa') ||
-      cleanTarget.includes('veiculo') ||
-      cleanTarget.includes('veicular') ||
-      cleanTarget.includes('telefone') ||
-      cleanTarget.includes('phone') ||
-      cleanTarget.includes('email') ||
-      cleanTarget === 'nome' ||
-      cleanTarget.includes('smart')
-    ) {
-      unitCost = 0.30;
-    }
+    if (t === 'nome_candidatos') unitCost = 0;
+    else if (t.includes('placa') || t.includes('veiculo') || t.includes('veicular')) unitCost = 1.10;
+    else if (t.includes('cpf') || t.includes('cnpj')) unitCost = 0.36;
+    else if (t === 'nome' || t.includes('smart')) unitCost = 0.36;
+    else if (t.includes('telefone') || t.includes('phone') || t.includes('email')) unitCost = 0.16;
+    else unitCost = 0.30;
     
-    if (unitCost > 0) {
-      total += count * unitCost;
-    } else {
-      total += sumCost * 0.4;
-    }
+    total += count * unitCost;
   });
   return total;
 }
