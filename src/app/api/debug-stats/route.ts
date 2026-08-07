@@ -11,30 +11,17 @@ export async function GET(request: Request) {
     const startUTC = new Date(startBr.getTime() - BR_OFFSET_MS);
     const endUTC = new Date(endBr.getTime() - BR_OFFSET_MS);
 
-    const allSearches = await prisma.searchHistory.findMany({
+    const logs = await prisma.systemLog.findMany({
       where: {
         createdAt: { gte: startUTC, lte: endUTC }
-      },
-      select: {
-        id: true,
-        target: true,
-        status: true,
-        query: true,
-        cost: true,
-        createdAt: true,
-        user: { select: { name: true } }
       },
       orderBy: { createdAt: 'asc' }
     });
 
     return NextResponse.json({
       success: true,
-      total: allSearches.length,
-      statusCounts: allSearches.reduce((acc, curr) => {
-        acc[curr.status] = (acc[curr.status] || 0) + 1;
-        return acc;
-      }, {} as any),
-      searches: allSearches
+      totalLogs: logs.length,
+      logs
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
