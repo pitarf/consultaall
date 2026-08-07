@@ -187,7 +187,14 @@ export async function performSmartSearch(
       } else {
         // Etapa 1: Obter lista de candidatos
         const filterRes = await filterNaturalPerson({ fullName: cleanQuery, state });
+        
         if (!filterRes.success || !filterRes.listFilters || filterRes.listFilters.length === 0) {
+          if (filterRes.success && filterRes.numberOfPeople > 0) {
+            return { 
+              success: false, 
+              message: `Muitos resultados encontrados (${filterRes.numberOfPeople.toLocaleString('pt-BR')} homônimos). Por favor, refine a sua busca fornecendo o Estado ou nomes adicionais.` 
+            };
+          }
           const errorMsg = filterRes.error?.message || filterRes.metaDados?.mensagem || 'Nenhum registro encontrado.';
           return { success: false, message: errorMsg };
         }
