@@ -82,10 +82,21 @@ async function checkAdmin() {
 // Helpers de Custo de API
 function calculateApiCostForSearch(target: string, cost: number): number {
   const cleanTarget = target.toLowerCase();
-  if (cleanTarget.includes('cpf')) return 0.25;
-  if (cleanTarget.includes('cnpj')) return 0.35;
-  if (cleanTarget.includes('placa') || cleanTarget.includes('veiculo') || cleanTarget.includes('veicular')) return 0.30;
-  if (cleanTarget.includes('telefone') || cleanTarget.includes('email') || cleanTarget.includes('nome') || cleanTarget.includes('smart')) return 0.15;
+  if (cleanTarget === 'nome_candidatos') return 0.15;
+  if (
+    cleanTarget.includes('cpf') ||
+    cleanTarget.includes('cnpj') ||
+    cleanTarget.includes('placa') ||
+    cleanTarget.includes('veiculo') ||
+    cleanTarget.includes('veicular') ||
+    cleanTarget.includes('telefone') ||
+    cleanTarget.includes('phone') ||
+    cleanTarget.includes('email') ||
+    cleanTarget === 'nome' ||
+    cleanTarget.includes('smart')
+  ) {
+    return 0.30;
+  }
   return Number(cost || 0) * 0.4;
 }
 
@@ -98,10 +109,21 @@ function calculateTotalApiCost(searchesByTarget: { target: string; _count: { id:
     const cleanTarget = target.toLowerCase();
     
     let unitCost = 0;
-    if (cleanTarget.includes('cpf')) unitCost = 0.25;
-    else if (cleanTarget.includes('cnpj')) unitCost = 0.35;
-    else if (cleanTarget.includes('placa') || cleanTarget.includes('veiculo') || cleanTarget.includes('veicular')) unitCost = 0.30;
-    else if (cleanTarget.includes('telefone') || cleanTarget.includes('email') || cleanTarget.includes('nome') || cleanTarget.includes('smart')) unitCost = 0.15;
+    if (cleanTarget === 'nome_candidatos') unitCost = 0.15;
+    else if (
+      cleanTarget.includes('cpf') ||
+      cleanTarget.includes('cnpj') ||
+      cleanTarget.includes('placa') ||
+      cleanTarget.includes('veiculo') ||
+      cleanTarget.includes('veicular') ||
+      cleanTarget.includes('telefone') ||
+      cleanTarget.includes('phone') ||
+      cleanTarget.includes('email') ||
+      cleanTarget === 'nome' ||
+      cleanTarget.includes('smart')
+    ) {
+      unitCost = 0.30;
+    }
     
     if (unitCost > 0) {
       total += count * unitCost;
@@ -1218,5 +1240,83 @@ export async function removeBlockedData(id: string) {
     return { error: error.message || 'Erro ao remover bloqueio.' };
   }
 }
+
+/**
+ * Busca dados para a auditoria de custos de APIs
+ */
+export async function getApiCostsData() {
+  await checkAdmin();
+
+  try {
+    const searches = await prisma.searchHistory.findMany({
+      where: {
+        status: 'SUCCESS',
+      },
+      select: {
+        id: true,
+        target: true,
+        cost: true,
+        createdAt: true,
+        query: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Agrupamento diário
+    const dailyMap = new Map<string, { dateStr: string; queryCount: number; userCharged: number; apiCost: number }>();
+
+    searches.forEach(s => {
+      // Ajuste para Brasília UTC-3
+      const dateBr = new Date(s.createdAt.getTime() - 3 * 60 * 60 * 1000);
+      const dateStr = dateBr.toISOString().split('T')[0];
+
+      const estCost = calculateApiCostForSearch(s.target, s.cost);
+
+      if (!dailyMap.has(dateStr)) {
+        dailyMap.set(dateStr, {
+          dateStr,
+          queryCount: 0,
+          userCharged: 0,
+          apiCost: 0,
+        });
+      }
+
+      const dayData = dailyMap.get(dateStr)!;
+      dayData.queryCount += 1;
+      dayData.userCharged += s.cost;
+      dayData.apiCost += estCost;
+    });
+
+    const dailyBreakdown = Array.from(dailyMap.values()).sort((a, b) => b.dateStr.localeCompare(a.dateStr));
+
+    const detailedQueries = searches.map(s => ({
+      id: s.id,
+      createdAt: s.createdAt,
+      query: s.query,
+      target: s.target,
+      userCharge: s.cost,
+      estimatedApiCost: calculateApiCostForSearch(s.target, s.cost),
+      userName: s.user?.name || 'Sem nome',
+      userEmail: s.user?.email || 'Sem email',
+    }));
+
+    return {
+      dailyBreakdown,
+      detailedQueries,
+    };
+  } catch (error: any) {
+    console.error('Erro ao buscar dados de custos de API:', error);
+    throw new Error(error.message || 'Falha ao buscar dados de custos.');
+  }
+}
+
 
 

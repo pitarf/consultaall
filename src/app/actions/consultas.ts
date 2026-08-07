@@ -93,6 +93,25 @@ export async function realizarConsulta(
       if (!apiResult.success) {
         return { error: apiResult.message || 'Erro na busca por candidatos.' };
       }
+
+      // Log candidate list query to SearchHistory
+      try {
+        const sortedModules = [...selectedModules].sort().join(',');
+        await prisma.searchHistory.create({
+          data: {
+            userId: user.id,
+            query: cleanQuery,
+            target: 'nome_candidatos',
+            modules: sortedModules,
+            cost: 0,
+            status: 'SUCCESS',
+            result: apiResult as any,
+          }
+        });
+      } catch (logErr) {
+        console.error('Erro ao salvar historico de candidatos:', logErr);
+      }
+
       return apiResult;
     }
 
