@@ -15,7 +15,8 @@ export async function realizarConsulta(
   query: string, 
   selectedModules: string[] = [], 
   isTest: boolean = false,
-  candidateId?: string
+  candidateId?: string,
+  state?: string
 ) {
   const session = await verifySession();
 
@@ -88,7 +89,7 @@ export async function realizarConsulta(
           ]
         };
       }
-      const apiResult = await performSmartSearch('name', cleanQuery, selectedModules, undefined, undefined);
+      const apiResult = await performSmartSearch('name', cleanQuery, selectedModules, state, undefined);
       if (!apiResult.success) {
         return { error: apiResult.message || 'Erro na busca por candidatos.' };
       }
@@ -190,7 +191,7 @@ export async function realizarConsulta(
           target as 'email' | 'phone' | 'name', 
           cleanQuery,
           selectedModules,
-          undefined,
+          state,
           candidateId
         );
       } else {
@@ -220,6 +221,13 @@ export async function realizarConsulta(
     // Se for teste, retorna agora sem cobrar e sem salvar histórico (opcional salvar como rascunho)
     if (effectiveIsTest) {
       return { success: true, data: apiResult.data, newBalance: user.balance, isDemo: true };
+    }
+
+    // Validação de Segurança Financeira: Se a API retornou sucesso, mas os dados estão VAZIOS (ou seja, a base não tem nada), NÃO DEBITE o cliente.
+    // Isso ocorre quando o candidateId é processado, mas o retorno não traz nenhum dos módulos selecionados (objeto vazio {}).
+    const isDataEmpty = !apiResult.data || Object.keys(apiResult.data).length === 0 || (Object.keys(apiResult.data).length === 1 && !!apiResult.data['Aviso']);
+    if (isDataEmpty) {
+      return { error: 'A base de dados não retornou informações úteis para este perfil. Nenhuma tarifa foi cobrada.' };
     }
 
     // 2. Transação para descontar o saldo e registrar o histórico com SEGURANÇA (Apenas consultas Reais)

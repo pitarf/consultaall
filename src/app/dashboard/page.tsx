@@ -53,6 +53,7 @@ const INITIAL_DATA_MODULES = [
 export default function DashboardPage() {
   const [chaveTipo, setChaveTipo] = useState('telefone');
   const [chaveValor, setChaveValor] = useState('');
+  const [chaveUf, setChaveUf] = useState('');
   const [modules, setModules] = useState(INITIAL_DATA_MODULES);
   
   // Estado para guardar quais IDs de módulos estão marcados
@@ -177,7 +178,7 @@ export default function DashboardPage() {
     }
 
     try {
-      const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo);
+      const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, undefined, chaveTipo === 'nome' ? chaveUf : undefined);
       
       if (res.error) {
         setError(res.error);
@@ -324,8 +325,31 @@ export default function DashboardPage() {
                 chaveTipo === 'nome' ? 'Nome completo...' :
                 'exemplo@email.com'
               } 
-              className="w-full p-3 bg-transparent text-slate-800 dark:text-white outline-none"
+              className={`w-full p-3 bg-transparent text-slate-800 dark:text-white outline-none ${chaveTipo === 'nome' ? 'md:w-2/3' : ''}`}
             />
+            {chaveTipo === 'nome' && (
+              <div className="w-1/3 border-l border-slate-300 dark:border-white/10 relative h-full">
+                <select
+                  value={chaveUf}
+                  onChange={(e) => setChaveUf(e.target.value)}
+                  className="w-full h-full p-3 pr-8 bg-transparent text-slate-700 dark:text-gray-300 outline-none appearance-none cursor-pointer relative z-10"
+                >
+                  <option value="">Brasil (Todos)</option>
+                  <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+                  <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                  <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+                  <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                  <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+                  <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+                  <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+                  <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                  <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </div>
+            )}
               <div className="absolute right-4">
                 <Tooltip text="Escolha o tipo de documento que você possui. O CPF garante a maior precisão na busca.">
                   <HelpCircle className="w-5 h-5 text-slate-400 cursor-help hover:text-primary transition-colors" />

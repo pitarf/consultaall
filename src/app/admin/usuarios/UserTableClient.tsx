@@ -620,12 +620,14 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                             {new Date(h.createdAt).toLocaleString('pt-BR')}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="font-bold text-slate-900 dark:text-white text-lg">{h.target}</div>
-                          <ArrowRight className="w-4 h-4 text-slate-400 dark:text-gray-600" />
-                          <div className="text-xs text-slate-500 dark:text-gray-400 italic">Preço: R$ {h.cost.toFixed(2)}</div>
+                        <div className="flex flex-col mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="font-bold text-slate-900 dark:text-white text-lg">{h.target}</div>
+                            <ArrowRight className="w-4 h-4 text-slate-400 dark:text-gray-600" />
+                            <div className="text-xs text-slate-500 dark:text-gray-400 italic">Preço: R$ {h.cost.toFixed(2)}</div>
+                          </div>
+                          {h.query && <div className="text-sm font-semibold text-primary/80 mt-1">Busca: {h.query}</div>}
                         </div>
-                        
                         {/* Resultado Expansível (Simulado ou Real) */}
                         <details className="group/details border-t border-slate-100 dark:border-white/5 pt-3">
                           <summary className="text-xs text-primary/70 hover:text-primary cursor-pointer font-bold flex items-center gap-2 list-none">
