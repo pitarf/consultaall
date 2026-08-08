@@ -242,10 +242,57 @@ export async function realizarConsulta(
       return { success: true, data: apiResult.data, newBalance: user.balance, isDemo: true };
     }
 
-    // Validação de Segurança: Apenas barra se a API não retornou nenhum objeto de dados
-    const isDataEmpty = !apiResult.data || Object.keys(apiResult.data).length === 0;
+function hasMeaningfulData(val: any): boolean {
+  if (val === null || val === undefined) return false;
+  if (typeof val === 'boolean' || typeof val === 'number') return true;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return false;
+    const invalidValues = [
+      'Nenhum dado encontrado',
+      'Nenhum registro encontrado',
+      'Não informado',
+      'Nenhum resultado',
+      'N/I',
+      'Não possui filiais.',
+      'Nenhum dado selecionado para exibição.',
+      'Nenhuma restrição encontrada'
+    ];
+    if (invalidValues.includes(trimmed)) return false;
+    return true;
+  }
+  if (Array.isArray(val)) {
+    if (val.length === 0) return false;
+    return val.some(item => hasMeaningfulData(item));
+  }
+  if (typeof val === 'object') {
+    const keys = Object.keys(val).filter(k => k !== 'Aviso' && k !== 'Aviso_Demo' && k !== 'aviso');
+    if (keys.length === 0) return false;
+    return keys.some(k => hasMeaningfulData(val[k]));
+  }
+  return false;
+}
+
+    // Se o resultado for vazio ou sem informações relevantes, NÃO cobra do cliente, mas salva o histórico (status: EMPTY) para contabilizar o custo de API no Admin
+    const isDataEmpty = !apiResult.data || !hasMeaningfulData(apiResult.data);
     if (isDataEmpty) {
-      return { error: 'A base de dados não retornou resposta para esta busca. Nenhuma tarifa foi cobrada.' };
+      try {
+        await prisma.searchHistory.create({
+          data: {
+            userId: user.id,
+            query: cleanQuery,
+            target,
+            modules: sortedModules,
+            cost: 0,
+            status: 'EMPTY',
+            result: apiResult.data || {},
+          }
+        });
+      } catch (logErr) {
+        console.error('Erro ao salvar historico de consulta vazia:', logErr);
+      }
+      
+      return { error: 'Não foram encontrados dados para a pesquisa feita na base de dados.' };
     }
 
     // 2. Transação para descontar o saldo e registrar o histórico com SEGURANÇA (Apenas consultas Reais)
