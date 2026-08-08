@@ -200,7 +200,7 @@ export async function getDashboardMetrics() {
   const todaySearchesByTarget = await prisma.searchHistory.groupBy({
     by: ['target'],
     where: {
-      status: 'SUCCESS',
+      status: { in: ['SUCCESS', 'EMPTY'] },
       createdAt: { gte: startOfTodayUTC }
     },
     _count: { id: true },
@@ -235,7 +235,7 @@ export async function getDashboardMetrics() {
   const yesterdaySearchesByTarget = await prisma.searchHistory.groupBy({
     by: ['target'],
     where: {
-      status: 'SUCCESS',
+      status: { in: ['SUCCESS', 'EMPTY'] },
       createdAt: {
         gte: startOfYesterdayUTC,
         lt: startOfTodayUTC
@@ -265,7 +265,7 @@ export async function getDashboardMetrics() {
   
   const searchesByTarget = await prisma.searchHistory.groupBy({
     by: ['target'],
-    where: { status: 'SUCCESS' },
+    where: { status: { in: ['SUCCESS', 'EMPTY'] } },
     _count: { id: true },
     _sum: { cost: true }
   });
@@ -488,7 +488,7 @@ export async function getAdvancedMetrics(period: string = 'month', customStart?:
   const searchesByTarget = await prisma.searchHistory.groupBy({
     by: ['target'],
     where: { 
-      status: 'SUCCESS',
+      status: { in: ['SUCCESS', 'EMPTY'] },
       createdAt: startDate ? { gte: startDate, lte: endDate } : { lte: endDate }
     },
     _count: { id: true },
@@ -622,7 +622,7 @@ export async function getAdvancedMetrics(period: string = 'month', customStart?:
         select: { amount: true }
       },
       searches: {
-        where: { status: 'SUCCESS' },
+        where: { status: { in: ['SUCCESS', 'EMPTY'] } },
         select: { target: true, cost: true }
       }
     }
@@ -986,7 +986,7 @@ export async function getTrafficDetailedStats(searchQuery?: string, filterSource
           select: { amount: true }
         },
         searches: {
-          where: { status: 'SUCCESS' },
+          where: { status: { in: ['SUCCESS', 'EMPTY'] } },
           select: { target: true, cost: true }
         }
       }
@@ -1228,7 +1228,7 @@ export async function getApiCostsData() {
   try {
     const searches = await prisma.searchHistory.findMany({
       where: {
-        status: 'SUCCESS',
+        status: { in: ['SUCCESS', 'EMPTY'] },
       },
       select: {
         id: true,

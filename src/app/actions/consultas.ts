@@ -246,6 +246,23 @@ export async function realizarConsulta(
     // Isso ocorre quando o candidateId é processado, mas o retorno não traz nenhum dos módulos selecionados (objeto vazio {}).
     const isDataEmpty = !apiResult.data || Object.keys(apiResult.data).length === 0 || (Object.keys(apiResult.data).length === 1 && !!apiResult.data['Aviso']);
     if (isDataEmpty) {
+      // Registra a consulta vazia para fins de auditoria de custo da API (status: EMPTY)
+      try {
+        await prisma.searchHistory.create({
+          data: {
+            userId: user.id,
+            query: cleanQuery,
+            target,
+            modules: sortedModules,
+            cost: 0,
+            status: 'EMPTY',
+            result: {},
+          }
+        });
+      } catch (logErr) {
+        console.error('Erro ao salvar historico de search vazia:', logErr);
+      }
+      
       return { error: 'A base de dados não retornou informações úteis para este perfil. Nenhuma tarifa foi cobrada.' };
     }
 
