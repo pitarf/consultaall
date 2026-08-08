@@ -478,11 +478,13 @@ export default function DashboardPage() {
         <div className="glass-panel p-8 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-lg mt-8 animate-in fade-in duration-500">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Múltiplos Perfis Encontrados</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {candidates.length === 1 ? '1 Perfil Encontrado' : `${candidates.length} Perfis Encontrados`}
+              </h2>
               <p className="text-sm text-slate-500">
                 {candidates.length > 5 
-                  ? `Foram encontrados ${candidates.length} perfis. Exibindo os 5 mais prováveis. Selecione para ver o relatório completo.`
-                  : 'Selecione o perfil desejado para prosseguir com o relatório completo (débito apenas após a seleção).'
+                  ? `Exibindo os 5 perfis mais prováveis. Selecione a pessoa desejada para gerar o relatório completo (O saldo de R$ ${totalCost.toFixed(2).replace('.', ',')} só é debitado após a sua seleção).`
+                  : `Selecione o perfil desejado para prosseguir (Sem custo até aqui. O débito de R$ ${totalCost.toFixed(2).replace('.', ',')} ocorre somente ao confirmar).`
                 }
               </p>
             </div>
@@ -518,7 +520,7 @@ export default function DashboardPage() {
                       Consultando...
                     </>
                   ) : (
-                    'Confirmar e Consultar'
+                    `Confirmar e Consultar (R$ ${totalCost.toFixed(2).replace('.', ',')})`
                   )}
                 </button>
               </div>
