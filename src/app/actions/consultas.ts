@@ -278,9 +278,9 @@ export async function realizarConsulta(
         },
       });
 
-      // Atualiza saldo do usuário
+      // Atualiza saldo do usuário GARANTINDO que ele tem saldo suficiente no momento exato do débito (Prevenção de Race Condition)
       const updatedUser = await tx.user.update({
-        where: { id: user.id },
+        where: { id: user.id, balance: { gte: totalCost } },
         data: { balance: { decrement: totalCost } },
       });
 

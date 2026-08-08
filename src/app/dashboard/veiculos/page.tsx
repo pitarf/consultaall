@@ -88,6 +88,7 @@ export default function VeiculosPage() {
   };
 
   const handleSearch = async () => {
+    if (loading) return; // Previne duplo clique
     const validation = validarChave('placa', chaveValor);
     if (!validation.valid) {
       toast.error(validation.message);
@@ -261,8 +262,11 @@ export default function VeiculosPage() {
               : 'btn-premium'
           }`}
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isDemo ? <FlaskConical className="w-5 h-5" /> : <Search className="w-5 h-5" />)}
-          {isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${totalCost.toFixed(2).replace('.', ',')})`}
+          {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isDemo ? <FlaskConical className="w-6 h-6" /> : <Search className="w-6 h-6" />)}
+          {loading 
+            ? 'Consultando...' 
+            : (isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${totalCost.toFixed(2).replace('.', ',')})`)
+          }
         </button>
       </div>
 

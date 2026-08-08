@@ -154,6 +154,7 @@ export default function DashboardPage() {
   };
 
   const handleSearch = async () => {
+    if (loading) return; // Previne duplo clique
     setError(null);
     // Validação preventiva no Frontend
     const validation = validarChave(chaveTipo, chaveValor);
@@ -215,6 +216,7 @@ export default function DashboardPage() {
   };
 
   const handleSelectCandidate = async (candidateId: string) => {
+    if (loading) return; // Previne duplo clique
     setError(null);
     setCandidates(null);
     setLoading(true);
@@ -464,7 +466,10 @@ export default function DashboardPage() {
           }`}
         >
           {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isDemo ? <FlaskConical className="w-6 h-6" /> : <Search className="w-6 h-6" />)}
-          {isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${totalCost.toFixed(2).replace('.', ',')})`}
+          {loading 
+            ? 'Consultando...' 
+            : (isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${totalCost.toFixed(2).replace('.', ',')})`)
+          }
         </button>
       </div>
 
@@ -504,9 +509,17 @@ export default function DashboardPage() {
                 </div>
                 <button
                   onClick={() => handleSelectCandidate(c.id)}
-                  className="mt-5 w-full bg-primary hover:bg-primary-hover text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                  disabled={loading}
+                  className={`mt-5 w-full text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-2 ${loading ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover'}`}
                 >
-                  Confirmar e Consultar
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Consultando...
+                    </>
+                  ) : (
+                    'Confirmar e Consultar'
+                  )}
                 </button>
               </div>
             ))}
