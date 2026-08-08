@@ -41,6 +41,26 @@ const axiosV3 = axios.create({
   httpsAgent: new https.Agent({ rejectUnauthorized: false })
 });
 
+// Helper para sanitizar mensagens de erro da API evitando expor termos técnicos ou JSONs brutos
+function sanitizeApiErrorMessage(rawMsg: any): string {
+  if (!rawMsg) return 'Nenhum registro foi encontrado com os critérios informados.';
+  const str = typeof rawMsg === 'object' ? JSON.stringify(rawMsg) : String(rawMsg);
+  
+  if (str.includes('ECONNRESET') || str.includes('connreset') || str.includes('reset') || str.includes('socket hang up')) {
+    return 'A busca por Nome está temporariamente indisponível. Por favor, tente realizar a busca utilizando o CPF.';
+  }
+  
+  if (str.includes('Not Found') || str.includes('404') || str.includes('retornaram nenhum resultado') || str.includes('Nenhum registro') || str.includes('nenhum resultado') || str.includes('não retornaram')) {
+    return 'Nenhum registro foi encontrado com os dados informados. Verifique se o nome/chave está correto ou selecione a UF (Estado) para refinar a busca.';
+  }
+
+  if (str.includes('DirectData') || str.includes('API Error') || str.includes('listFilters') || str.includes('elapsedTimeMs')) {
+    return 'Nenhum registro foi localizado para os critérios informados. Tente refinar a busca.';
+  }
+
+  return str;
+}
+
 // -----------------------------------------------------------------------------
 // SEÇÃO: CONSULTA VEICULAR (V3)
 // -----------------------------------------------------------------------------
@@ -130,7 +150,7 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
     return { success: true, data };
   } catch (error: any) {
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    return { success: false, message: apiMessage };
+    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
   }
 }
 // SEÇÃO: PESQUISA AVANÇADA (V3) - NOME, TELEFONE, EMAIL (SÍNCRONO)
@@ -241,15 +261,7 @@ export async function performSmartSearch(
   } catch (error: any) {
     console.error('Erro na SmartSearch:', error.response?.data || error.message);
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    
-    if (apiMessage && (apiMessage.includes('ECONNRESET') || apiMessage.includes('connreset') || apiMessage.includes('reset') || apiMessage.includes('socket hang up'))) {
-      return {
-        success: false,
-        message: 'A API de busca por Nome (DirectData V2) está temporariamente indisponível ou recusou a conexão (ECONNRESET). Por favor, tente realizar a busca utilizando diretamente o CPF.'
-      };
-    }
-    
-    return { success: false, message: apiMessage || 'Erro na comunicação com a API.' };
+    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
   }
 }
 
@@ -274,7 +286,7 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
     return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
   } catch (error: any) {
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    return { success: false, message: apiMessage };
+    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
   }
 }
 
@@ -394,11 +406,10 @@ export async function filterNaturalPerson(filters: {
   } catch (error: any) {
     if (error.response) {
       const errText = typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data;
-      throw new Error(`DirectData API Error ${error.response.status}: ${errText}`);
+      throw new Error(sanitizeApiErrorMessage(errText));
     }
     console.error("FilterNaturalPerson falhou:", error);
-    // Preserva a mensagem de ECONNRESET ou repassa o erro da API
-    throw new Error(error.message || 'Erro desconhecido ao conectar com DirectData');
+    throw new Error(sanitizeApiErrorMessage(error.message));
   }
 }
 
@@ -425,9 +436,9 @@ export async function processingIds(listIds: string[], searchName: string = 'Con
   } catch (error: any) {
     if (error.response) {
       const errText = typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data;
-      throw new Error(`DirectData API Error ${error.response.status}: ${errText}`);
+      throw new Error(sanitizeApiErrorMessage(errText));
     }
-    throw new Error(error.message || 'Erro desconhecido em ProcessingIds');
+    throw new Error(sanitizeApiErrorMessage(error.message));
   }
 }
 
@@ -454,9 +465,9 @@ export async function viewSearch(searchUid: string) {
   } catch (error: any) {
     if (error.response) {
       const errText = typeof error.response.data === 'object' ? JSON.stringify(error.response.data) : error.response.data;
-      throw new Error(`DirectData API Error ${error.response.status}: ${errText}`);
+      throw new Error(sanitizeApiErrorMessage(errText));
     }
-    throw new Error(error.message || 'Erro desconhecido em ViewSearch');
+    throw new Error(sanitizeApiErrorMessage(error.message));
   }
 }
 
@@ -552,7 +563,8 @@ export async function consultaCnpjPlus(cnpj: string, selectedModules: string[] =
     
     return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
   } catch (error: any) {
-    return { success: false, message: error.response?.data?.metaDados?.mensagem || error.message };
+    const apiMessage = error.response?.data?.metaDados?.mensagem || error.message;
+    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
   }
 }
 

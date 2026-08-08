@@ -242,9 +242,38 @@ export async function realizarConsulta(
       return { success: true, data: apiResult.data, newBalance: user.balance, isDemo: true };
     }
 
-    // Validação de Segurança Financeira: Se a API retornou sucesso, mas os dados estão VAZIOS (ou seja, a base não tem nada), NÃO DEBITE o cliente.
-    // Isso ocorre quando o candidateId é processado, mas o retorno não traz nenhum dos módulos selecionados (objeto vazio {}).
-    const isDataEmpty = !apiResult.data || Object.keys(apiResult.data).length === 0 || (Object.keys(apiResult.data).length === 1 && !!apiResult.data['Aviso']);
+function hasMeaningfulData(val: any): boolean {
+  if (val === null || val === undefined) return false;
+  if (typeof val === 'boolean' || typeof val === 'number') return true;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return false;
+    const invalidValues = [
+      'Nenhum dado encontrado',
+      'Nenhum registro encontrado',
+      'Não informado',
+      'Nenhum resultado',
+      'N/I',
+      'Não possui filiais.',
+      'Nenhum dado selecionado para exibição.'
+    ];
+    if (invalidValues.includes(trimmed)) return false;
+    return true;
+  }
+  if (Array.isArray(val)) {
+    if (val.length === 0) return false;
+    return val.some(item => hasMeaningfulData(item));
+  }
+  if (typeof val === 'object') {
+    const keys = Object.keys(val).filter(k => k !== 'Aviso' && k !== 'Aviso_Demo' && k !== 'aviso');
+    if (keys.length === 0) return false;
+    return keys.some(k => hasMeaningfulData(val[k]));
+  }
+  return false;
+}
+
+    // Validação de Segurança Financeira: Se a API retornou sucesso, mas os dados estão VAZIOS (arrays vazios, sem registros), NÃO DEBITE o cliente.
+    const isDataEmpty = !apiResult.data || !hasMeaningfulData(apiResult.data);
     if (isDataEmpty) {
       // Registra a consulta vazia para fins de auditoria de custo da API (status: EMPTY)
       try {
@@ -256,14 +285,14 @@ export async function realizarConsulta(
             modules: sortedModules,
             cost: 0,
             status: 'EMPTY',
-            result: {},
+            result: apiResult.data || {},
           }
         });
       } catch (logErr) {
         console.error('Erro ao salvar historico de search vazia:', logErr);
       }
       
-      return { error: 'A base de dados não retornou informações úteis para este perfil. Nenhuma tarifa foi cobrada.' };
+      return { error: 'A base de dados não retornou registros para os módulos selecionados. Nenhuma tarifa foi cobrada.' };
     }
 
     // 2. Transação para descontar o saldo e registrar o histórico com SEGURANÇA (Apenas consultas Reais)
