@@ -5,6 +5,7 @@ import NavbarClient from '@/components/NavbarClient';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { Calendar, User, ArrowLeft, Tag, Search, ArrowRight, ChevronRight, Home } from 'lucide-react';
+import { SeoPageContent } from '@/components/SeoPageContent';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -202,6 +203,60 @@ export default async function BlogArticleDetailPage({ params }: Props) {
     month: 'long',
     year: 'numeric'
   });
+
+  const isCustomLandingPage = /<style\b/i.test(article.content);
+
+  // Extrai styles para renderização no SSR (evitando flashes e garantindo CSS inicial)
+  const styles: string[] = [];
+  article.content.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (match, css) => {
+    if (css.trim()) styles.push(css.trim());
+    return '';
+  });
+
+  // Limpa tags estruturais para não renderizá-las literalmente
+  const cleanHtml = article.content
+    .replace(/<!DOCTYPE html>/gi, '')
+    .replace(/<\/?(html|head|body)\b[^>]*>/gi, '')
+    .trim();
+
+  if (isCustomLandingPage) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background antialiased overflow-x-hidden">
+        {/* ===================== NAVBAR ===================== */}
+        <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} menuPages={menuPages} />
+
+        {/* Estilos renderizados no SSR */}
+        {styles.map((css, idx) => (
+          <style key={`custom-css-${idx}`} dangerouslySetInnerHTML={{ __html: css }} />
+        ))}
+
+        {/* Renderiza o conteúdo usando o componente SeoPageContent e executa scripts de forma segura */}
+        <main className="flex-1 w-full">
+          <SeoPageContent html={cleanHtml} isAdminCreated={true} />
+        </main>
+
+        {/* Schemas Auto-gerados (SEO) */}
+        {schemas.map((schema, index) => (
+          <script
+            key={`schema-auto-${index}`}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
+
+        {/* Schema JSON-LD Extra (Manual do Admin) */}
+        {article.jsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: article.jsonLd }}
+          />
+        )}
+
+        {/* ===================== FOOTER ===================== */}
+        <Footer logoUrl={settings?.logoUrl} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-800 antialiased overflow-x-hidden">
