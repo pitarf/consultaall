@@ -237,7 +237,9 @@ export async function POST(req: Request) {
                   await webpush.sendNotification({
                     endpoint: sub.endpoint,
                     keys: { p256dh: sub.p256dh, auth: sub.auth }
-                  }, payload);
+                  }, payload, {
+                    TTL: 30 * 24 * 60 * 60 // Mantém a notificação na fila por até 30 dias se o admin estiver offline
+                  });
                 } catch (subErr: any) {
                   // Se a inscrição expirou (410 Gone), removemos do banco
                   if (subErr.statusCode === 410 || subErr.statusCode === 404) {

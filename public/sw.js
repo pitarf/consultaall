@@ -6,6 +6,7 @@ self.addEventListener('push', function (event) {
       icon: data.icon || '/logo.webp', 
       badge: data.badge || '/logo.webp',
       vibrate: [100, 50, 100],
+      requireInteraction: true, // Força a notificação a ficar na tela até que o admin clique ou feche manualmente
       data: {
         dateOfArrival: Date.now(),
         primaryKey: '2',
