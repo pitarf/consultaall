@@ -204,8 +204,6 @@ export default async function BlogArticleDetailPage({ params }: Props) {
     year: 'numeric'
   });
 
-  const isCustomLandingPage = /<style\b/i.test(article.content);
-
   // Extrai styles para renderização no SSR (evitando flashes e garantindo CSS inicial)
   const styles: string[] = [];
   article.content.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (match, css) => {
@@ -218,45 +216,6 @@ export default async function BlogArticleDetailPage({ params }: Props) {
     .replace(/<!DOCTYPE html>/gi, '')
     .replace(/<\/?(html|head|body)\b[^>]*>/gi, '')
     .trim();
-
-  if (isCustomLandingPage) {
-    return (
-      <div className="flex flex-col min-h-screen bg-background antialiased overflow-x-hidden">
-        {/* ===================== NAVBAR ===================== */}
-        <NavbarClient logoUrl={settings?.logoUrl} siteTitle={settings?.siteTitle} menuPages={menuPages} />
-
-        {/* Estilos renderizados no SSR */}
-        {styles.map((css, idx) => (
-          <style key={`custom-css-${idx}`} dangerouslySetInnerHTML={{ __html: css }} />
-        ))}
-
-        {/* Renderiza o conteúdo usando o componente SeoPageContent e executa scripts de forma segura */}
-        <main className="flex-1 w-full">
-          <SeoPageContent html={cleanHtml} isAdminCreated={true} />
-        </main>
-
-        {/* Schemas Auto-gerados (SEO) */}
-        {schemas.map((schema, index) => (
-          <script
-            key={`schema-auto-${index}`}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-          />
-        ))}
-
-        {/* Schema JSON-LD Extra (Manual do Admin) */}
-        {article.jsonLd && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: article.jsonLd }}
-          />
-        )}
-
-        {/* ===================== FOOTER ===================== */}
-        <Footer logoUrl={settings?.logoUrl} />
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fafc] text-slate-800 antialiased overflow-x-hidden">
@@ -494,11 +453,15 @@ export default async function BlogArticleDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* Conteúdo HTML Rico */}
-          <div 
-            className="article-content"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
+          {/* Estilos renderizados no SSR extraídos do artigo (para evitar flashes) */}
+          {styles.map((css, idx) => (
+            <style key={`custom-css-${idx}`} dangerouslySetInnerHTML={{ __html: css }} />
+          ))}
+
+          {/* Conteúdo HTML Rico (Suporta scripts do widget + Estilização padrão do Blog) */}
+          <div className="article-content">
+            <SeoPageContent html={cleanHtml} isAdminCreated={true} />
+          </div>
 
           {/* Schemas Auto-gerados */}
           {schemas.map((schema, index) => (
