@@ -194,9 +194,23 @@ export async function performSmartSearch(
               if (item.resultId === 6) {
                 return { success: false, message: item.result || 'Falha no processamento da consulta de nome.' };
               }
+              const data = transformDirectDataAdvanced(item.returnJson || {}, selectedModules);
+              
+              if (selectedModules.includes('processos')) {
+                const cpf = item.returnJson?.cpf || item.returnJson?.retorno?.cpf;
+                if (cpf) {
+                  const procRes = await consultaProcessos(cpf);
+                  if (procRes.success) {
+                    data['Processos_Judiciais'] = procRes.data;
+                  } else {
+                    data['Processos_Judiciais'] = { aviso: procRes.message || 'Nenhum processo judicial localizado.' };
+                  }
+                }
+              }
+
               return {
                 success: true,
-                data: transformDirectDataAdvanced(item.returnJson || {}, selectedModules),
+                data,
                 message: item.result || 'Consulta realizada com sucesso.'
               };
             }
@@ -252,14 +266,57 @@ export async function performSmartSearch(
 
     const rawData = Array.isArray(res.retorno) ? res.retorno[0] : res.retorno;
     
+    const data = transformDirectDataPlus(rawData, selectedModules);
+    
+    if (selectedModules.includes('processos')) {
+      const cpf = rawData.cpf;
+      if (cpf) {
+        const procRes = await consultaProcessos(cpf);
+        if (procRes.success) {
+          data['Processos_Judiciais'] = procRes.data;
+        } else {
+          data['Processos_Judiciais'] = { aviso: procRes.message || 'Nenhum processo judicial localizado.' };
+        }
+      }
+    }
+
     return {
       success: true,
-      data: transformDirectDataPlus(rawData, selectedModules),
+      data,
       message: 'Consulta realizada com sucesso.'
     };
 
   } catch (error: any) {
     console.error('Erro na SmartSearch:', error.response?.data || error.message);
+    const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
+    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SEÇÃO: CONSULTA DE PROCESSOS JUDICIAIS
+// -----------------------------------------------------------------------------
+
+export async function consultaProcessos(cpfOrCnpj: string) {
+  const { token, v3Url } = await getDirectDataConfig();
+  if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
+  
+  const cleanDoc = cpfOrCnpj.replace(/\D/g, '');
+  if (!cleanDoc) return { success: false, message: 'Documento inválido.' };
+  
+  const paramName = cleanDoc.length === 11 ? 'CPF' : 'CNPJ';
+  const url = `${v3Url}/api/ProcessosJudiciaisCompleta?TOKEN=${token}&${paramName}=${cleanDoc}`;
+
+  try {
+    const response = await axiosV3.get(url);
+    const res = response.data;
+
+    if (res.retorno) {
+      return { success: true, data: res.retorno };
+    }
+    
+    return { success: false, message: res.metaDados?.mensagem || 'Nenhum processo encontrado para este documento.' };
+  } catch (error: any) {
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
     return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
   }
@@ -280,7 +337,19 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
     const res = response.data;
 
     if (res.retorno) {
-      return { success: true, data: transformDirectDataPlus(res.retorno, selectedModules) };
+      const data = transformDirectDataPlus(res.retorno, selectedModules);
+      
+      // Se selecionou o módulo de processos judiciais, busca em paralelo
+      if (selectedModules.includes('processos')) {
+        const procRes = await consultaProcessos(cleanCpf);
+        if (procRes.success) {
+          data['Processos_Judiciais'] = procRes.data;
+        } else {
+          data['Processos_Judiciais'] = { aviso: procRes.message || 'Nenhum processo judicial localizado.' };
+        }
+      }
+
+      return { success: true, data };
     }
     
     return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
@@ -558,7 +627,19 @@ export async function consultaCnpjPlus(cnpj: string, selectedModules: string[] =
     }
 
     if (res.retorno) {
-      return { success: true, data: transformDirectDataCnpj(res.retorno, selectedModules) };
+      const data = transformDirectDataCnpj(res.retorno, selectedModules);
+      
+      // Se selecionou o módulo de processos judiciais, busca em paralelo
+      if (selectedModules.includes('processos')) {
+        const procRes = await consultaProcessos(cleanCnpj);
+        if (procRes.success) {
+          data['Processos_Judiciais'] = procRes.data;
+        } else {
+          data['Processos_Judiciais'] = { aviso: procRes.message || 'Nenhum processo judicial localizado.' };
+        }
+      }
+
+      return { success: true, data };
     }
     
     return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
