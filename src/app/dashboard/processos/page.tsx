@@ -10,6 +10,19 @@ import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 
 export default function ProcessosPage() {
+  const isLiberado = false; 
+
+  if (!isLiberado) {
+    return (
+      <div className="max-w-6xl mx-auto py-16 text-center space-y-4">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Módulo Indisponível</h1>
+        <p className="text-slate-500 dark:text-gray-400 max-w-md mx-auto">
+          Este módulo de dados não está ativo na sua conta ou plano atual. Entre em contato com o administrador do sistema para solicitar a ativação.
+        </p>
+      </div>
+    );
+  }
+
   const [chaveTipo, setChaveTipo] = useState('cpf');
   const [chaveValor, setChaveValor] = useState('');
   const [chaveUf, setChaveUf] = useState('');

@@ -76,7 +76,8 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
     const response = await axiosV3.get(url);
     const res = response.data;
 
-    if (!res.retorno || res.metaDados?.resultadoId !== 1) {
+    console.log('🚗 DirectData ConsultaVeicular Response Metadata:', res.metaDados);
+    if (!res.retorno) {
       return { 
         success: false, 
         message: res.metaDados?.mensagem || 'Veículo não encontrado ou erro na consulta.' 

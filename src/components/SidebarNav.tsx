@@ -65,15 +65,15 @@ export function SidebarNav({ isAdmin, whatsappLink }: SidebarNavProps) {
         <span className="text-sm">Consultar empresas</span>
       </Link>
 
-      <Link href="/dashboard/processos" className={navItemClass('/dashboard/processos')}>
+      <div title="Em desenvolvimento" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 cursor-not-allowed opacity-50 transition-colors">
         <Scale className="w-4 h-4" />
         <span className="text-sm">Consultar processos</span>
-      </Link>
+      </div>
 
-      <Link href="/dashboard/enderecos" className={navItemClass('/dashboard/enderecos')}>
+      <div title="Em desenvolvimento" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 cursor-not-allowed opacity-50 transition-colors">
         <MapPin className="w-4 h-4" />
         <span className="text-sm">Consultar endereços</span>
-      </Link>
+      </div>
 
       <Link href="/dashboard/historico" className={`${navItemClass('/dashboard/historico')} mt-4`}>
         <History className="w-4 h-4" />
