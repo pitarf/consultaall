@@ -31,6 +31,7 @@ export default function ProcessosPage() {
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[] | null>(null);
+  const [candidatePage, setCandidatePage] = useState(1);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +88,7 @@ export default function ProcessosPage() {
       } else if (res.success) {
         if (res.isMultiple) {
           setCandidates(res.candidates);
+          setCandidatePage(1);
           toast.success(`${res.candidates.length} perfis correspondentes encontrados.`);
         } else {
           if (res.isDemo) {
@@ -276,25 +278,58 @@ export default function ProcessosPage() {
             <button onClick={() => setCandidates(null)} className="text-xs text-red-500 font-bold hover:underline">Cancelar busca</button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {candidates.slice(0, 5).map((c) => (
-              <div key={c.id} className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 transition-all">
-                <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
-                  <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
-                  <p><span className="font-semibold text-slate-400">CPF:</span> {c.taxIdNumber || 'Não informado'}</p>
-                  <p><span className="font-semibold text-slate-400">Mãe:</span> {c.motherName || 'Não informado'}</p>
-                  <p><span className="font-semibold text-slate-400">Localização:</span> {c.city || 'Desconhecida'} - {c.state || 'XX'}</p>
+          {(() => {
+            const itemsPerPage = 10;
+            const totalCandidatePages = Math.ceil(candidates.length / itemsPerPage);
+            const startIndex = (candidatePage - 1) * itemsPerPage;
+            const paginatedCandidates = candidates.slice(startIndex, startIndex + itemsPerPage);
+
+            return (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {paginatedCandidates.map((c) => (
+                    <div key={c.id} className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 transition-all">
+                      <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
+                        <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
+                        <p><span className="font-semibold text-slate-400">CPF:</span> {c.taxIdNumber || 'Não informado'}</p>
+                        <p><span className="font-semibold text-slate-400">Mãe:</span> {c.motherName || 'Não informado'}</p>
+                        <p><span className="font-semibold text-slate-400">Localização:</span> {c.city || 'Desconhecida'} - {c.state || 'XX'}</p>
+                      </div>
+                      <button
+                        onClick={() => handleSelectCandidate(c.id)}
+                        disabled={loading}
+                        className="mt-5 w-full bg-primary hover:bg-primary-hover text-white py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+                      >
+                        Selecionar e Consultar Processos
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <button
-                  onClick={() => handleSelectCandidate(c.id)}
-                  disabled={loading}
-                  className="mt-5 w-full bg-primary hover:bg-primary-hover text-white py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-                >
-                  Selecionar e Consultar Processos
-                </button>
-              </div>
-            ))}
-          </div>
+
+                {totalCandidatePages > 1 && (
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
+                    <button
+                      onClick={() => setCandidatePage(prev => Math.max(prev - 1, 1))}
+                      disabled={candidatePage === 1}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 dark:text-gray-200 transition-colors"
+                    >
+                      Anterior
+                    </button>
+                    <span className="text-sm font-semibold text-slate-500">
+                      Página {candidatePage} de {totalCandidatePages} (Total: {candidates.length} perfis)
+                    </span>
+                    <button
+                      onClick={() => setCandidatePage(prev => Math.min(prev + 1, totalCandidatePages))}
+                      disabled={candidatePage === totalCandidatePages}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 dark:text-gray-200 transition-colors"
+                    >
+                      Próxima
+                    </button>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 

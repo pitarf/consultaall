@@ -62,6 +62,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[] | null>(null);
+  const [candidatePage, setCandidatePage] = useState(1);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -196,6 +197,7 @@ export default function DashboardPage() {
       } else if (res.success) {
         if (res.isMultiple) {
           setCandidates(res.candidates);
+          setCandidatePage(1);
           toast.success(`${res.candidates.length} perfis correspondentes encontrados.`);
         } else {
           if (res.isDemo) {
@@ -473,7 +475,6 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Seleção de Múltiplos Candidatos */}
       {candidates && (
         <div className="glass-panel p-8 rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-lg mt-8 animate-in fade-in duration-500">
           <div className="flex justify-between items-center mb-6">
@@ -482,10 +483,7 @@ export default function DashboardPage() {
                 {candidates.length === 1 ? '1 Perfil Encontrado' : `${candidates.length} Perfis Encontrados`}
               </h2>
               <p className="text-sm text-slate-500">
-                {candidates.length > 5 
-                  ? `Exibindo os 5 perfis mais prováveis. Selecione a pessoa desejada para gerar o relatório completo (O saldo de R$ ${totalCost.toFixed(2).replace('.', ',')} só é debitado após a sua seleção).`
-                  : `Selecione o perfil desejado para prosseguir (Sem custo até aqui. O débito de R$ ${totalCost.toFixed(2).replace('.', ',')} ocorre somente ao confirmar).`
-                }
+                Selecione o perfil desejado para prosseguir (Sem custo até aqui. O débito de R$ {totalCost.toFixed(2).replace('.', ',')} ocorre somente ao confirmar).
               </p>
             </div>
             <button 
@@ -496,36 +494,69 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {candidates.slice(0, 5).map((c) => (
-              <div 
-                key={c.id} 
-                className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 dark:hover:border-primary/40 transition-all group"
-              >
-                <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
-                  <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
-                  <p><span className="font-semibold text-slate-400">CPF:</span> {c.taxIdNumber || 'Não informado'}</p>
-                  <p><span className="font-semibold text-slate-400">Nascimento:</span> {c.dateOfBirth ? (c.dateOfBirth.includes('/') || c.dateOfBirth.includes('*') ? c.dateOfBirth : new Date(c.dateOfBirth).toLocaleDateString('pt-BR', { timeZone: 'UTC' })) : 'Não informado'}</p>
-                  <p><span className="font-semibold text-slate-400">Mãe:</span> {c.motherName ? c.motherName.toUpperCase() : 'Não informado'}</p>
-                  <p><span className="font-semibold text-slate-400">Localização:</span> {c.city || 'Desconhecida'} - {c.state || 'XX'}</p>
+          {(() => {
+            const itemsPerPage = 10;
+            const totalCandidatePages = Math.ceil(candidates.length / itemsPerPage);
+            const startIndex = (candidatePage - 1) * itemsPerPage;
+            const paginatedCandidates = candidates.slice(startIndex, startIndex + itemsPerPage);
+
+            return (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {paginatedCandidates.map((c) => (
+                    <div 
+                      key={c.id} 
+                      className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 dark:hover:border-primary/40 transition-all group"
+                    >
+                      <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
+                        <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
+                        <p><span className="font-semibold text-slate-400">CPF:</span> {c.taxIdNumber || 'Não informado'}</p>
+                        <p><span className="font-semibold text-slate-400">Nascimento:</span> {c.dateOfBirth ? (c.dateOfBirth.includes('/') || c.dateOfBirth.includes('*') ? c.dateOfBirth : new Date(c.dateOfBirth).toLocaleDateString('pt-BR', { timeZone: 'UTC' })) : 'Não informado'}</p>
+                        <p><span className="font-semibold text-slate-400">Mãe:</span> {c.motherName ? c.motherName.toUpperCase() : 'Não informado'}</p>
+                        <p><span className="font-semibold text-slate-400">Localização:</span> {c.city || 'Desconhecida'} - {c.state || 'XX'}</p>
+                      </div>
+                      <button
+                        onClick={() => handleSelectCandidate(c.id)}
+                        disabled={loading}
+                        className={`mt-5 w-full text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-2 ${loading ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover'}`}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Consultando...
+                          </>
+                        ) : (
+                          `Confirmar e Consultar (R$ ${totalCost.toFixed(2).replace('.', ',')})`
+                        )}
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <button
-                  onClick={() => handleSelectCandidate(c.id)}
-                  disabled={loading}
-                  className={`mt-5 w-full text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-2 ${loading ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover'}`}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Consultando...
-                    </>
-                  ) : (
-                    `Confirmar e Consultar (R$ ${totalCost.toFixed(2).replace('.', ',')})`
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
+
+                {totalCandidatePages > 1 && (
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
+                    <button
+                      onClick={() => setCandidatePage(prev => Math.max(prev - 1, 1))}
+                      disabled={candidatePage === 1}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 dark:text-gray-200 transition-colors"
+                    >
+                      Anterior
+                    </button>
+                    <span className="text-sm font-semibold text-slate-500">
+                      Página {candidatePage} de {totalCandidatePages} (Total: {candidates.length} perfis)
+                    </span>
+                    <button
+                      onClick={() => setCandidatePage(prev => Math.min(prev + 1, totalCandidatePages))}
+                      disabled={candidatePage === totalCandidatePages}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 dark:text-gray-200 transition-colors"
+                    >
+                      Próxima
+                    </button>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 
