@@ -25,7 +25,11 @@ export default function AdminLoginPage() {
       const res = await verifyAdminPassword(password);
       if (res.success) {
         toast.success('Acesso liberado!');
-        router.push('/admin');
+        if (res.role === 'SEO') {
+          router.push('/admin/configuracoes');
+        } else {
+          router.push('/admin');
+        }
         router.refresh(); // Garante que o layout reavalie o cookie
       } else {
         toast.error(res.error || 'Erro ao verificar senha.');

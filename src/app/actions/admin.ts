@@ -40,7 +40,7 @@ export async function verifyAdminPassword(password: string) {
       sameSite: 'lax',
       path: '/admin',
     });
-    return { success: true };
+    return { success: true, role: user.role };
   }
 
   // Falha: Incrementa tentativas
