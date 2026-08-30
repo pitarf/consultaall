@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSystemSettings, updateSystemSettings } from '@/app/actions/admin';
+import { getUserProfile } from '@/app/actions/perfil';
 import { Save, Globe, MessageSquare, Loader2, Info, Image, ExternalLink, Scale, CreditCard, Eye, EyeOff, ShieldCheck, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
  * Permite alterar SEO, Branding (Logo e Favicon), Gateway PushinPay e canais de suporte.
  */
 export default function AdminSettingsPage() {
+  const [role, setRole] = useState('USER');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPushinToken, setShowPushinToken] = useState(false);
@@ -42,7 +44,13 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await getSystemSettings();
+        const [data, profile] = await Promise.all([
+          getSystemSettings(),
+          getUserProfile()
+        ]);
+        if (profile) {
+          setRole(profile.role);
+        }
         setSettings({
           siteTitle: data.siteTitle || '',
           siteDescription: data.siteDescription || '',
@@ -251,253 +259,257 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        {/* ====== GATEWAY DE PAGAMENTO (PUSHINPAY) ====== */}
-        <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
-          <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
-            <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400">
-              <CreditCard className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Gateway de Pagamento (PushinPay)</h2>
-              <p className="text-slate-500 dark:text-gray-400 text-sm">Configure as chaves de integração Pix. Se deixado em branco, o sistema usará as chaves padrão do arquivo .env.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6">
-            {/* Token da API PushinPay */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de API PushinPay (Bearer Token)</label>
-                  {settings.pushinpayToken && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Configurado
-                    </span>
-                  )}
+        {role === 'ADMIN' && (
+          <>
+            {/* ====== GATEWAY DE PAGAMENTO (PUSHINPAY) ====== */}
+            <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
+                <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400">
+                  <CreditCard className="w-5 h-5" />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPushinToken(!showPushinToken)}
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
-                >
-                  {showPushinToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  {showPushinToken ? 'Ocultar' : 'Mostrar'}
-                </button>
-              </div>
-              <input
-                type={showPushinToken ? "text" : "password"}
-                value={settings.pushinpayToken}
-                onChange={(e) => setSettings({ ...settings, pushinpayToken: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
-                placeholder="Ex: 67768|cy3n6j9UdLD0FeXc0ZjhiNRYrcbGL4pwBIbzJT5B0d32938d"
-              />
-              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
-                <Info className="w-3 h-3 flex-shrink-0" />
-                Token de autenticação gerado no painel da PushinPay (Menu {'>'} Tokens de Acesso). Usado para gerar cobranças Pix.
-              </p>
-            </div>
-
-            {/* Token de Segurança do Webhook */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de Segurança do Webhook (PUSHINPAY_WEBHOOK_TOKEN)</label>
-                <button
-                  type="button"
-                  onClick={() => setShowWebhookToken(!showWebhookToken)}
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
-                >
-                  {showWebhookToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  {showWebhookToken ? 'Ocultar' : 'Mostrar'}
-                </button>
-              </div>
-              <input
-                type={showWebhookToken ? "text" : "password"}
-                value={settings.pushinpayWebhookToken}
-                onChange={(e) => setSettings({ ...settings, pushinpayWebhookToken: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
-                placeholder="Ex: 880d03ddeda5ad631ebd021c6d7b5013"
-              />
-              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
-                <Info className="w-3 h-3 flex-shrink-0" />
-                Senha de validação inserida na URL do webhook para verificar notificações de pagamento confirmadas.
-              </p>
-            </div>
-
-            {/* Taxa do Gateway Pix */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Taxa do Gateway Pix por Transação (R$)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={settings.pixFee}
-                onChange={(e) => setSettings({ ...settings, pixFee: parseFloat(e.target.value) || 0 })}
-                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
-                placeholder="Ex: 0.95"
-              />
-              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
-                <Info className="w-3 h-3 flex-shrink-0" />
-                Valor fixo deduzido de cada recarga Pix aprovada para calcular o Lucro Líquido Real no dashboard (Ex: R$ 0,95).
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ====== CONFIGURAÇÕES DE APIS EXTERNAS ====== */}
-        <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
-          <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
-            <div className="p-2 bg-blue-500/20 rounded-lg text-blue-600 dark:text-blue-400">
-              <Settings className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">APIs & Integrações Externas</h2>
-              <p className="text-slate-500 dark:text-gray-400 text-sm">Configure as chaves e endpoints de consulta e comunicação. Se deixados em branco, o sistema usará as chaves padrão do arquivo .env.</p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {/* Brevo API Key */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Chave API Brevo (E-mails transacionais)</label>
-                  {settings.brevoApiKey && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Configurado
-                    </span>
-                  )}
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Gateway de Pagamento (PushinPay)</h2>
+                  <p className="text-slate-500 dark:text-gray-400 text-sm">Configure as chaves de integração Pix. Se deixado em branco, o sistema usará as chaves padrão do arquivo .env.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowBrevoToken(!showBrevoToken)}
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
-                >
-                  {showBrevoToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  {showBrevoToken ? 'Ocultar' : 'Mostrar'}
-                </button>
-              </div>
-              <input
-                type={showBrevoToken ? "text" : "password"}
-                value={settings.brevoApiKey}
-                onChange={(e) => setSettings({ ...settings, brevoApiKey: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
-                placeholder="Ex: xkeysib-xxxxxxxx..."
-              />
-              <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
-                <Info className="w-3 h-3 flex-shrink-0" />
-                Chave de API da plataforma Brevo (antiga Sendinblue) para envio automático de e-mails de recuperação de senha.
-              </p>
-            </div>
-
-            <hr className="border-slate-100 dark:border-white/5" />
-
-            {/* Direct Data Section */}
-            <div className="space-y-4">
-              <h3 className="text-md font-bold text-slate-800 dark:text-white">Direct Data (Consultas Avançadas)</h3>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token DirectData (GUID)</label>
-                    {settings.directDataToken && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Configurado
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowDirectToken(!showDirectToken)}
-                    className="text-xs text-primary hover:underline flex items-center gap-1"
-                  >
-                    {showDirectToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    {showDirectToken ? 'Ocultar' : 'Mostrar'}
-                  </button>
-                </div>
-                <input
-                  type={showDirectToken ? "text" : "password"}
-                  value={settings.directDataToken}
-                  onChange={(e) => setSettings({ ...settings, directDataToken: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
-                  placeholder="Ex: d4b39ad3-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-6">
+                {/* Token da API PushinPay */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL Base DirectData (V2)</label>
-                  <input
-                    type="text"
-                    value={settings.directDataBaseUrl}
-                    onChange={(e) => setSettings({ ...settings, directDataBaseUrl: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
-                    placeholder="Padrão: https://api.directd.com.br"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL DirectData V3</label>
-                  <input
-                    type="text"
-                    value={settings.directDataV3Url}
-                    onChange={(e) => setSettings({ ...settings, directDataV3Url: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
-                    placeholder="Padrão: https://apiv3.directd.com.br"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <hr className="border-slate-100 dark:border-white/5" />
-
-            {/* API Consulta (Hero) Section */}
-            <div className="space-y-4">
-              <h3 className="text-md font-bold text-slate-800 dark:text-white">API Consulta Brasil (Hero)</h3>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token API Consulta</label>
-                    {settings.apiConsultaToken && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Configurado
-                      </span>
-                    )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de API PushinPay (Bearer Token)</label>
+                      {settings.pushinpayToken && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Configurado
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPushinToken(!showPushinToken)}
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
+                    >
+                      {showPushinToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      {showPushinToken ? 'Ocultar' : 'Mostrar'}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowConsultaToken(!showConsultaToken)}
-                    className="text-xs text-primary hover:underline flex items-center gap-1"
-                  >
-                    {showConsultaToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    {showConsultaToken ? 'Ocultar' : 'Mostrar'}
-                  </button>
+                  <input
+                    type={showPushinToken ? "text" : "password"}
+                    value={settings.pushinpayToken}
+                    onChange={(e) => setSettings({ ...settings, pushinpayToken: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                    placeholder="Ex: 67768|cy3n6j9UdLD0FeXc0ZjhiNRYrcbGL4pwBIbzJT5B0d32938d"
+                  />
+                  <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                    <Info className="w-3 h-3 flex-shrink-0" />
+                    Token de autenticação gerado no painel da PushinPay (Menu {'>'} Tokens de Acesso). Usado para gerar cobranças Pix.
+                  </p>
                 </div>
-                <input
-                  type={showConsultaToken ? "text" : "password"}
-                  value={settings.apiConsultaToken}
-                  onChange={(e) => setSettings({ ...settings, apiConsultaToken: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
-                  placeholder="Ex: seu_token_da_api_consulta_brasil..."
-                />
+
+                {/* Token de Segurança do Webhook */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token de Segurança do Webhook (PUSHINPAY_WEBHOOK_TOKEN)</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowWebhookToken(!showWebhookToken)}
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
+                    >
+                      {showWebhookToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      {showWebhookToken ? 'Ocultar' : 'Mostrar'}
+                    </button>
+                  </div>
+                  <input
+                    type={showWebhookToken ? "text" : "password"}
+                    value={settings.pushinpayWebhookToken}
+                    onChange={(e) => setSettings({ ...settings, pushinpayWebhookToken: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                    placeholder="Ex: 880d03ddeda5ad631ebd021c6d7b5013"
+                  />
+                  <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                    <Info className="w-3 h-3 flex-shrink-0" />
+                    Senha de validação inserida na URL do webhook para verificar notificações de pagamento confirmadas.
+                  </p>
+                </div>
+
+                {/* Taxa do Gateway Pix */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Taxa do Gateway Pix por Transação (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={settings.pixFee}
+                    onChange={(e) => setSettings({ ...settings, pixFee: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                    placeholder="Ex: 0.95"
+                  />
+                  <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                    <Info className="w-3 h-3 flex-shrink-0" />
+                    Valor fixo deduzido de cada recarga Pix aprovada para calcular o Lucro Líquido Real no dashboard (Ex: R$ 0,95).
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* ====== CONFIGURAÇÕES DE APIS EXTERNAS ====== */}
+            <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
+                <div className="p-2 bg-blue-500/20 rounded-lg text-blue-600 dark:text-blue-400">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">APIs & Integrações Externas</h2>
+                  <p className="text-slate-500 dark:text-gray-400 text-sm">Configure as chaves e endpoints de consulta e comunicação. Se deixados em branco, o sistema usará as chaves padrão do arquivo .env.</p>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL da API Consulta</label>
-                <input
-                  type="text"
-                  value={settings.apiConsultaUrl}
-                  onChange={(e) => setSettings({ ...settings, apiConsultaUrl: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
-                  placeholder="Padrão: https://services.apiconsultabrasil.com/"
-                />
+              <div className="space-y-6">
+                {/* Brevo API Key */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Chave API Brevo (E-mails transacionais)</label>
+                      {settings.brevoApiKey && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Configurado
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowBrevoToken(!showBrevoToken)}
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
+                    >
+                      {showBrevoToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      {showBrevoToken ? 'Ocultar' : 'Mostrar'}
+                    </button>
+                  </div>
+                  <input
+                    type={showBrevoToken ? "text" : "password"}
+                    value={settings.brevoApiKey}
+                    onChange={(e) => setSettings({ ...settings, brevoApiKey: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                    placeholder="Ex: xkeysib-xxxxxxxx..."
+                  />
+                  <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1">
+                    <Info className="w-3 h-3 flex-shrink-0" />
+                    Chave de API da plataforma Brevo (antiga Sendinblue) para envio automático de e-mails de recuperação de senha.
+                  </p>
+                </div>
+
+                <hr className="border-slate-100 dark:border-white/5" />
+
+                {/* Direct Data Section */}
+                <div className="space-y-4">
+                  <h3 className="text-md font-bold text-slate-800 dark:text-white">Direct Data (Consultas Avançadas)</h3>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token DirectData (GUID)</label>
+                        {settings.directDataToken && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Configurado
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowDirectToken(!showDirectToken)}
+                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                      >
+                        {showDirectToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        {showDirectToken ? 'Ocultar' : 'Mostrar'}
+                      </button>
+                    </div>
+                    <input
+                      type={showDirectToken ? "text" : "password"}
+                      value={settings.directDataToken}
+                      onChange={(e) => setSettings({ ...settings, directDataToken: e.target.value })}
+                      className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                      placeholder="Ex: d4b39ad3-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL Base DirectData (V2)</label>
+                      <input
+                        type="text"
+                        value={settings.directDataBaseUrl}
+                        onChange={(e) => setSettings({ ...settings, directDataBaseUrl: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
+                        placeholder="Padrão: https://api.directd.com.br"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL DirectData V3</label>
+                      <input
+                        type="text"
+                        value={settings.directDataV3Url}
+                        onChange={(e) => setSettings({ ...settings, directDataV3Url: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
+                        placeholder="Padrão: https://apiv3.directd.com.br"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="border-slate-100 dark:border-white/5" />
+
+                {/* API Consulta (Hero) Section */}
+                <div className="space-y-4">
+                  <h3 className="text-md font-bold text-slate-800 dark:text-white">API Consulta Brasil (Hero)</h3>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <label className="text-sm font-bold text-slate-600 dark:text-gray-400">Token API Consulta</label>
+                        {settings.apiConsultaToken && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Configurado
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowConsultaToken(!showConsultaToken)}
+                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                      >
+                        {showConsultaToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        {showConsultaToken ? 'Ocultar' : 'Mostrar'}
+                      </button>
+                    </div>
+                    <input
+                      type={showConsultaToken ? "text" : "password"}
+                      value={settings.apiConsultaToken}
+                      onChange={(e) => setSettings({ ...settings, apiConsultaToken: e.target.value })}
+                      className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm font-mono"
+                      placeholder="Ex: seu_token_da_api_consulta_brasil..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 dark:text-gray-400">URL da API Consulta</label>
+                    <input
+                      type="text"
+                      value={settings.apiConsultaUrl}
+                      onChange={(e) => setSettings({ ...settings, apiConsultaUrl: e.target.value })}
+                      className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-black/80 focus:border-primary outline-none transition-all text-sm"
+                      placeholder="Padrão: https://services.apiconsultabrasil.com/"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
+          </>
+        )}
 
         {/* ====== INFORMAÇÕES LEGAIS (PARA TERMOS DE USO) ====== */}
         <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
