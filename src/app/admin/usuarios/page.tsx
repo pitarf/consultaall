@@ -1,10 +1,11 @@
-import { getUsers } from '@/app/actions/admin';
+import { getUsers, requireAdmin } from '@/app/actions/admin';
 import UserTableClient from './UserTableClient';
 import { Users } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminUsuariosPage() {
+  await requireAdmin();
   const users = await getUsers();
 
   return (

@@ -1,4 +1,4 @@
-import { getDashboardMetrics, getAdvancedMetrics } from '@/app/actions/admin';
+import { getDashboardMetrics, getAdvancedMetrics, requireAdmin } from '@/app/actions/admin';
 import { DollarSign, Search, Users, Activity, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Globe } from 'lucide-react';
 import DashboardClient from './DashboardClient';
 import PerformanceChart from '@/components/admin/PerformanceChart';
@@ -10,6 +10,7 @@ export default async function AdminDashboardPage({
 }: {
   searchParams: Promise<{ period?: string; start?: string; end?: string }>;
 }) {
+  await requireAdmin();
   const { period, start, end } = await searchParams;
   const currentPeriod = period || 'month';
   

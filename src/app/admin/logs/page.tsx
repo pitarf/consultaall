@@ -1,9 +1,10 @@
-import { getSystemLogs } from '@/app/actions/admin';
+import { getSystemLogs, requireAdmin } from '@/app/actions/admin';
 import { Activity, AlertTriangle, Info, XCircle, Clock, Shield } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminLogsPage() {
+  await requireAdmin();
   const logs = await getSystemLogs();
 
   const getLevelStyles = (level: string) => {

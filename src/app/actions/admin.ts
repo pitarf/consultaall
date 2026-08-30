@@ -4,6 +4,7 @@ import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 /**
  * Verifica a senha secundária do painel administrativo.
@@ -75,6 +76,16 @@ async function checkAdmin() {
 
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
   if (!user || user.role !== 'ADMIN') throw new Error('Sem permissão');
+
+  return user;
+}
+
+async function checkAdminOrSeo() {
+  const session = await verifySession();
+  if (!session) throw new Error('Não autenticado');
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'SEO')) throw new Error('Sem permissão');
 
   return user;
 }
@@ -318,9 +329,9 @@ export async function toggleUserStatus(userId: string, currentStatus: boolean) {
   return { success: true };
 }
 
-export async function toggleUserRole(userId: string, currentRole: string) {
+export async function toggleUserRole(userId: string, currentRole: string, targetRole?: string) {
   await checkAdmin();
-  const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+  const newRole = targetRole || (currentRole === 'ADMIN' ? 'USER' : 'ADMIN');
   await prisma.user.update({
     where: { id: userId },
     data: { role: newRole },
@@ -353,7 +364,7 @@ export async function addBalance(userId: string, amount: number, description: st
 }
 
 export async function getSystemSettings() {
-  await checkAdmin();
+  const user = await checkAdminOrSeo();
   let settings = await prisma.systemSetting.findFirst();
   
   if (!settings) {
@@ -361,6 +372,21 @@ export async function getSystemSettings() {
     settings = await prisma.systemSetting.create({
       data: { id: 'default' }
     });
+  }
+
+  // Mascara chaves sensíveis se o usuário for SEO
+  if (user.role === 'SEO') {
+    return {
+      ...settings,
+      pushinpayToken: settings.pushinpayToken ? '********' : '',
+      pushinpayWebhookToken: settings.pushinpayWebhookToken ? '********' : '',
+      brevoApiKey: settings.brevoApiKey ? '********' : '',
+      directDataToken: settings.directDataToken ? '********' : '',
+      directDataBaseUrl: settings.directDataBaseUrl ? '********' : '',
+      directDataV3Url: settings.directDataV3Url ? '********' : '',
+      apiConsultaToken: settings.apiConsultaToken ? '********' : '',
+      apiConsultaUrl: settings.apiConsultaUrl ? '********' : '',
+    };
   }
   
   return settings;
@@ -387,12 +413,30 @@ export async function updateSystemSettings(data: {
   apiConsultaToken?: string;
   apiConsultaUrl?: string;
 }) {
-  await checkAdmin();
+  const user = await checkAdminOrSeo();
+  
+  let dataToUpdate = { ...data };
+
+  // Se for SEO, impede gravação de tokens sensíveis
+  if (user.role === 'SEO') {
+    dataToUpdate = {
+      siteTitle: data.siteTitle,
+      siteDescription: data.siteDescription,
+      siteKeywords: data.siteKeywords,
+      supportWhatsapp: data.supportWhatsapp,
+      logoUrl: data.logoUrl,
+      faviconUrl: data.faviconUrl,
+      companyName: data.companyName,
+      companyCnpj: data.companyCnpj,
+      companyAddress: data.companyAddress,
+      companyEmail: data.companyEmail,
+    };
+  }
   
   await prisma.systemSetting.upsert({
     where: { id: 'default' },
-    update: data,
-    create: { id: 'default', ...data }
+    update: dataToUpdate,
+    create: { id: 'default', ...dataToUpdate }
   });
 
   revalidatePath('/admin/configuracoes');
@@ -1294,6 +1338,16 @@ export async function getApiCostsData() {
     console.error('Erro ao buscar dados de custos de API:', error);
     throw new Error(error.message || 'Falha ao buscar dados de custos.');
   }
+}
+
+export async function requireAdmin() {
+  const session = await verifySession();
+  if (!session) redirect('/login');
+  const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } });
+  if (!user || user.role !== 'ADMIN') {
+    redirect('/admin/configuracoes');
+  }
+  return user;
 }
 
 

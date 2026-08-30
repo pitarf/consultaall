@@ -1,10 +1,11 @@
-import { getBlockedDataList } from '@/app/actions/admin';
+import { getBlockedDataList, requireAdmin } from '@/app/actions/admin';
 import { ShieldAlert } from 'lucide-react';
 import BloqueiosClient from './BloqueiosClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminBloqueiosPage() {
+  await requireAdmin();
   const blockedList = await getBlockedDataList();
 
   // Serializa as datas para strings para evitar erros de serialização do Next.js RSC

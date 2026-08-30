@@ -12,7 +12,7 @@ async function checkAdmin() {
   const session = await verifySession();
   if (!session) throw new Error('Não autenticado');
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
-  if (!user || user.role !== 'ADMIN') throw new Error('Acesso negado');
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'SEO')) throw new Error('Acesso negado');
   return user;
 }
 

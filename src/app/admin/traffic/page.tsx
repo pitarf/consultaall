@@ -1,4 +1,4 @@
-import { getTrafficDetailedStats } from '@/app/actions/admin';
+import { getTrafficDetailedStats, requireAdmin } from '@/app/actions/admin';
 import TrafficClient from './TrafficClient';
 
 export const metadata = {
@@ -13,6 +13,7 @@ interface PageProps {
 }
 
 export default async function AdminTrafficPage({ searchParams }: PageProps) {
+  await requireAdmin();
   const params = await searchParams;
   const q = params.q || '';
   const source = params.source || '';

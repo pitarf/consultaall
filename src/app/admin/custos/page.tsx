@@ -1,10 +1,11 @@
-import { getApiCostsData } from '@/app/actions/admin';
+import { getApiCostsData, requireAdmin } from '@/app/actions/admin';
 import { Coins } from 'lucide-react';
 import CustosClient from './CustosClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminCustosPage() {
+  await requireAdmin();
   const data = await getApiCostsData();
 
   // Serializa datas para strings antes de passar ao Client Component

@@ -1,4 +1,4 @@
-import { getSalesHistory, getPendingDeposits } from '@/app/actions/admin';
+import { getSalesHistory, getPendingDeposits, requireAdmin } from '@/app/actions/admin';
 import { DollarSign } from 'lucide-react';
 import VendasClient from './VendasClient';
 
@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
  * Esta página é um Server Component que busca em paralelo os dados de vendas confirmadas e solicitações de Pix pendentes.
  */
 export default async function AdminVendasPage() {
+  await requireAdmin();
   // Busca em paralelo para excelente desempenho em produção
   const [sales, pending] = await Promise.all([
     getSalesHistory(),

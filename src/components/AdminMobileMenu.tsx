@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ShieldCheck, LayoutDashboard, Users, Activity, ArrowLeft, Settings, DollarSign, Tag, Globe, Ban, Coins } from 'lucide-react';
+import { Menu, X, ShieldCheck, LayoutDashboard, Users, Activity, ArrowLeft, Settings, DollarSign, Tag, Globe, Ban, Coins, FileText, BookOpen } from 'lucide-react';
 
 /**
  * Componente client-side que implementa a gaveta lateral deslizante de navegação (Mobile Drawer)
- * para a área administrativa em dispositivos móveis, utilizando React Portal para evitar limitações
- * de contexto de renderização causadas pelo backdrop-blur de elementos pais.
+ * para a área administrativa em dispositivos móveis.
  */
-export function AdminMobileMenu() {
+export function AdminMobileMenu({ role }: { role: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -93,82 +92,109 @@ export function AdminMobileMenu() {
 
             {/* Links de Navegação do Admin */}
             <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto bg-[#0f172a]">
+              {role === 'ADMIN' && (
+                <>
+                  <Link
+                    href="/admin"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname === '/admin'
+                        ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <LayoutDashboard className="w-5 h-5" />
+                    Métricas Geral
+                  </Link>
+                  <Link
+                    href="/admin/usuarios"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname.startsWith('/admin/usuarios')
+                        ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <Users className="w-5 h-5" />
+                    Gestão de Usuários
+                  </Link>
+                  <Link
+                    href="/admin/vendas"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname.startsWith('/admin/vendas')
+                        ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <DollarSign className="w-5 h-5" />
+                    Vendas e Receita
+                  </Link>
+                  <Link
+                    href="/admin/custos"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname.startsWith('/admin/custos')
+                        ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <Coins className="w-5 h-5" />
+                    Auditoria de Custos
+                  </Link>
+                  <Link
+                    href="/admin/traffic"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname.startsWith('/admin/traffic')
+                        ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <Globe className="w-5 h-5" />
+                    Origem de Clientes
+                  </Link>
+                  <Link
+                    href="/admin/bloqueios"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname.startsWith('/admin/bloqueios')
+                        ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <Ban className="w-5 h-5" />
+                    Bloqueios LGPD
+                  </Link>
+                  <Link
+                    href="/admin/precos"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname.startsWith('/admin/precos')
+                        ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <Tag className="w-5 h-5" />
+                    Tabela de Preços
+                  </Link>
+                </>
+              )}
+
               <Link
-                href="/admin"
+                href="/admin/paginas"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname === '/admin'
+                  pathname.startsWith('/admin/paginas')
                     ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
-                <LayoutDashboard className="w-5 h-5" />
-                Métricas Geral
+                <FileText className="w-5 h-5" />
+                Páginas SEO
               </Link>
               <Link
-                href="/admin/usuarios"
+                href="/admin/blog"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname.startsWith('/admin/usuarios')
+                  pathname.startsWith('/admin/blog')
                     ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
-                <Users className="w-5 h-5" />
-                Gestão de Usuários
-              </Link>
-              <Link
-                href="/admin/vendas"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname.startsWith('/admin/vendas')
-                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <DollarSign className="w-5 h-5" />
-                Vendas e Receita
-              </Link>
-              <Link
-                href="/admin/custos"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname.startsWith('/admin/custos')
-                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <Coins className="w-5 h-5" />
-                Auditoria de Custos
-              </Link>
-              <Link
-                href="/admin/traffic"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname.startsWith('/admin/traffic')
-                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <Globe className="w-5 h-5" />
-                Origem de Clientes
-              </Link>
-              <Link
-                href="/admin/bloqueios"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname.startsWith('/admin/bloqueios')
-                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <Ban className="w-5 h-5" />
-                Bloqueios LGPD
-              </Link>
-              <Link
-                href="/admin/precos"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname.startsWith('/admin/precos')
-                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <Tag className="w-5 h-5" />
-                Tabela de Preços
+                <BookOpen className="w-5 h-5" />
+                Blog
               </Link>
               <Link
                 href="/admin/configuracoes"
@@ -181,17 +207,20 @@ export function AdminMobileMenu() {
                 <Settings className="w-5 h-5" />
                 Configurações
               </Link>
-              <Link
-                href="/admin/logs"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  pathname.startsWith('/admin/logs')
-                    ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <Activity className="w-5 h-5" />
-                Logs de Sistema
-              </Link>
+
+              {role === 'ADMIN' && (
+                <Link
+                  href="/admin/logs"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    pathname.startsWith('/admin/logs')
+                      ? 'bg-red-500/10 text-white border border-red-500/20 shadow-md shadow-red-500/5'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                  }`}
+                >
+                  <Activity className="w-5 h-5" />
+                  Logs de Sistema
+                </Link>
+              )}
             </nav>
 
             {/* Rodapé da Sidebar Móvel - Retorno ao Dashboard do App */}

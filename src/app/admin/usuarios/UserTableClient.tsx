@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toggleUserStatus, toggleUserRole, addBalance, getUserAuditData, createAndApproveDepositManual, approveDepositManual } from '@/app/actions/admin';
 import { toast } from 'sonner';
-import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode, Crown, Phone, Download } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, History, Search, ArrowRight, DollarSign, Clock, QrCode, Crown, Phone, Download, Globe, User } from 'lucide-react';
 
 export default function UserTableClient({ initialUsers }: { initialUsers: any[] }) {
   const [users, setUsers] = useState(initialUsers);
@@ -107,16 +107,20 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
   };
 
   const handleToggleRole = async (userId: string, currentRole: string, email: string) => {
-    const isPromoting = currentRole !== 'ADMIN';
-    if (!confirm(`Tem certeza que deseja ${isPromoting ? 'promover a ADMIN' : 'remover os privilégios de ADMIN de'} ${email}?`)) return;
+    let nextRole = 'USER';
+    if (currentRole === 'USER') nextRole = 'SEO';
+    else if (currentRole === 'SEO') nextRole = 'ADMIN';
+    else nextRole = 'USER';
+
+    if (!confirm(`Deseja alterar o cargo de ${email} para ${nextRole}?`)) return;
 
     setLoading(true);
     toast.info('Atualizando nível de acesso...');
     try {
-      const res = await toggleUserRole(userId, currentRole);
+      const res = await toggleUserRole(userId, currentRole, nextRole);
       if (res.success) {
         setUsers(users.map(u => u.id === userId ? { ...u, role: res.newRole } : u));
-        toast.success(`Usuário ${isPromoting ? 'promovido a ADMIN' : 'alterado para USER'} com sucesso!`);
+        toast.success(`Usuário alterado para ${res.newRole} com sucesso!`);
       }
     } catch (err) {
       toast.error('Erro ao alterar cargo do usuário.');
@@ -285,6 +289,12 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                             ADMIN
                           </span>
                         )}
+                        {user.role === 'SEO' && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">
+                            <Globe className="w-3 h-3 text-blue-500" />
+                            SEO
+                          </span>
+                        )}
                       </span>
                       <span className="text-xs text-slate-400 dark:text-gray-500">{user.email}</span>
                       {user.whatsapp && (
@@ -329,10 +339,22 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                     <button 
                       onClick={() => handleToggleRole(user.id, user.role, user.email)}
                       disabled={loading}
-                      className={`p-2 rounded transition-all inline-flex ${user.role === 'ADMIN' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white' : 'bg-slate-200/50 dark:bg-white/5 text-slate-500 dark:text-gray-400 hover:bg-amber-500 hover:text-white'}`}
-                      title={user.role === 'ADMIN' ? "Remover Privilégios de Admin" : "Promover a Administrador (ADMIN)"}
+                      className={`p-2 rounded transition-all inline-flex ${
+                        user.role === 'ADMIN' 
+                          ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white' 
+                          : user.role === 'SEO'
+                          ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white'
+                          : 'bg-slate-200/50 dark:bg-white/5 text-slate-500 dark:text-gray-400 hover:bg-amber-500 hover:text-white'
+                      }`}
+                      title={`Cargo atual: ${user.role || 'USER'}. Clique para alterar.`}
                     >
-                      <Crown className="w-4 h-4" />
+                      {user.role === 'ADMIN' ? (
+                        <Crown className="w-4 h-4" />
+                      ) : user.role === 'SEO' ? (
+                        <Globe className="w-4 h-4" />
+                      ) : (
+                        <User className="w-4 h-4" />
+                      )}
                     </button>
 
                     <button 

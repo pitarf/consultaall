@@ -39,7 +39,7 @@ export default async function AdminLayout({
     select: { name: true, role: true, lastActiveAt: true },
   });
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'SEO')) {
     redirect('/dashboard'); // Redireciona usuários normais para fora do admin
   }
 
@@ -70,34 +70,39 @@ export default async function AdminLayout({
         </div>
         
         <nav className="flex-1 px-4 py-6 space-y-2">
-          <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <LayoutDashboard className="w-5 h-5" />
-            Métricas Geral
-          </Link>
-          <Link href="/admin/usuarios" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <Users className="w-5 h-5" />
-            Gestão de Usuários
-          </Link>
-          <Link href="/admin/vendas" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <DollarSign className="w-5 h-5" />
-            Vendas e Receita
-          </Link>
-          <Link href="/admin/custos" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <Coins className="w-5 h-5" />
-            Auditoria de Custos
-          </Link>
-          <Link href="/admin/traffic" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <Globe className="w-5 h-5" />
-            Origem de Clientes
-          </Link>
-          <Link href="/admin/bloqueios" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <Ban className="w-5 h-5" />
-            Bloqueios LGPD
-          </Link>
-          <Link href="/admin/precos" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <Tag className="w-5 h-5" />
-            Tabela de Preços
-          </Link>
+          {user.role === 'ADMIN' && (
+            <>
+              <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                <LayoutDashboard className="w-5 h-5" />
+                Métricas Geral
+              </Link>
+              <Link href="/admin/usuarios" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                <Users className="w-5 h-5" />
+                Gestão de Usuários
+              </Link>
+              <Link href="/admin/vendas" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                <DollarSign className="w-5 h-5" />
+                Vendas e Receita
+              </Link>
+              <Link href="/admin/custos" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                <Coins className="w-5 h-5" />
+                Auditoria de Custos
+              </Link>
+              <Link href="/admin/traffic" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                <Globe className="w-5 h-5" />
+                Origem de Clientes
+              </Link>
+              <Link href="/admin/bloqueios" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                <Ban className="w-5 h-5" />
+                Bloqueios LGPD
+              </Link>
+              <Link href="/admin/precos" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                <Tag className="w-5 h-5" />
+                Tabela de Preços
+              </Link>
+            </>
+          )}
+          
           <Link href="/admin/paginas" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <FileText className="w-5 h-5" />
             Páginas SEO
@@ -110,10 +115,13 @@ export default async function AdminLayout({
             <Settings className="w-5 h-5" />
             Configurações
           </Link>
-          <Link href="/admin/logs" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-            <Activity className="w-5 h-5" />
-            Logs de Sistema
-          </Link>
+          
+          {user.role === 'ADMIN' && (
+            <Link href="/admin/logs" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+              <Activity className="w-5 h-5" />
+              Logs de Sistema
+            </Link>
+          )}
         </nav>
 
         <div className="p-4 border-t border-white/10">
@@ -129,7 +137,7 @@ export default async function AdminLayout({
         {/* Header superior adaptativo unificado com ThemeToggle */}
         <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-card/30 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shadow-sm sticky top-0 z-50 animate-in fade-in duration-300">
           <div className="flex items-center gap-2">
-            <AdminMobileMenu />
+            <AdminMobileMenu role={user.role} />
             <ShieldCheck className="text-red-500 w-5 h-5 hidden xs:inline" />
             <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm md:text-base">Painel Administrativo</span>
           </div>
