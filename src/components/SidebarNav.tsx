@@ -16,6 +16,9 @@ import {
   Code,
   ShieldCheck,
   Globe,
+  FileText,
+  BookOpen,
+  Settings,
   Gift,
   Award
 } from 'lucide-react';
@@ -126,10 +129,27 @@ export function SidebarNav({ isAdmin, isSeo, role, whatsappLink }: SidebarNavPro
       )}
 
       {(isSeo || role === 'SEO') && (
-        <Link href="/admin/configuracoes" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-400/5 border border-blue-500/10 transition-colors mt-2">
-          <Globe className="w-4 h-4" />
-          <span className="text-sm font-bold">Painel SEO</span>
-        </Link>
+        <div className="pt-3 mt-3 border-t border-white/5 space-y-1">
+          <div className="px-3 py-1 flex items-center gap-2">
+            <Globe className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-[11px] font-bold tracking-wider text-blue-400 uppercase">Gestão de SEO</span>
+          </div>
+          
+          <Link href="/admin/paginas" className={navItemClass('/admin/paginas')}>
+            <FileText className="w-4 h-4 text-blue-400" />
+            <span className="text-sm">Páginas SEO</span>
+          </Link>
+
+          <Link href="/admin/blog" className={navItemClass('/admin/blog')}>
+            <BookOpen className="w-4 h-4 text-blue-400" />
+            <span className="text-sm">Blog CMS</span>
+          </Link>
+
+          <Link href="/admin/configuracoes" className={navItemClass('/admin/configuracoes')}>
+            <Settings className="w-4 h-4 text-blue-400" />
+            <span className="text-sm">Configurações SEO</span>
+          </Link>
+        </div>
       )}
     </nav>
   );

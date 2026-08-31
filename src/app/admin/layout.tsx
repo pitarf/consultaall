@@ -62,11 +62,20 @@ export default async function AdminLayout({
       {/* Sidebar Admin - Mantida estaticamente em tom escuro de contraste para visual SaaS premium */}
       <aside className="w-64 border-r border-red-500/20 bg-[#0f172a] hidden md:flex flex-col relative overflow-hidden">
         {/* Efeito Glow vermelho sutil indicando privilégios administrativos */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-red-500/10 blur-3xl -z-10"></div>
+        <div className={`absolute top-0 left-0 w-full h-32 blur-3xl -z-10 ${user.role === 'SEO' ? 'bg-blue-500/10' : 'bg-red-500/10'}`}></div>
 
         <div className="h-16 flex items-center px-6 border-b border-white/10">
-          <ShieldCheck className="text-red-500 w-6 h-6 mr-2" />
-          <span className="text-lg font-bold text-white">Admin<span className="text-red-500">Panel</span></span>
+          {user.role === 'SEO' ? (
+            <>
+              <Globe className="text-blue-500 w-6 h-6 mr-2" />
+              <span className="text-lg font-bold text-white">SEO<span className="text-blue-500">Panel</span></span>
+            </>
+          ) : (
+            <>
+              <ShieldCheck className="text-red-500 w-6 h-6 mr-2" />
+              <span className="text-lg font-bold text-white">Admin<span className="text-red-500">Panel</span></span>
+            </>
+          )}
         </div>
         
         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -103,17 +112,22 @@ export default async function AdminLayout({
             </>
           )}
           
+          <div className="pt-2 pb-1 px-3 text-[11px] font-bold tracking-wider text-blue-400 uppercase flex items-center gap-1.5">
+            <Globe className="w-3.5 h-3.5" />
+            Gestão de SEO
+          </div>
+
           <Link href="/admin/paginas" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <FileText className="w-5 h-5" />
             Páginas SEO
           </Link>
           <Link href="/admin/blog" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <BookOpen className="w-5 h-5" />
-            Blog
+            Blog CMS
           </Link>
           <Link href="/admin/configuracoes" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
             <Settings className="w-5 h-5" />
-            Configurações
+            Configurações SEO
           </Link>
           
           {user.role === 'ADMIN' && (
