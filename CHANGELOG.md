@@ -2,6 +2,15 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.2] - 2026-08-31
+### Adicionado
+- **Função e Papel SEO no Painel Administrativo:**
+  - Criação da role `"SEO"` para gerenciamento autônomo de blog, páginas SEO e branding.
+  - Bloqueio completo a dados financeiros, saldo de usuários, custos de APIs, auditorias e logs do sistema.
+  - Ocultação de credenciais confidenciais (Gateways e APIs externas) na tela de configurações para usuários com papel de SEO.
+  - Inclusão do botão e atalho destacado **"Painel SEO"** (com ícone `Globe`) na barra lateral do Dashboard e no menu mobile para fácil acesso de contas com a permissão `SEO`.
+  - Redirecionamento automático e inteligente do login administrativo diretamente para as configurações permitidas.
+
 ## [0.9.1] - 2026-08-03
 ### Adicionado
 - **Integração de Caixa de Pesquisa Interativa (Hero):**
