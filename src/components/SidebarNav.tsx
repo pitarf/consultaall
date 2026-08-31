@@ -15,16 +15,19 @@ import {
   LifeBuoy, 
   Code,
   ShieldCheck,
+  Globe,
   Gift,
   Award
 } from 'lucide-react';
 
 interface SidebarNavProps {
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  isSeo?: boolean;
+  role?: string;
   whatsappLink: string;
 }
 
-export function SidebarNav({ isAdmin, whatsappLink }: SidebarNavProps) {
+export function SidebarNav({ isAdmin, isSeo, role, whatsappLink }: SidebarNavProps) {
   const pathname = usePathname();
 
   // Função para verificar se o link está ativo
@@ -115,10 +118,17 @@ export function SidebarNav({ isAdmin, whatsappLink }: SidebarNavProps) {
         <span className="text-sm">API</span>
       </div>
 
-      {isAdmin && (
+      {(isAdmin || role === 'ADMIN') && (
         <Link href="/admin" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/5 border border-red-500/10 transition-colors mt-2">
           <ShieldCheck className="w-4 h-4" />
           <span className="text-sm font-bold">Painel Admin</span>
+        </Link>
+      )}
+
+      {(isSeo || role === 'SEO') && (
+        <Link href="/admin/configuracoes" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-blue-400 hover:text-blue-300 hover:bg-blue-400/5 border border-blue-500/10 transition-colors mt-2">
+          <Globe className="w-4 h-4" />
+          <span className="text-sm font-bold">Painel SEO</span>
         </Link>
       )}
     </nav>

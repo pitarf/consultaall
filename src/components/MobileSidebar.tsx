@@ -8,12 +8,14 @@ import Link from 'next/link';
 import { logout } from '@/app/actions/auth';
 
 interface MobileSidebarProps {
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  isSeo?: boolean;
+  role?: string;
   whatsappLink: string;
   logoUrl?: string;
 }
 
-export function MobileSidebar({ isAdmin, whatsappLink, logoUrl }: MobileSidebarProps) {
+export function MobileSidebar({ isAdmin, isSeo, role, whatsappLink, logoUrl }: MobileSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -53,7 +55,7 @@ export function MobileSidebar({ isAdmin, whatsappLink, logoUrl }: MobileSidebarP
         <div className="flex-1 overflow-y-auto">
           {/* Quando clica em um link, fecha o menu */}
           <div onClick={() => setIsOpen(false)}>
-            <SidebarNav isAdmin={isAdmin} whatsappLink={whatsappLink} />
+            <SidebarNav isAdmin={isAdmin} isSeo={isSeo} role={role} whatsappLink={whatsappLink} />
           </div>
         </div>
 

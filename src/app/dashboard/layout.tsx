@@ -77,7 +77,12 @@ export default async function DashboardLayout({
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <SidebarNav isAdmin={user.role === 'ADMIN'} whatsappLink={whatsappLink} />
+          <SidebarNav 
+            isAdmin={user.role === 'ADMIN'} 
+            isSeo={user.role === 'SEO'}
+            role={user.role}
+            whatsappLink={whatsappLink} 
+          />
 
           <div className="px-3 pb-4">
             <form action={logout}>
@@ -95,6 +100,8 @@ export default async function DashboardLayout({
         <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-card/30 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shadow-sm sticky top-0 z-50">
           <MobileSidebar 
             isAdmin={user.role === 'ADMIN'} 
+            isSeo={user.role === 'SEO'}
+            role={user.role}
             whatsappLink={whatsappLink} 
             logoUrl={settings?.logoUrl} 
           />
