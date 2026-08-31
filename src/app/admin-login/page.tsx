@@ -58,13 +58,13 @@ export default function AdminLoginPage() {
             <ShieldCheck className="w-8 h-8 text-red-500" />
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">Área Restrita</h1>
-          <p className="text-slate-500 dark:text-gray-400">Insira a senha de mestre para acessar o painel administrativo.</p>
+          <p className="text-slate-500 dark:text-gray-400">Insira a senha de acesso para liberar o painel.</p>
         </div>
 
         <div className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-xl rounded-3xl p-8">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-600 dark:text-gray-400 ml-1">Senha Administrativa</label>
+              <label className="text-sm font-bold text-slate-600 dark:text-gray-400 ml-1">Senha de Acesso</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-gray-500" />
                 <input

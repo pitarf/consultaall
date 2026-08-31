@@ -15,7 +15,7 @@ export async function verifyAdminPassword(password: string) {
   if (!session) return { error: 'Sessão expirada.' };
 
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
-  if (!user || user.role !== 'ADMIN') return { error: 'Acesso negado.' };
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'SEO')) return { error: 'Acesso negado.' };
 
   // Verifica se está em período de bloqueio
   if (user.adminLockoutUntil && user.adminLockoutUntil > new Date()) {
@@ -23,7 +23,9 @@ export async function verifyAdminPassword(password: string) {
     return { error: `Muitas tentativas. Tente novamente em ${espera} minutos.` };
   }
 
-  const correctPassword = process.env.ADMIN_PANEL_PASSWORD || '@212121@';
+  const correctPassword = user.role === 'SEO'
+    ? (process.env.SEO_PANEL_PASSWORD || 'seo@21@')
+    : (process.env.ADMIN_PANEL_PASSWORD || '@212121@');
 
   if (password === correctPassword) {
     // Sucesso: Reseta tentativas e define cookie
