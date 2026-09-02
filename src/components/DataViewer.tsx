@@ -91,6 +91,18 @@ export function DataViewer({ data, title }: DataViewerProps) {
         return `${item.marca || ''} ${item.modelo || ''} (${item.placa || 'Sem Placa'})`.trim();
       }
 
+      // Se for item de histórico de proprietário de veículo
+      if (item.nome_razao_social) {
+        const parts = [
+          item.posicao ? `[${item.posicao}]` : null,
+          item.nome_razao_social,
+          item.documento ? `(${item.documento})` : null,
+          item.data_transferencia ? `• Transferência: ${item.data_transferencia}` : null,
+          item.localidade ? `• ${item.localidade}` : null
+        ].filter(Boolean);
+        return parts.join(' ');
+      }
+
       // Se for um sócio (tem cargo ou percentual)
       if (item.cargo || item.nome) {
         return `${item.nome} (${item.documento || 'Sem Documento'}) - ${item.cargo || 'Sócio'}${item.participacao ? ` - ${item.participacao}%` : ''}`;
