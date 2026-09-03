@@ -40,8 +40,9 @@ async function main() {
     // Categoria: Veículos
     { id: 'veiculo_basico', name: 'Dados Básicos e Técnicos', price: 1.0, category: 'Veículos' },
     { id: 'veiculo_documentacao', name: 'Situação e Documentação', price: 1.0, category: 'Veículos' },
+    { id: 'veiculo_debitos', name: 'Débitos, Multas e IPVA', price: 1.5, category: 'Veículos' },
     { id: 'veiculo_proprietario', name: 'Dados do Proprietário', price: 1.5, category: 'Veículos' },
-    { id: 'veiculo_restricoes', name: 'Restrições, Leilão e Histórico', price: 2.0, category: 'Veículos' },
+    { id: 'veiculo_restricoes', name: 'Restrições, Bloqueios e Alertas', price: 2.0, category: 'Veículos' },
 
     // Categoria: Empresas
     { id: 'cnpj_basico', name: 'Dados Básicos e Natureza', price: 1.0, category: 'Empresas' },

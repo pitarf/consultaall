@@ -173,18 +173,20 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
         data_emissao_crv: estadual?.dataEmissaoCrv || 'N/I',
         descricao_status: gravame?.descricaoStatus || (estadual?.situacao ? `Veículo em situação: ${estadual.situacao}` : 'Veículo regular')
       };
+    }
 
-      // Exibe débitos caso existam no retorno estadual
-      if (estadual?.debitos) {
-        data['Debitos_e_Encargos'] = {
-          ipva: deb.valorIpva ? `${deb.situacaoIpva || 'Situação'} (${deb.valorIpva})` : deb.situacaoIpva || 'Nada consta',
-          multas: deb.valorMulta ? `${deb.situacaoMulta || 'Situação'} (${deb.valorMulta})` : deb.situacaoMulta || 'Nada consta',
-          licenciamento: deb.valorLicenciamento ? `${deb.situacaoLicenciamento || 'Situação'} (${deb.valorLicenciamento})` : deb.situacaoLicenciamento || 'Nada consta',
-          dpvat: deb.valorDpvat ? `${deb.situacaoDpvat || 'Situação'} (${deb.valorDpvat})` : deb.situacaoDpvat || 'Nada consta',
-          multa_renainf: deb.valorRenainf || 'R$ 0,00',
-          multa_prf: deb.valorPoliciaRodoviariaFederal || 'R$ 0,00'
-        };
-      }
+    // Módulo: Débitos, Multas e IPVA
+    if (selectedModules.includes('veiculo_debitos')) {
+      data['Debitos_e_Encargos'] = {
+        ipva: deb.valorIpva ? `${deb.situacaoIpva || 'Situação'} (${deb.valorIpva})` : deb.situacaoIpva || 'Nada consta',
+        multas: deb.valorMulta ? `${deb.situacaoMulta || 'Situação'} (${deb.valorMulta})` : deb.situacaoMulta || 'Nada consta',
+        licenciamento: deb.valorLicenciamento ? `${deb.situacaoLicenciamento || 'Situação'} (${deb.valorLicenciamento})` : deb.situacaoLicenciamento || 'Nada consta',
+        dpvat: deb.valorDpvat ? `${deb.situacaoDpvat || 'Situação'} (${deb.valorDpvat})` : deb.situacaoDpvat || 'Nada consta',
+        multa_renainf: deb.valorRenainf || 'R$ 0,00',
+        multa_prf: deb.valorPoliciaRodoviariaFederal || 'R$ 0,00',
+        multa_der_dersa: (deb.valorDer && deb.valorDer !== 'R$ 0,00') ? deb.valorDer : (deb.valorDersa || 'R$ 0,00'),
+        multa_detran_municipais: (deb.valorDetran && deb.valorDetran !== 'R$ 0,00') ? deb.valorDetran : (deb.valorMunicipais || 'R$ 0,00')
+      };
     }
 
     // Módulo: Restrições e Alertas

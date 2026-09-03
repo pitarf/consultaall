@@ -22,9 +22,20 @@ const INITIAL_VEHICLE_MODULES = [
       },
       { 
         id: 'veiculo_documentacao', 
-        label: 'Situação, Documentação e Débitos', 
-        desc: 'Município/UF de emplacamento, Situação de circulação, Data de Licenciamento, Emissão de CRV, Débitos de IPVA, Multas, Licenciamento e DPVAT.',
+        label: 'Situação e Documentação', 
+        desc: 'Município/UF de emplacamento, Situação de circulação, Data de Licenciamento, Emissão de CRV e status geral.',
         cost: 1.0 
+      },
+    ]
+  },
+  {
+    title: 'Débitos e Multas',
+    items: [
+      { 
+        id: 'veiculo_debitos', 
+        label: 'Débitos, Multas e IPVA', 
+        desc: 'Valores e situação de IPVA, Multas Estaduais/Municipais, Licenciamento em atraso, DPVAT, Multas RENAINF, PRF, DER e DETRAN.',
+        cost: 1.5 
       },
     ]
   },
@@ -202,7 +213,7 @@ export default function VeiculosPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modules.map((category, idx) => {
             const allChecked = category.items.every(i => selectedModules.includes(i.id));
             
