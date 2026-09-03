@@ -9,20 +9,40 @@ import { Search, Loader2, FlaskConical, HelpCircle } from 'lucide-react';
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 
-// Módulos veiculares separados
+// Módulos veiculares separados com detalhamento completo dos campos
 const INITIAL_VEHICLE_MODULES = [
   {
     title: 'Dados do Veículo',
     items: [
-      { id: 'veiculo_basico', label: 'Dados Básicos e Técnicos', cost: 1.0 },
-      { id: 'veiculo_documentacao', label: 'Situação e Documentação', cost: 1.0 },
+      { 
+        id: 'veiculo_basico', 
+        label: 'Dados Básicos e Técnicos', 
+        desc: 'Placa, Chassi, Renavam, Marca/Modelo, Ano Fab/Mod, Cor, Categoria, Procedência, Tipo, Carroceria, Capacidade de Carga, PBT e Eixos.',
+        cost: 1.0 
+      },
+      { 
+        id: 'veiculo_documentacao', 
+        label: 'Situação, Documentação e Débitos', 
+        desc: 'Município/UF de emplacamento, Situação de circulação, Data de Licenciamento, Emissão de CRV, Débitos de IPVA, Multas, Licenciamento e DPVAT.',
+        cost: 1.0 
+      },
     ]
   },
   {
-    title: 'Histórico e Posse',
+    title: 'Histórico e Restrições',
     items: [
-      { id: 'veiculo_proprietario', label: 'Dados do Proprietário', cost: 1.5 },
-      { id: 'veiculo_restricoes', label: 'Restrições, Leilão e Histórico', cost: 2.0 },
+      { 
+        id: 'veiculo_proprietario', 
+        label: 'Dados do Proprietário & Faturamento', 
+        desc: 'Nome / Razão Social do proprietário atual, CPF ou CNPJ, Localidade, Proprietário anterior e dados de faturamento.',
+        cost: 1.5 
+      },
+      { 
+        id: 'veiculo_restricoes', 
+        label: 'Restrições, Bloqueios e Alertas', 
+        desc: 'Alienação Fiduciária / Financeira, Ocorrência de Furto/Roubo, Bloqueio de Guincho, Restrições Administrativas, Judiciais, Tributárias e Renajud.',
+        cost: 2.0 
+      },
     ]
   }
 ];
@@ -182,7 +202,7 @@ export default function VeiculosPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {modules.map((category, idx) => {
             const allChecked = category.items.every(i => selectedModules.includes(i.id));
             
@@ -192,24 +212,33 @@ export default function VeiculosPage() {
                   <h3 className="font-semibold text-slate-800 dark:text-white text-sm">{category.title}</h3>
                 </div>
                 
-                <div className="space-y-3 flex-1">
-                  {category.items.map((item) => (
-                    <label key={item.id} className="flex items-center justify-between cursor-pointer group">
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedModules.includes(item.id)}
-                          onChange={() => toggleModule(item.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:bg-black/50"
-                        />
-                        <span className="text-sm text-slate-600 dark:text-gray-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                          {item.label}
+                <div className="space-y-4 flex-1">
+                  {category.items.map((item: any) => (
+                    <div key={item.id} className="p-3 rounded-lg border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] hover:border-primary/30 transition-all">
+                      <label className="flex items-start justify-between cursor-pointer gap-2">
+                        <div className="flex items-start gap-2.5">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedModules.includes(item.id)}
+                            onChange={() => toggleModule(item.id)}
+                            className="mt-0.5 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:bg-black/50"
+                          />
+                          <div>
+                            <span className="text-sm font-medium text-slate-700 dark:text-gray-200 block">
+                              {item.label}
+                            </span>
+                            {item.desc && (
+                              <span className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5 block leading-relaxed">
+                                {item.desc}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="shrink-0 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-bold">
+                          R$ {item.cost.toFixed(2).replace('.', ',')}
                         </span>
-                      </div>
-                      <span className="bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400 text-xs px-2 py-0.5 rounded-full font-medium">
-                        R$ {item.cost.toFixed(2).replace('.', ',')}
-                      </span>
-                    </label>
+                      </label>
+                    </div>
                   ))}
                 </div>
 

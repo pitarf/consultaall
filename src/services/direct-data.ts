@@ -66,7 +66,7 @@ function sanitizeApiErrorMessage(rawMsg: any): string {
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// SEÇÃO: CONSULTA VEICULAR (V3 - ECONÔMICA E DE ALTA PERFORMANCE)
+// SEÇÃO: CONSULTA VEICULAR (V3 - CONSULTA ESTADUAL COMPLETA E ECONÔMICA)
 // -----------------------------------------------------------------------------
 
 export async function consultaVeicular(placa: string, selectedModules: string[] = []) {
@@ -87,101 +87,117 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
   };
 
   try {
-    // 1. Busca sempre a base de Gravame (R$ 1,80) que já traz todos os dados do veículo, placa, chassi, renavam e proprietário financiado
-    let gravame = await fetchEndpoint('ConsultaVeicularGravame');
-    let estadual: any = null;
-    
-    // Fallback: se Gravame não retornar nada, tenta a base Estadual (R$ 1,90)
-    if (!gravame) {
-      estadual = await fetchEndpoint('ConsultaVeicularEstadual');
-    }
+    // 1. Busca primeiro ConsultaVeicularEstadual (R$ 1,90) que traz Dados do Veículo, Proprietário, Débitos e Restrições
+    let estadual = await fetchEndpoint('ConsultaVeicularEstadual');
+    let gravame: any = null;
 
-    // 2. Busca Roubo/Furto e Recall APENAS se o usuário tiver selecionado o módulo de restrições
-    let roubo: any = null;
-    let recall: any = null;
-    if (selectedModules.includes('veiculo_restricoes')) {
-      const [rouboRes, recallRes] = await Promise.all([
-        fetchEndpoint('ConsultaVeicularRouboFurto'),
-        fetchEndpoint('ConsultaVeicularRecall')
-      ]);
-      roubo = rouboRes;
-      recall = recallRes;
+    // Se o estadual não retornou (ex: veículo de outro estado sem convênio ou indisponível), faz fallback para Gravame (R$ 1,80)
+    if (!estadual) {
+      gravame = await fetchEndpoint('ConsultaVeicularGravame');
     }
 
     // Se nenhum dos endpoints retornou dados válidos
-    if (!gravame && !estadual && !roubo) {
+    if (!estadual && !gravame) {
       return { 
         success: false, 
         message: 'Veículo não localizado para a placa informada ou indisponibilidade temporária na base veicular.' 
       };
     }
 
-    const vInfo = gravame?.veiculo || {};
+    const vEstadual = estadual?.veiculo || {};
+    const vGravame = gravame?.veiculo || {};
     const gData = gravame?.gravame || {};
+    const deb = estadual?.debitos || {};
+    const rest = estadual?.restricoes || {};
+    const cv = estadual?.comunicacaoVenda || {};
+
     const data: Record<string, any> = {};
 
     // Módulo: Dados do Veículo & Detalhes Técnicos
     if (selectedModules.includes('veiculo_basico')) {
       data['Dados_do_Veiculo'] = {
-        placa: gravame?.placa || estadual?.placa || cleanPlaca,
-        renavam: gravame?.renavam || estadual?.renavam || null,
-        chassi: gravame?.chassi || estadual?.chassi || null,
-        marca_modelo: vInfo.marcaModelo || estadual?.marcaModelo || 'N/I',
-        ano_fabricacao: vInfo.anoFabricacao || estadual?.anoFabricacao || null,
-        ano_modelo: vInfo.anoModelo || estadual?.anoModelo || null,
-        cor: vInfo.cor || estadual?.cor || 'N/I',
-        combustivel: vInfo.combustivel && vInfo.combustivel !== '0' ? vInfo.combustivel : 'Não informado',
-        procedencia: vInfo.procedencia || 'NACIONAL'
+        placa: estadual?.placa || gravame?.placa || cleanPlaca,
+        renavam: estadual?.renavam || gravame?.renavam || null,
+        chassi: estadual?.chassi || gravame?.chassi || null,
+        marca_modelo: vEstadual.marcaModelo || vGravame.marcaModelo || 'N/I',
+        ano_fabricacao: vEstadual.anoFabricacao || vGravame.anoFabricacao || null,
+        ano_modelo: vEstadual.anoModelo || vGravame.anoModelo || null,
+        cor: vEstadual.cor || vGravame.cor || 'N/I',
+        combustivel: vEstadual.combustivel && !vEstadual.combustivel.includes('NAO ENCONTRADO') ? vEstadual.combustivel : (vGravame.combustivel && vGravame.combustivel !== '0' ? vGravame.combustivel : 'Não informado'),
+        categoria: vEstadual.categoria || vGravame.categoria || 'N/I',
+        procedencia: vEstadual.procedencia || vGravame.procedencia || 'NACIONAL'
       };
 
       data['Detalhes_Tecnicos'] = {
-        tipo_veiculo: vInfo.tipo || estadual?.tipo || 'N/I',
-        especie: vInfo.especie || estadual?.especie || 'N/I',
-        tipo_carroceria: vInfo.tipoCarroceria || 'N/I',
-        capacidade_carga: vInfo.capacidadeCarga ? `${vInfo.capacidadeCarga} kg` : null,
-        peso_bruto_total: vInfo.pbt ? `${vInfo.pbt} kg` : null,
-        situacao_chassi: vInfo.situacaoChassi || 'NORMAL',
-        quantidade_eixos: vInfo.eixoQuantidade || null
+        tipo_veiculo: vEstadual.tipo || vGravame.tipo || 'N/I',
+        especie: vEstadual.especie || vGravame.especie || 'N/I',
+        tipo_carroceria: vEstadual.carroceria || vGravame.tipoCarroceria || 'N/I',
+        capacidade_carga: vEstadual.capacidadeCarga ? `${vEstadual.capacidadeCarga} kg` : (vGravame.capacidadeCarga ? `${vGravame.capacidadeCarga} kg` : null),
+        peso_bruto_total: vEstadual.pbt ? `${vEstadual.pbt} kg` : (vGravame.pbt ? `${vGravame.pbt} kg` : null),
+        quantidade_eixos: vEstadual.eixos || vGravame.eixoQuantidade || null,
+        potencia: vEstadual.potencia ? `${vEstadual.potencia} cv` : null,
+        cilindrada: vEstadual.cilindrada && vEstadual.cilindrada !== '0' ? vEstadual.cilindrada : null
       };
     }
 
-    // Módulo: Proprietário Atual
+    // Módulo: Proprietário Atual & Faturamento
     if (selectedModules.includes('veiculo_proprietario')) {
-      const nomeProp = gData.nomeFinanciado || estadual?.nomeRazaoSocial || 'N/I';
-      const docProp = gData.documentoProprietarioAtual || estadual?.documento || 'N/I';
-      
+      const nomeProp = estadual?.nomeRazaoSocial || gData.nomeFinanciado || 'N/I';
+      const docProp = estadual?.documento || gData.documentoProprietarioAtual || 'N/I';
+      const tipoDoc = estadual?.tipoDocumento ? (estadual.tipoDocumento === 'JURIDICA' ? 'Pessoa Jurídica (CNPJ)' : 'Pessoa Física (CPF)') : (docProp.length > 11 ? 'Pessoa Jurídica (CNPJ)' : docProp.length > 0 ? 'Pessoa Física (CPF)' : 'Não informado');
+
       data['Proprietário_Atual'] = {
         nome_ou_razao_social: nomeProp,
         documento: docProp,
-        tipo_documento: docProp.length > 11 ? 'Pessoa Jurídica (CNPJ)' : docProp.length > 0 ? 'Pessoa Física (CPF)' : 'Não informado',
+        tipo_documento: tipoDoc,
         municipio_emplacamento: estadual?.municipio || 'N/I',
-        uf: gravame?.ufPlaca || estadual?.uf || 'N/I'
+        uf: estadual?.uf || gravame?.ufPlaca || 'N/I'
       };
+
+      if (cv.proprietarioAnterior || cv.numeroIdentificacaoFaturado) {
+        data['Historico_e_Faturamento'] = {
+          proprietario_anterior: cv.proprietarioAnterior || 'Não consta',
+          faturado_para: cv.numeroIdentificacaoFaturado ? `${cv.numeroIdentificacaoFaturado} (${cv.tipoDocumentoFaturado || 'CNPJ/CPF'})` : 'Não informado',
+          uf_faturamento: cv.ufDestinoFaturamento || 'N/I',
+          comunicacao_venda: cv.situacao || 'Nada consta'
+        };
+      }
     }
 
     // Módulo: Situação e Documentação
     if (selectedModules.includes('veiculo_documentacao')) {
       data['Documentacao_e_Situacao'] = {
-        municipio_uf: `${estadual?.municipio || 'N/I'} - ${gravame?.ufPlaca || estadual?.uf || ''}`.trim(),
-        situacao_veiculo: gravame?.statusDoVeiculo || estadual?.situacao || 'CIRCULAÇÃO',
-        descricao_situacao: gravame?.descricaoStatus || 'Veículo regular',
-        gravame_alienacao: gData.financeiraNome ? {
-          status: 'ALIENADO / FINANCIADO',
-          financeira: gData.financeiraNome,
-          cnpj_financeira: gData.documentoFinanceira,
-          numero_contrato: gData.numeroContrato,
-          data_inclusao_gravame: gData.dataGravame,
-          vigencia: gData.dataGravameVigencia
-        } : 'Sem alienação fiduciária ativa'
+        municipio_uf: `${estadual?.municipio || 'N/I'} - ${estadual?.uf || gravame?.ufPlaca || ''}`.trim(),
+        situacao_veiculo: estadual?.situacao || gravame?.statusDoVeiculo || 'CIRCULAÇÃO',
+        data_licenciamento: estadual?.licenciamentoData || 'N/I',
+        data_emissao_crv: estadual?.dataEmissaoCrv || 'N/I',
+        descricao_status: gravame?.descricaoStatus || (estadual?.situacao ? `Veículo em situação: ${estadual.situacao}` : 'Veículo regular')
       };
+
+      // Exibe débitos caso existam no retorno estadual
+      if (estadual?.debitos) {
+        data['Debitos_e_Encargos'] = {
+          ipva: deb.valorIpva ? `${deb.situacaoIpva || 'Situação'} (${deb.valorIpva})` : deb.situacaoIpva || 'Nada consta',
+          multas: deb.valorMulta ? `${deb.situacaoMulta || 'Situação'} (${deb.valorMulta})` : deb.situacaoMulta || 'Nada consta',
+          licenciamento: deb.valorLicenciamento ? `${deb.situacaoLicenciamento || 'Situação'} (${deb.valorLicenciamento})` : deb.situacaoLicenciamento || 'Nada consta',
+          dpvat: deb.valorDpvat ? `${deb.situacaoDpvat || 'Situação'} (${deb.valorDpvat})` : deb.situacaoDpvat || 'Nada consta',
+          multa_renainf: deb.valorRenainf || 'R$ 0,00',
+          multa_prf: deb.valorPoliciaRodoviariaFederal || 'R$ 0,00'
+        };
+      }
     }
 
     // Módulo: Restrições e Alertas
     if (selectedModules.includes('veiculo_restricoes')) {
       data['Restricoes_e_Alertas'] = {
-        roubo_e_furto: roubo?.situacao || (roubo?.indicadores?.houveRouboFurto ? '⚠️ CONSTAM OCORRÊNCIAS DE ROUBO/FURTO' : 'Nada Consta'),
-        recall: recall?.possuiRecallPendente ? `⚠️ RECALL PENDENTE (${recall.quantidadeRecallsPendentes})` : 'Nenhum recall pendente',
-        alienacao_fiduciaria: gravame?.statusDoVeiculo ? `⚠️ ${gravame.statusDoVeiculo}` : 'Nada Consta'
+        restricao_financeira: rest.financeira || gravame?.statusDoVeiculo || 'NADA CONSTA',
+        ocorrencia_furto: rest.furto || 'NADA CONSTA',
+        bloqueio_guincho: rest.guincho || 'NADA CONSTA',
+        restricao_administrativa: rest.administrativa || 'NADA CONSTA',
+        restricao_judicial: rest.judicial || 'NADA CONSTA',
+        bloqueio_renajud: rest.renajud || 'NADA CONSTA',
+        restricao_tributaria: rest.tributaria || 'NADA CONSTA',
+        inspecao_ambiental: rest.ambiental || 'NADA CONSTA'
       };
     }
 
