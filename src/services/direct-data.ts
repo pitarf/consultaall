@@ -65,6 +65,10 @@ function sanitizeApiErrorMessage(rawMsg: any): string {
 // SEÇÃO: CONSULTA VEICULAR (V3)
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// SEÇÃO: CONSULTA VEICULAR (V3 - ECONÔMICA E DE ALTA PERFORMANCE)
+// -----------------------------------------------------------------------------
+
 export async function consultaVeicular(placa: string, selectedModules: string[] = []) {
   const { token, v3Url } = await getDirectDataConfig();
   if (!token) throw new Error('DIRECT_DATA_TOKEN não configurado.');
@@ -83,88 +87,82 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
   };
 
   try {
-    // Executa em paralelo as consultas especializadas da base de dados veicular
-    const [gravame, histProp, roubo, leilao, recall, estadual] = await Promise.all([
-      fetchEndpoint('ConsultaVeicularGravame'),
-      fetchEndpoint('ConsultaVeicularHistoricoProprietarios'),
-      fetchEndpoint('ConsultaVeicularRouboFurto'),
-      fetchEndpoint('ConsultaLeilaoVeicular'),
-      fetchEndpoint('ConsultaVeicularRecall'),
-      fetchEndpoint('ConsultaVeicularEstadual')
-    ]);
+    // 1. Busca sempre a base de Gravame (R$ 1,80) que já traz todos os dados do veículo, placa, chassi, renavam e proprietário financiado
+    let gravame = await fetchEndpoint('ConsultaVeicularGravame');
+    let estadual: any = null;
+    
+    // Fallback: se Gravame não retornar nada, tenta a base Estadual (R$ 1,90)
+    if (!gravame) {
+      estadual = await fetchEndpoint('ConsultaVeicularEstadual');
+    }
+
+    // 2. Busca Roubo/Furto e Recall APENAS se o usuário tiver selecionado o módulo de restrições
+    let roubo: any = null;
+    let recall: any = null;
+    if (selectedModules.includes('veiculo_restricoes')) {
+      const [rouboRes, recallRes] = await Promise.all([
+        fetchEndpoint('ConsultaVeicularRouboFurto'),
+        fetchEndpoint('ConsultaVeicularRecall')
+      ]);
+      roubo = rouboRes;
+      recall = recallRes;
+    }
 
     // Se nenhum dos endpoints retornou dados válidos
-    if (!gravame && !histProp && !roubo && !estadual) {
+    if (!gravame && !estadual && !roubo) {
       return { 
         success: false, 
         message: 'Veículo não localizado para a placa informada ou indisponibilidade temporária na base veicular.' 
       };
     }
 
-    const vInfo = gravame?.veiculo || roubo?.veiculo || {};
-    const currentOwner = histProp?.registros?.[0] || {};
+    const vInfo = gravame?.veiculo || {};
     const gData = gravame?.gravame || {};
     const data: Record<string, any> = {};
 
     // Módulo: Dados do Veículo & Detalhes Técnicos
     if (selectedModules.includes('veiculo_basico')) {
       data['Dados_do_Veiculo'] = {
-        placa: gravame?.placa || histProp?.placaConsultada || cleanPlaca,
-        placa_mercosul: currentOwner.placaMercosul || null,
-        renavam: gravame?.renavam || roubo?.renavam || estadual?.renavam || null,
-        chassi: gravame?.chassi || currentOwner.chassi || roubo?.chassi || estadual?.chassi || null,
-        marca_modelo: vInfo.marcaModelo || currentOwner.marcaModelo || estadual?.marcaModelo || 'N/I',
-        ano_fabricacao: vInfo.anoFabricacao || (currentOwner.ano ? String(currentOwner.ano) : null),
-        ano_modelo: vInfo.anoModelo || null,
-        cor: vInfo.cor || 'N/I',
+        placa: gravame?.placa || estadual?.placa || cleanPlaca,
+        renavam: gravame?.renavam || estadual?.renavam || null,
+        chassi: gravame?.chassi || estadual?.chassi || null,
+        marca_modelo: vInfo.marcaModelo || estadual?.marcaModelo || 'N/I',
+        ano_fabricacao: vInfo.anoFabricacao || estadual?.anoFabricacao || null,
+        ano_modelo: vInfo.anoModelo || estadual?.anoModelo || null,
+        cor: vInfo.cor || estadual?.cor || 'N/I',
         combustivel: vInfo.combustivel && vInfo.combustivel !== '0' ? vInfo.combustivel : 'Não informado',
         procedencia: vInfo.procedencia || 'NACIONAL'
       };
 
       data['Detalhes_Tecnicos'] = {
-        tipo_veiculo: vInfo.tipo || vInfo.tipoVeiculo || 'N/I',
-        especie: vInfo.especie || 'N/I',
+        tipo_veiculo: vInfo.tipo || estadual?.tipo || 'N/I',
+        especie: vInfo.especie || estadual?.especie || 'N/I',
         tipo_carroceria: vInfo.tipoCarroceria || 'N/I',
         capacidade_carga: vInfo.capacidadeCarga ? `${vInfo.capacidadeCarga} kg` : null,
         peso_bruto_total: vInfo.pbt ? `${vInfo.pbt} kg` : null,
-        situacao_chassi: vInfo.situacaoChassi || vInfo.remarcacaoChassi || 'NORMAL',
-        quantidade_eixos: vInfo.eixoQuantidade || vInfo.numEixo || null
+        situacao_chassi: vInfo.situacaoChassi || 'NORMAL',
+        quantidade_eixos: vInfo.eixoQuantidade || null
       };
     }
 
-    // Módulo: Proprietário Atual & Histórico de Proprietários
+    // Módulo: Proprietário Atual
     if (selectedModules.includes('veiculo_proprietario')) {
-      const nomeProp = currentOwner.nomeRazaoSocial || gData.nomeFinanciado || estadual?.nomeRazaoSocial || 'N/I';
-      const docProp = currentOwner.documento || gData.documentoProprietarioAtual || estadual?.documento || 'N/I';
+      const nomeProp = gData.nomeFinanciado || estadual?.nomeRazaoSocial || 'N/I';
+      const docProp = gData.documentoProprietarioAtual || estadual?.documento || 'N/I';
       
       data['Proprietário_Atual'] = {
         nome_ou_razao_social: nomeProp,
         documento: docProp,
-        tipo_documento: currentOwner.tipoDocumento === 'J' ? 'Pessoa Jurídica (CNPJ)' : currentOwner.tipoDocumento === 'F' ? 'Pessoa Física (CPF)' : 'Não informado',
-        municipio_emplacamento: currentOwner.municipio || estadual?.municipio || 'N/I',
-        uf: currentOwner.uf || gravame?.ufPlaca || estadual?.uf || 'N/I',
-        data_transferencia: currentOwner.dataTransferencia || null
+        tipo_documento: docProp.length > 11 ? 'Pessoa Jurídica (CNPJ)' : docProp.length > 0 ? 'Pessoa Física (CPF)' : 'Não informado',
+        municipio_emplacamento: estadual?.municipio || 'N/I',
+        uf: gravame?.ufPlaca || estadual?.uf || 'N/I'
       };
-
-      if (histProp?.registros && histProp.registros.length > 0) {
-        data['Historico_de_Proprietarios'] = {
-          total_registros: histProp.totalRegistros || histProp.registros.length,
-          proprietarios_anteriores: histProp.registros.map((reg: any, idx: number) => ({
-            posicao: idx === 0 ? 'Proprietário Mais Recente' : `Anterior (${idx})`,
-            nome_razao_social: reg.nomeRazaoSocial,
-            documento: reg.documento,
-            data_transferencia: reg.dataTransferencia,
-            ano: reg.ano,
-            localidade: `${reg.municipio || ''} - ${reg.uf || ''}`.trim()
-          }))
-        };
-      }
     }
 
     // Módulo: Situação e Documentação
     if (selectedModules.includes('veiculo_documentacao')) {
       data['Documentacao_e_Situacao'] = {
-        municipio_uf: `${currentOwner.municipio || roubo?.veiculo?.municipio || estadual?.municipio || 'N/I'} - ${gravame?.ufPlaca || currentOwner.uf || estadual?.uf || ''}`.trim(),
+        municipio_uf: `${estadual?.municipio || 'N/I'} - ${gravame?.ufPlaca || estadual?.uf || ''}`.trim(),
         situacao_veiculo: gravame?.statusDoVeiculo || estadual?.situacao || 'CIRCULAÇÃO',
         descricao_situacao: gravame?.descricaoStatus || 'Veículo regular',
         gravame_alienacao: gData.financeiraNome ? {
@@ -178,16 +176,12 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
       };
     }
 
-    // Módulo: Restrições, Leilão e Histórico
+    // Módulo: Restrições e Alertas
     if (selectedModules.includes('veiculo_restricoes')) {
       data['Restricoes_e_Alertas'] = {
         roubo_e_furto: roubo?.situacao || (roubo?.indicadores?.houveRouboFurto ? '⚠️ CONSTAM OCORRÊNCIAS DE ROUBO/FURTO' : 'Nada Consta'),
-        leilao: leilao?.possuiRegistro ? '⚠️ CONSTA REGISTRO DE LEILÃO' : 'Nada Consta (Sem registros de leilão)',
         recall: recall?.possuiRecallPendente ? `⚠️ RECALL PENDENTE (${recall.quantidadeRecallsPendentes})` : 'Nenhum recall pendente',
-        alienacao_fiduciaria: gravame?.statusDoVeiculo ? `⚠️ ${gravame.statusDoVeiculo}` : 'Nada Consta',
-        restricoes_administrativas: Array.isArray(roubo?.veiculo?.restricoes) && roubo.veiculo.restricoes.length > 0
-          ? roubo.veiculo.restricoes
-          : ['Nenhuma restrição administrativa localizada']
+        alienacao_fiduciaria: gravame?.statusDoVeiculo ? `⚠️ ${gravame.statusDoVeiculo}` : 'Nada Consta'
       };
     }
 
