@@ -66,7 +66,7 @@ function sanitizeApiErrorMessage(rawMsg: any): string {
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// SEÇÃO: CONSULTA VEICULAR (V3 - CONSULTA ESTADUAL COMPLETA E ECONÔMICA)
+// SEÇÃO: CONSULTA VEICULAR (V3 - NACIONAL & ESTADUAL)
 // -----------------------------------------------------------------------------
 
 export async function consultaVeicular(placa: string, selectedModules: string[] = []) {
@@ -75,11 +75,11 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
   
   const cleanPlaca = placa.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
   
-  // Helper interno para consultar micro-endpoints com timeout seguro de 8 segundos
+  // Helper interno para consultar micro-endpoints com timeout seguro de 12 segundos
   const fetchEndpoint = async (endpointName: string) => {
     try {
       const url = `${v3Url}/api/${endpointName}?TOKEN=${token}&PLACA=${cleanPlaca}`;
-      const response = await axiosV3.get(url, { timeout: 8000 });
+      const response = await axiosV3.get(url, { timeout: 12000 });
       return response.data?.retorno || null;
     } catch {
       return null;
@@ -87,79 +87,99 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
   };
 
   try {
-    // 1. Busca primeiro ConsultaVeicularEstadual (R$ 1,90) que traz Dados do Veículo, Proprietário, Débitos e Restrições
-    let estadual = await fetchEndpoint('ConsultaVeicularEstadual');
-    let gravame: any = null;
+    const promises: Promise<any>[] = [
+      fetchEndpoint('ConsultaVeicular') // 1. Rota Nacional oficial (Senatran)
+    ];
 
-    // Se o estadual não retornou (ex: veículo de outro estado sem convênio ou indisponível), faz fallback para Gravame (R$ 1,80)
-    if (!estadual) {
+    // 2. Se o usuário solicitou débitos/multas, busca também a base Estadual
+    if (selectedModules.includes('veiculo_debitos')) {
+      promises.push(fetchEndpoint('ConsultaVeicularEstadual'));
+    }
+
+    const [nacionalRes, estadualRes] = await Promise.all(promises);
+    let nacional = nacionalRes;
+    let estadual = estadualRes;
+
+    // Fallback: se Nacional falhar, busca Estadual
+    if (!nacional && !estadual) {
+      estadual = await fetchEndpoint('ConsultaVeicularEstadual');
+    }
+
+    // Fallback secundário: se ambos falharem, tenta Gravame
+    let gravame: any = null;
+    if (!nacional && !estadual) {
       gravame = await fetchEndpoint('ConsultaVeicularGravame');
     }
 
     // Se nenhum dos endpoints retornou dados válidos
-    if (!estadual && !gravame) {
+    if (!nacional && !estadual && !gravame) {
       return { 
         success: false, 
         message: 'Veículo não localizado para a placa informada ou indisponibilidade temporária na base veicular.' 
       };
     }
 
-    const vEstadual = estadual?.veiculo || {};
-    const vGravame = gravame?.veiculo || {};
+    const vNac = nacional?.veiculo || {};
+    const vEst = estadual?.veiculo || {};
+    const vGrav = gravame?.veiculo || {};
     const gData = gravame?.gravame || {};
     const deb = estadual?.debitos || {};
-    const rest = estadual?.restricoes || {};
+    const restEst = estadual?.restricoes || {};
     const cv = estadual?.comunicacaoVenda || {};
 
     const data: Record<string, any> = {};
 
     // Módulo: Dados do Veículo & Detalhes Técnicos
     if (selectedModules.includes('veiculo_basico')) {
+      const marcaModelo = vNac.marca && vNac.modelo ? `${vNac.marca} / ${vNac.modelo}` : (vEst.marcaModelo || vGrav.marcaModelo || 'N/I');
+      
       data['Dados_do_Veiculo'] = {
-        placa: estadual?.placa || gravame?.placa || cleanPlaca,
-        renavam: estadual?.renavam || gravame?.renavam || null,
-        chassi: estadual?.chassi || gravame?.chassi || null,
-        marca_modelo: vEstadual.marcaModelo || vGravame.marcaModelo || 'N/I',
-        ano_fabricacao: vEstadual.anoFabricacao || vGravame.anoFabricacao || null,
-        ano_modelo: vEstadual.anoModelo || vGravame.anoModelo || null,
-        cor: vEstadual.cor || vGravame.cor || 'N/I',
-        combustivel: vEstadual.combustivel && !vEstadual.combustivel.includes('NAO ENCONTRADO') ? vEstadual.combustivel : (vGravame.combustivel && vGravame.combustivel !== '0' ? vGravame.combustivel : 'Não informado'),
-        categoria: vEstadual.categoria || vGravame.categoria || 'N/I',
-        procedencia: vEstadual.procedencia || vGravame.procedencia || 'NACIONAL'
+        placa: vNac.placa || estadual?.placa || gravame?.placa || cleanPlaca,
+        renavam: vNac.renavam || estadual?.renavam || gravame?.renavam || null,
+        chassi: vNac.chassi || estadual?.chassi || gravame?.chassi || null,
+        marca_modelo: marcaModelo,
+        ano_fabricacao: vNac.anoFabricacao || vEst.anoFabricacao || vGrav.anoFabricacao || null,
+        ano_modelo: vNac.anoModelo || vEst.anoModelo || vGrav.anoModelo || null,
+        cor: vNac.cor || vEst.cor || vGrav.cor || 'N/I',
+        combustivel: vNac.combustivel || (vEst.combustivel && !vEst.combustivel.includes('NAO ENCONTRADO') ? vEst.combustivel : 'Não informado'),
+        categoria: vNac.categoria || vEst.categoria || vGrav.categoria || 'N/I',
+        procedencia: vNac.procedenciaVeiculo || vEst.procedencia || vGrav.procedencia || 'NACIONAL'
       };
 
       data['Detalhes_Tecnicos'] = {
-        tipo_veiculo: vEstadual.tipo || vGravame.tipo || 'N/I',
-        especie: vEstadual.especie || vGravame.especie || 'N/I',
-        tipo_carroceria: vEstadual.carroceria || vGravame.tipoCarroceria || 'N/I',
-        capacidade_carga: vEstadual.capacidadeCarga ? `${vEstadual.capacidadeCarga} kg` : (vGravame.capacidadeCarga ? `${vGravame.capacidadeCarga} kg` : null),
-        peso_bruto_total: vEstadual.pbt ? `${vEstadual.pbt} kg` : (vGravame.pbt ? `${vGravame.pbt} kg` : null),
-        quantidade_eixos: vEstadual.eixos || vGravame.eixoQuantidade || null,
-        potencia: vEstadual.potencia ? `${vEstadual.potencia} cv` : null,
-        cilindrada: vEstadual.cilindrada && vEstadual.cilindrada !== '0' ? vEstadual.cilindrada : null
+        tipo_veiculo: vNac.tipo || vEst.tipo || vGrav.tipo || 'N/I',
+        especie: vNac.especie || vEst.especie || vGrav.especie || 'N/I',
+        tipo_carroceria: vNac.tipoCarroceria || vEst.carroceria || vGrav.tipoCarroceria || 'N/I',
+        capacidade_carga: vNac.capacidadeMaximaCarga ? `${vNac.capacidadeMaximaCarga}` : (vEst.capacidadeCarga ? `${vEst.capacidadeCarga} kg` : null),
+        peso_bruto_total: vNac.pesoBrutoTotal ? `${vNac.pesoBrutoTotal}` : (vEst.pbt ? `${vEst.pbt} kg` : null),
+        quantidade_eixos: vNac.numeroEixos || vEst.eixos || vGrav.eixoQuantidade || null,
+        potencia: vNac.potencia ? `${vNac.potencia} cv` : (vEst.potencia ? `${vEst.potencia} cv` : null),
+        cilindrada: vNac.cilindrada && vNac.cilindrada !== '0' ? vNac.cilindrada : (vEst.cilindrada && vEst.cilindrada !== '0' ? vEst.cilindrada : null)
       };
     }
 
     // Módulo: Proprietário Atual & Faturamento
     if (selectedModules.includes('veiculo_proprietario')) {
-      const nomeProp = estadual?.nomeRazaoSocial || gData.nomeFinanciado || 'N/I';
-      const docProp = estadual?.documento || gData.documentoProprietarioAtual || 'N/I';
-      const tipoDoc = estadual?.tipoDocumento ? (estadual.tipoDocumento === 'JURIDICA' ? 'Pessoa Jurídica (CNPJ)' : 'Pessoa Física (CPF)') : (docProp.length > 11 ? 'Pessoa Jurídica (CNPJ)' : docProp.length > 0 ? 'Pessoa Física (CPF)' : 'Não informado');
+      const nomeProp = nacional?.proprietario || estadual?.nomeRazaoSocial || gData.nomeFinanciado || 'N/I';
+      const docProp = nacional?.documento || estadual?.documento || gData.documentoProprietarioAtual || 'N/I';
+      const cleanDoc = docProp.replace(/\D/g, '');
+      const tipoDoc = estadual?.tipoDocumento ? (estadual.tipoDocumento === 'JURIDICA' ? 'Pessoa Jurídica (CNPJ)' : 'Pessoa Física (CPF)') : (cleanDoc.length > 11 ? 'Pessoa Jurídica (CNPJ)' : cleanDoc.length > 0 ? 'Pessoa Física (CPF)' : 'Não informado');
 
       data['Proprietário_Atual'] = {
         nome_ou_razao_social: nomeProp,
         documento: docProp,
         tipo_documento: tipoDoc,
-        municipio_emplacamento: estadual?.municipio || 'N/I',
-        uf: estadual?.uf || gravame?.ufPlaca || 'N/I'
+        ano_exercicio: nacional?.anoExercicio || estadual?.licenciamentoData || null,
+        municipio_emplacamento: vNac.municipio || estadual?.municipio || 'N/I',
+        uf: vNac.uf || estadual?.uf || gravame?.ufPlaca || 'N/I'
       };
 
-      if (cv.proprietarioAnterior || cv.numeroIdentificacaoFaturado) {
+      const fatDoc = vNac.faturado?.documento || cv.numeroIdentificacaoFaturado;
+      if (fatDoc || cv.proprietarioAnterior) {
         data['Historico_e_Faturamento'] = {
           proprietario_anterior: cv.proprietarioAnterior || 'Não consta',
-          faturado_para: cv.numeroIdentificacaoFaturado ? `${cv.numeroIdentificacaoFaturado} (${cv.tipoDocumentoFaturado || 'CNPJ/CPF'})` : 'Não informado',
-          uf_faturamento: cv.ufDestinoFaturamento || 'N/I',
-          comunicacao_venda: cv.situacao || 'Nada consta'
+          faturado_para: fatDoc ? `${fatDoc} (${vNac.faturado?.tipo || cv.tipoDocumentoFaturado || 'Documento'})` : 'Não informado',
+          comunicacao_venda: cv.situacao || (vNac.indicadores?.comunicadoVenda ? 'CONSTA COMUNICAÇÃO DE VENDA' : 'Nada consta')
         };
       }
     }
@@ -167,11 +187,11 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
     // Módulo: Situação e Documentação
     if (selectedModules.includes('veiculo_documentacao')) {
       data['Documentacao_e_Situacao'] = {
-        municipio_uf: `${estadual?.municipio || 'N/I'} - ${estadual?.uf || gravame?.ufPlaca || ''}`.trim(),
-        situacao_veiculo: estadual?.situacao || gravame?.statusDoVeiculo || 'CIRCULAÇÃO',
-        data_licenciamento: estadual?.licenciamentoData || 'N/I',
-        data_emissao_crv: estadual?.dataEmissaoCrv || 'N/I',
-        descricao_status: gravame?.descricaoStatus || (estadual?.situacao ? `Veículo em situação: ${estadual.situacao}` : 'Veículo regular')
+        municipio_uf: `${vNac.municipio || estadual?.municipio || 'N/I'} - ${vNac.uf || estadual?.uf || gravame?.ufPlaca || ''}`.trim(),
+        situacao_veiculo: vNac.situacaoVeiculo || estadual?.situacao || gravame?.statusDoVeiculo || 'CIRCULAÇÃO',
+        data_licenciamento: estadual?.licenciamentoData || (nacional?.anoExercicio ? `Exercício ${nacional.anoExercicio}` : 'N/I'),
+        data_emissao_crv: vNac.dataEmissaoCrv || estadual?.dataEmissaoCrv || 'N/I',
+        descricao_status: gravame?.descricaoStatus || (vNac.situacaoVeiculo ? `Veículo em situação: ${vNac.situacaoVeiculo}` : 'Veículo regular')
       };
     }
 
@@ -182,7 +202,7 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
         multas: deb.valorMulta ? `${deb.situacaoMulta || 'Situação'} (${deb.valorMulta})` : deb.situacaoMulta || 'Nada consta',
         licenciamento: deb.valorLicenciamento ? `${deb.situacaoLicenciamento || 'Situação'} (${deb.valorLicenciamento})` : deb.situacaoLicenciamento || 'Nada consta',
         dpvat: deb.valorDpvat ? `${deb.situacaoDpvat || 'Situação'} (${deb.valorDpvat})` : deb.situacaoDpvat || 'Nada consta',
-        multa_renainf: deb.valorRenainf || 'R$ 0,00',
+        multa_renainf: deb.valorRenainf || (vNac.indicadores?.renainf ? 'CONSTA RENAINF' : 'R$ 0,00'),
         multa_prf: deb.valorPoliciaRodoviariaFederal || 'R$ 0,00',
         multa_der_dersa: (deb.valorDer && deb.valorDer !== 'R$ 0,00') ? deb.valorDer : (deb.valorDersa || 'R$ 0,00'),
         multa_detran_municipais: (deb.valorDetran && deb.valorDetran !== 'R$ 0,00') ? deb.valorDetran : (deb.valorMunicipais || 'R$ 0,00')
@@ -191,15 +211,19 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
 
     // Módulo: Restrições e Alertas
     if (selectedModules.includes('veiculo_restricoes')) {
+      const restricoesLista = Array.isArray(vNac.restricoes) && vNac.restricoes.length > 0 
+        ? vNac.restricoes.filter((r: string) => r && !r.includes('SEM RESTRICAO')) 
+        : [];
+
       data['Restricoes_e_Alertas'] = {
-        restricao_financeira: rest.financeira || gravame?.statusDoVeiculo || 'NADA CONSTA',
-        ocorrencia_furto: rest.furto || 'NADA CONSTA',
-        bloqueio_guincho: rest.guincho || 'NADA CONSTA',
-        restricao_administrativa: rest.administrativa || 'NADA CONSTA',
-        restricao_judicial: rest.judicial || 'NADA CONSTA',
-        bloqueio_renajud: rest.renajud || 'NADA CONSTA',
-        restricao_tributaria: rest.tributaria || 'NADA CONSTA',
-        inspecao_ambiental: rest.ambiental || 'NADA CONSTA'
+        restricoes_senatran: restricoesLista.length > 0 ? restricoesLista.join('; ') : 'Nenhuma restrição encontrada',
+        restricao_financeira: restEst.financeira || gravame?.statusDoVeiculo || (restricoesLista.some((r: string) => r.includes('ALIENACAO')) ? 'ALIENAÇÃO FIDUCIÁRIA' : 'NADA CONSTA'),
+        ocorrencia_furto: vNac.indicadores?.rouboFurto ? '⚠️ CONSTAM OCORRÊNCIAS DE ROUBO/FURTO' : (restEst.furto || 'NADA CONSTA'),
+        registro_leilao: vNac.indicadores?.leilao ? '⚠️ CONSTA REGISTRO DE LEILÃO' : 'NADA CONSTA',
+        recall_pendente: vNac.indicadores?.recall ? '⚠️ RECALL PENDENTE' : 'NENHUM RECALL PENDENTE',
+        bloqueio_renajud: vNac.indicadores?.renajud ? '⚠️ BLOQUEIO RENAJUD' : (restEst.renajud || 'NADA CONSTA'),
+        restricao_administrativa: restEst.administrativa || 'NADA CONSTA',
+        restricao_judicial: restEst.judicial || 'NADA CONSTA'
       };
     }
 
