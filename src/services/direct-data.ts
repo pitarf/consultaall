@@ -36,9 +36,10 @@ async function getDirectDataConfig() {
   return { token, baseUrl, v3Url };
 }
 
-// Agente para ignorar erros de SSL na V3 (para compatibilidade completa de certificados em containers)
+// Agente para ignorar erros de SSL na V3 com timeout global seguro de 8s (evita travamentos infinitos)
 const axiosV3 = axios.create({
-  httpsAgent: new https.Agent({ rejectUnauthorized: false })
+  httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+  timeout: 8000
 });
 
 // Helper para sanitizar mensagens de erro da API evitando expor termos técnicos ou JSONs brutos
@@ -46,8 +47,8 @@ function sanitizeApiErrorMessage(rawMsg: any): string {
   if (!rawMsg) return 'Nenhum registro foi encontrado com os critérios informados.';
   const str = typeof rawMsg === 'object' ? JSON.stringify(rawMsg) : String(rawMsg);
   
-  if (str.includes('ECONNRESET') || str.includes('connreset') || str.includes('reset') || str.includes('socket hang up')) {
-    return 'A busca por Nome está temporariamente indisponível. Por favor, tente realizar a busca utilizando o CPF.';
+  if (str.includes('ECONNRESET') || str.includes('connreset') || str.includes('reset') || str.includes('socket hang up') || str.includes('timeout')) {
+    return 'O servidor de consultas demorou para responder ou está momentaneamente indisponível. Por favor, tente novamente em instantes.';
   }
   
   if (str.includes('Not Found') || str.includes('404') || str.includes('retornaram nenhum resultado') || str.includes('Nenhum registro') || str.includes('nenhum resultado') || str.includes('não retornaram')) {
@@ -62,11 +63,7 @@ function sanitizeApiErrorMessage(rawMsg: any): string {
 }
 
 // -----------------------------------------------------------------------------
-// SEÇÃO: CONSULTA VEICULAR (V3)
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// SEÇÃO: CONSULTA VEICULAR (V3 - NACIONAL & ESTADUAL)
+// SEÇÃO: CONSULTA VEICULAR (V3 - NACIONAL & ESTADUAL RESILIENTE)
 // -----------------------------------------------------------------------------
 
 export async function consultaVeicular(placa: string, selectedModules: string[] = []) {
@@ -75,11 +72,11 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
   
   const cleanPlaca = placa.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
   
-  // Helper interno para consultar micro-endpoints com timeout seguro de 12 segundos
-  const fetchEndpoint = async (endpointName: string) => {
+  // Helper interno para consultar micro-endpoints com timeout seguro configurável
+  const fetchEndpoint = async (endpointName: string, timeoutMs: number = 6000) => {
     try {
       const url = `${v3Url}/api/${endpointName}?TOKEN=${token}&PLACA=${cleanPlaca}`;
-      const response = await axiosV3.get(url, { timeout: 12000 });
+      const response = await axiosV3.get(url, { timeout: timeoutMs });
       return response.data?.retorno || null;
     } catch {
       return null;
@@ -88,27 +85,26 @@ export async function consultaVeicular(placa: string, selectedModules: string[] 
 
   try {
     const promises: Promise<any>[] = [
-      fetchEndpoint('ConsultaVeicular') // 1. Rota Nacional oficial (Senatran)
+      fetchEndpoint('ConsultaVeicular', 6000) // 1. Rota Nacional oficial (Senatran) - Rápida (~1s)
     ];
 
     // 2. Se o usuário solicitou débitos/multas, busca também a base Estadual
+    // Timeout de 3.5s para não travar o cliente caso o Detran estadual esteja com lentidão
     if (selectedModules.includes('veiculo_debitos')) {
-      promises.push(fetchEndpoint('ConsultaVeicularEstadual'));
+      promises.push(fetchEndpoint('ConsultaVeicularEstadual', 3500));
     }
 
     const [nacionalRes, estadualRes] = await Promise.all(promises);
     let nacional = nacionalRes;
     let estadual = estadualRes;
 
-    // Fallback: se Nacional falhar, busca Estadual
-    if (!nacional && !estadual) {
-      estadual = await fetchEndpoint('ConsultaVeicularEstadual');
-    }
-
-    // Fallback secundário: se ambos falharem, tenta Gravame
+    // Fallback rápido: se Nacional falhar, tenta Gravame (mais rápido e estável)
     let gravame: any = null;
-    if (!nacional && !estadual) {
-      gravame = await fetchEndpoint('ConsultaVeicularGravame');
+    if (!nacional) {
+      gravame = await fetchEndpoint('ConsultaVeicularGravame', 4000);
+      if (!gravame && !estadual) {
+        estadual = await fetchEndpoint('ConsultaVeicularEstadual', 4000);
+      }
     }
 
     // Se nenhum dos endpoints retornou dados válidos
@@ -266,7 +262,7 @@ export async function performSmartSearch(
 
         const searchUid = procRes.searchUid;
 
-        // Polling rápido para obter o resultado em estado terminal (10 tentativas, 2s de intervalo)
+        // Polling para obter o resultado (até 10 tentativas com intervalo de 2s - máx 20s)
         let attempts = 0;
         while (attempts < 10) {
           attempts++;
@@ -393,7 +389,7 @@ export async function consultaProcessos(cpfOrCnpj: string) {
   const url = `${v3Url}/api/ProcessosJudiciaisCompleta?TOKEN=${token}&${paramName}=${cleanDoc}`;
 
   try {
-    const response = await axiosV3.get(url);
+    const response = await axiosV3.get(url, { timeout: 5000 });
     const res = response.data;
 
     if (res.retorno) {

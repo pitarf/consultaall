@@ -180,7 +180,13 @@ export default function DashboardPage() {
     }
 
     try {
-      const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, undefined, chaveTipo === 'nome' ? chaveUf : undefined);
+      const timeoutPromise = new Promise<{ error?: string }>((resolve) => 
+        setTimeout(() => resolve({ error: 'Tempo limite excedido. O servidor demorou para responder. Tente novamente.' }), 15000)
+      );
+      const res: any = await Promise.race([
+        realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, undefined, chaveTipo === 'nome' ? chaveUf : undefined),
+        timeoutPromise
+      ]);
       
       if (res.error) {
         setError(res.error);
@@ -231,7 +237,13 @@ export default function DashboardPage() {
     }
 
     try {
-      const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, candidateId);
+      const timeoutPromise = new Promise<{ error?: string }>((resolve) => 
+        setTimeout(() => resolve({ error: 'Tempo limite excedido no processamento do candidato. Tente novamente.' }), 15000)
+      );
+      const res: any = await Promise.race([
+        realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, candidateId),
+        timeoutPromise
+      ]);
       
       if (res.error) {
         setError(res.error);

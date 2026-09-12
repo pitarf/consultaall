@@ -2,6 +2,22 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.4] - 2026-09-12
+### Modificado
+- **Calibragem de Timeouts e Polling das APIs:**
+  - Aumentado o timeout de proteção nas Server Actions (`consultas.ts`) para 30s (de 10s para 30s), eliminando falsos positivos de "timeout" em buscas assíncronas por Nome e Veículos.
+  - Aumentado o número de tentativas de polling na busca por Nome em `performSmartSearch` de 5 (7.5s) para 10 tentativas (máx 20s), garantindo captura completa do cadastro enriquecido.
+  - Executada auditoria geral ao vivo em 100% dos serviços (DirectData V3, V2, PushinPay, Brevo, PostgreSQL).
+
+## [0.9.3] - 2026-09-12
+### Corrigido
+- **Eliminação de Travamento / Carregamento Infinito nas Consultas:**
+  - Configurado timeout global padrão de 8s na instância `axiosV3` da DirectData, impedindo que chamadas pendentes deixem o cliente aguardando indefinidamente.
+  - Resiliência na Consulta Veicular: rota Nacional do Senatran mantida como fonte principal instantânea (~1s), e a rota de débitos estaduais (`ConsultaVeicularEstadual`) recebeu limite estrito de 3.5s para não prender o usuário quando o gateway estadual oscilar.
+  - Proteção de `Promise.race` nas Server Actions (`realizarConsulta`) com corte de segurança em 10s e mensagem informativa clara ao cliente.
+  - Adicionado timeout de segurança no client-side (15s) no `Dashboard`, `Veículos` e `Empresas`, garantindo que o botão e o spinner sejam sempre liberados.
+  - Singleton do `PrismaClient` mantido em todos os ambientes para estabilidade de conexões com o Neon PostgreSQL.
+
 ## [0.9.2] - 2026-08-31
 ### Adicionado
 - **Função e Papel SEO no Painel Administrativo:**

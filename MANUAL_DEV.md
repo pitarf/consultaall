@@ -97,10 +97,14 @@ O painel administrativo (`/admin`) exibe agora indicadores diários de ROI e Cus
 - **Preenchimento de Lacunas**: A listagem de consultas diárias por categoria faz o pre-fill com zero para categorias sem buscas, evitando furos no layout.
 - **Tabela de Depósitos Recentes**: Exibe a lista cronológica dos depósitos aprovados no dia no formato de hora local de Brasília (`America/Sao_Paulo`).
 
-### 3. SEO Avançado da Homepage e Schemas JSON-LD
-A homepage do sistema (`src/app/page.tsx`) agora possui:
-- Metadados dinâmicos com tags OpenGraph e Twitter configuradas para `summary_large_image` e canonical absoluto.
-- Injeção dinâmica de schemas JSON-LD para os tipos `Organization`, `WebSite` e `FAQPage` estruturados.
-- Componente `HomeSearchBox` integrado para isca de buscas interativa.
+### 4. Resiliência e Blindagem Anti-Hang (Carregamento Infinito)
+Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
+- **Timeouts em Camadas:**
+  - `axiosV3` (`src/services/direct-data.ts`): Instanciado com `timeout: 8000` (8s padrão).
+  - Micro-endpoints veiculares: Rota nacional do Senatran com 6s e gateway estadual com 3.5s estritos (se o Detran estadual demorar, a rota nacional já conclui e entrega o veículo em ~1s).
+  - Processos Judiciais: Timeout de 5s para não atrasar a resposta de CPF/CNPJ.
+  - Server Actions (`realizarConsulta`): Proteção com `Promise.race` de 10s cortando qualquer travamento externo e gerando mensagem amigável.
+  - Client-side: `Promise.race` com 15s no `DashboardPage`, `VeiculosPage` e `EmpresasPage`, garantindo que o spinner seja sempre desligado.
+- **Singleton PrismaClient:** Instância global persistida em todos os ambientes (`globalForPrisma.prisma = prisma`) para evitar esgotamento de sockets e conexões no pool do Neon PostgreSQL.
 
 

@@ -108,6 +108,7 @@
 - [x] **Footer Global Corrigido:** Ajuste dos links e descrições no rodapé para apontar para as novas rotas.
 - [x] **SEO Avançado e Schemas JSON-LD:** Configuração de injeção dos metadados Open Graph e schemas JSON-LD `Organization`, `WebSite` e `FAQPage` estruturados.
 - [x] **Busca por Nome com Homônimos (Multi-Candidato):** Listagem inicial de candidatos de forma gratuita, permitindo o consumo de saldo somente após confirmação do perfil correto.
-- [x] **Métricas Financeiras do Admin:** Exibição do ROI (%), custo da API, histórico dos últimos depósitos aprovados e contagem de buscas do dia por categoria.
+- [x] **Eliminação de Carregamento Infinito e Blindagem de Timeouts:** Timeouts seguros no `axiosV3` (8s), otimização da rota veicular (3.5s no gateway estadual com resposta instantânea pelo Senatran nacional), Promise.race em Server Actions (10s) e timeout preventivo no frontend (15s).
+- [x] **Auditoria Completa ao Vivo de APIs e Calibragem de Timeouts (30s):** Diagnóstico em tempo real de CPF, CNPJ, Telefone, Email, Processos, Veículos, Nome, PushinPay, Brevo e Banco Neon. Ajuste dos timeouts de Server Action para 30s e ampliação do polling da Pesquisa Avançada por Nome (até 20s).
 
 

@@ -141,7 +141,13 @@ export default function VeiculosPage() {
     }
 
     try {
-      const res = await realizarConsulta('placa', chaveValor, selectedModules, isDemo);
+      const timeoutPromise = new Promise<{ error?: string }>((resolve) => 
+        setTimeout(() => resolve({ error: 'Tempo limite excedido. O servidor demorou para responder. Tente novamente.' }), 15000)
+      );
+      const res: any = await Promise.race([
+        realizarConsulta('placa', chaveValor, selectedModules, isDemo),
+        timeoutPromise
+      ]);
       
       if (res.error) {
         toast.error(res.error);

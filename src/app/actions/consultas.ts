@@ -89,7 +89,15 @@ export async function realizarConsulta(
           ]
         };
       }
-      const apiResult = await performSmartSearch('name', cleanQuery, selectedModules, state, undefined);
+
+      const searchCandidates = async () => performSmartSearch('name', cleanQuery, selectedModules, state, undefined);
+      const timeoutCandidates = new Promise<{ success: boolean; message: string }>((resolve) =>
+        setTimeout(() => resolve({ 
+          success: false, 
+          message: 'A busca por candidatos demorou mais que o esperado (30s). Tente filtrar informando o Estado (UF).' 
+        }), 30000)
+      );
+      const apiResult = await Promise.race([searchCandidates(), timeoutCandidates]);
       if (!apiResult.success) {
         return { error: apiResult.message || 'Erro na busca por candidatos.' };
       }
@@ -199,28 +207,39 @@ export async function realizarConsulta(
         return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
       }
 
-      if (target === 'cpf') {
-        apiResult = await consultaCpfPlus(cleanQuery, selectedModules);
-      } else if (target === 'cnpj') {
-        apiResult = await consultaCnpjPlus(cleanQuery, selectedModules);
-      } else if (target === 'placa') {
-        apiResult = await consultaVeicular(cleanQuery, selectedModules);
-      } else if (['email', 'telefone', 'nome'].includes(target)) {
-        apiResult = await performSmartSearch(
-          target as 'email' | 'phone' | 'name', 
-          cleanQuery,
-          selectedModules,
-          state,
-          candidateId
-        );
-      } else {
-        apiResult = await fazerConsultaAPI({ 
-          target: apiTarget, 
-          pacote: 'teste', 
-          query: cleanQuery, 
-          isTest: false // Sempre false pois já tratamos o modo de teste acima
-        });
-      }
+      const executeApi = async () => {
+        if (target === 'cpf') {
+          return await consultaCpfPlus(cleanQuery, selectedModules);
+        } else if (target === 'cnpj') {
+          return await consultaCnpjPlus(cleanQuery, selectedModules);
+        } else if (target === 'placa') {
+          return await consultaVeicular(cleanQuery, selectedModules);
+        } else if (['email', 'telefone', 'nome'].includes(target)) {
+          return await performSmartSearch(
+            target as 'email' | 'phone' | 'name', 
+            cleanQuery,
+            selectedModules,
+            state,
+            candidateId
+          );
+        } else {
+          return await fazerConsultaAPI({ 
+            target: apiTarget, 
+            pacote: 'teste', 
+            query: cleanQuery, 
+            isTest: false
+          });
+        }
+      };
+
+      const timeoutPromise = new Promise<{ success: boolean; message: string }>((resolve) =>
+        setTimeout(() => resolve({ 
+          success: false, 
+          message: 'O servidor de consultas demorou para responder (limite de 30s excedido). Por favor, tente novamente em instantes.' 
+        }), 30000)
+      );
+
+      apiResult = await Promise.race([executeApi(), timeoutPromise]);
     }
 
     if (!apiResult.success) {
