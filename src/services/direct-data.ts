@@ -43,16 +43,41 @@ const axiosV3 = axios.create({
 });
 
 // Helper para sanitizar mensagens de erro da API evitando expor termos técnicos ou JSONs brutos
-function sanitizeApiErrorMessage(rawMsg: any): string {
-  if (!rawMsg) return 'Nenhum registro foi encontrado com os critérios informados.';
+function sanitizeApiErrorMessage(rawMsg: any, target?: string): string {
+  if (!rawMsg) return 'Nenhum registro foi localizado na base de dados com os critérios informados. Nenhum saldo foi debitado.';
   const str = typeof rawMsg === 'object' ? JSON.stringify(rawMsg) : String(rawMsg);
   
   if (str.includes('ECONNRESET') || str.includes('connreset') || str.includes('reset') || str.includes('socket hang up') || str.includes('timeout')) {
     return 'O servidor de consultas demorou para responder ou está momentaneamente indisponível. Por favor, tente novamente em instantes.';
   }
   
-  if (str.includes('Not Found') || str.includes('404') || str.includes('retornaram nenhum resultado') || str.includes('Nenhum registro') || str.includes('nenhum resultado') || str.includes('não retornaram')) {
-    return 'Nenhum registro foi encontrado com os dados informados. Verifique se o nome/chave está correto ou selecione a UF (Estado) para refinar a busca.';
+  // Tratamento específico quando a entidade (pessoa, telefone, placa, documento) não é encontrada
+  if (
+    str.includes('Entidade Não Encontrada') || 
+    str.includes('Documento Entidade Não Encontrada') || 
+    str.includes('Not Found') || 
+    str.includes('404') || 
+    str.includes('retornaram nenhum resultado') || 
+    str.includes('Nenhum registro') || 
+    str.includes('nenhum resultado') || 
+    str.includes('não retornaram')
+  ) {
+    if (target === 'telefone' || target === 'phone' || str.includes('CELULAR')) {
+      return 'Nenhum titular ou cadastro vinculado a este número de telefone foi localizado na base de dados nacional. Seu saldo não foi debitado.';
+    }
+    if (target === 'email' || str.includes('EMAIL')) {
+      return 'Nenhum titular ou cadastro vinculado a este endereço de e-mail foi localizado na base de dados nacional. Seu saldo não foi debitado.';
+    }
+    if (target === 'cpf' || str.includes('CPF')) {
+      return 'Nenhum registro localizado para este CPF na base de dados nacional. Seu saldo não foi debitado.';
+    }
+    if (target === 'cnpj' || str.includes('CNPJ')) {
+      return 'Nenhum registro localizado para este CNPJ na base de dados nacional. Seu saldo não foi debitado.';
+    }
+    if (target === 'placa' || str.includes('PLACA')) {
+      return 'Veículo não localizado para a placa informada na base de dados nacional. Seu saldo não foi debitado.';
+    }
+    return 'Nenhum registro foi localizado para os dados informados na base de dados nacional. Seu saldo não foi debitado.';
   }
 
   if (str.includes('DirectData') || str.includes('API Error') || str.includes('listFilters') || str.includes('elapsedTimeMs')) {
@@ -251,13 +276,25 @@ export async function performSmartSearch(
   const cleanQuery = query.trim();
 
   try {
-    if (type === 'name' || type === 'nome' as any) {
+    const isPhone = type === 'phone' || type === 'telefone' as any;
+    const isName = type === 'name' || type === 'nome' as any;
+
+    if (isName || isPhone) {
+      let phone = '';
+      if (isPhone) {
+        phone = cleanQuery.replace(/\D/g, '');
+        if ((phone.length === 12 || phone.length === 13) && phone.startsWith('55')) {
+          phone = phone.substring(2);
+        }
+      }
+
       if (candidateId) {
         // Fluxo de processamento de um candidato selecionado
-        const procRes = await processingIds([candidateId], `Busca por Nome: ${cleanQuery}`);
+        const searchDesc = isPhone ? `Busca por Telefone: ${phone}` : `Busca por Nome: ${cleanQuery}`;
+        const procRes = await processingIds([candidateId], searchDesc);
         if (!procRes.success || !procRes.searchUid) {
           const errorMsg = procRes.error?.message || procRes.metaDados?.mensagem || 'Falha ao iniciar processamento do candidato.';
-          return { success: false, message: errorMsg };
+          return { success: false, message: errorMsg, provider: 'DirectData V2' };
         }
 
         const searchUid = procRes.searchUid;
@@ -273,12 +310,13 @@ export async function performSmartSearch(
             const item = viewRes.viewSearch.searchItems?.[0];
             if (item && [4, 5, 6, 7].includes(item.resultId)) {
               if (item.resultId === 6) {
-                return { success: false, message: item.result || 'Falha no processamento da consulta de nome.' };
+                return { success: false, message: item.result || 'Falha no processamento da consulta.', provider: 'DirectData V2' };
               }
-              const data = transformDirectDataAdvanced(item.returnJson || {}, selectedModules);
+              const rawData = item.returnJson?.retorno || item.returnJson || {};
+              const data = transformDirectDataAdvanced(rawData, selectedModules);
               
               if (selectedModules.includes('processos')) {
-                const cpf = item.returnJson?.cpf || item.returnJson?.retorno?.cpf;
+                const cpf = rawData?.cpf || rawData?.retorno?.cpf;
                 if (cpf) {
                   const procRes = await consultaProcessos(cpf);
                   if (procRes.success) {
@@ -292,57 +330,86 @@ export async function performSmartSearch(
               return {
                 success: true,
                 data,
-                message: item.result || 'Consulta realizada com sucesso.'
+                message: item.result || 'Consulta realizada com sucesso.',
+                provider: 'DirectData V2'
               };
             }
           }
         }
 
-        return { success: false, message: 'O processamento levou mais tempo que o esperado. Tente novamente.' };
+        return { success: false, message: 'O processamento levou mais tempo que o esperado. Tente novamente.', provider: 'DirectData V2' };
       } else {
-        // Etapa 1: Obter lista de candidatos
-        const filterRes = await filterNaturalPerson({ fullName: cleanQuery, state });
+        // Etapa 1: Obter lista de candidatos (Pesquisa Avançada V2)
+        const filterParams = isPhone ? { phoneNumber: phone } : { fullName: cleanQuery, state };
+        const filterRes = await filterNaturalPerson(filterParams);
         
-        if (!filterRes.success || !filterRes.listFilters || filterRes.listFilters.length === 0) {
-          if (filterRes.success && filterRes.numberOfPeople > 0) {
-            return { 
-              success: false, 
-              message: `Muitos resultados encontrados (${filterRes.numberOfPeople.toLocaleString('pt-BR')} homônimos). Por favor, refine a sua busca fornecendo o Estado ou nomes adicionais.` 
-            };
-          }
-          const errorMsg = filterRes.error?.message || filterRes.metaDados?.mensagem || 'Nenhum registro encontrado.';
-          return { success: false, message: errorMsg };
+        if (filterRes.success && filterRes.listFilters && filterRes.listFilters.length > 0) {
+          return {
+            success: true,
+            isMultiple: true,
+            candidates: filterRes.listFilters.map((c: any) => ({
+              id: c.id,
+              name: c.fullName || c.name || (isPhone ? phone : cleanQuery),
+              dateOfBirth: c.dateOfBirth,
+              motherName: c.motherName,
+              taxIdNumber: c.cpf || c.taxIdNumber, // CPF mascarado
+              state: c.state,
+              city: c.city
+            }))
+          };
         }
 
-        return {
-          success: true,
-          isMultiple: true,
-          candidates: filterRes.listFilters.map((c: any) => ({
-            id: c.id,
-            name: c.fullName || c.name || cleanQuery,
-            dateOfBirth: c.dateOfBirth,
-            motherName: c.motherName,
-            taxIdNumber: c.cpf || c.taxIdNumber, // CPF mascarado
-            state: c.state,
-            city: c.city
-          }))
+        // Se for telefone e a V2 não encontrou ninguém, tenta fallback na V3 de Leads
+        if (isPhone) {
+          try {
+            const v3UrlDirect = `${v3Url}/api/EnriquecimentoLead?TOKEN=${token}&CELULAR=${phone}`;
+            const v3Res = await axiosV3.get(v3UrlDirect);
+            if (v3Res.data?.retorno) {
+              const rawData = Array.isArray(v3Res.data.retorno) ? v3Res.data.retorno[0] : v3Res.data.retorno;
+              const data = transformDirectDataPlus(rawData, selectedModules);
+              return {
+                success: true,
+                data,
+                message: 'Consulta realizada com sucesso.',
+                provider: 'DirectData V3'
+              };
+            }
+          } catch {}
+        }
+
+        if (filterRes.success && filterRes.numberOfPeople > 0) {
+          return { 
+            success: false, 
+            message: `Muitos resultados encontrados (${filterRes.numberOfPeople.toLocaleString('pt-BR')} homônimos). Por favor, refine a sua busca fornecendo o Estado ou nomes adicionais.` 
+          };
+        }
+        const errorMsg = filterRes.error?.message || filterRes.metaDados?.mensagem || 'Nenhum registro encontrado.';
+        return { 
+          success: false, 
+          message: sanitizeApiErrorMessage(errorMsg, isPhone ? 'telefone' : 'nome'),
+          rawMessage: errorMsg,
+          provider: 'DirectData V2'
         };
       }
     }
 
-    // Busca síncrona V3 para celular e e-mail (mais econômica e rápida)
+    // Busca síncrona V3 para e-mail (mais econômica e rápida)
     if (type === 'email') {
       url = `${v3Url}/api/EnriquecimentoLead?TOKEN=${token}&EMAIL=${encodeURIComponent(cleanQuery)}`;
-    } else if (type === 'phone' || type === 'telefone' as any) {
-      const phone = cleanQuery.replace(/\D/g, '');
-      url = `${v3Url}/api/EnriquecimentoLead?TOKEN=${token}&CELULAR=${phone}`;
     }
 
     const response = await axiosV3.get(url);
     const res = response.data;
 
     if (!res.retorno || (Array.isArray(res.retorno) && res.retorno.length === 0)) {
-      return { success: false, message: res.metaDados?.mensagem || 'Nenhum registro encontrado.' };
+      const rawMsg = res.metaDados?.mensagem || res.metaDados?.resultado || 'Nenhum registro encontrado.';
+      return { 
+        success: false, 
+        message: sanitizeApiErrorMessage(rawMsg, type),
+        rawMessage: rawMsg,
+        resultadoId: res.metaDados?.resultadoId,
+        provider: 'DirectData V3'
+      };
     }
 
     const rawData = Array.isArray(res.retorno) ? res.retorno[0] : res.retorno;
@@ -370,7 +437,12 @@ export async function performSmartSearch(
   } catch (error: any) {
     console.error('Erro na SmartSearch:', error.response?.data || error.message);
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
+    return { 
+      success: false, 
+      message: sanitizeApiErrorMessage(apiMessage, type),
+      rawMessage: apiMessage,
+      provider: 'DirectData V3'
+    };
   }
 }
 
@@ -433,10 +505,22 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
       return { success: true, data };
     }
     
-    return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
+    const rawMsg = res.metaDados?.mensagem || res.metaDados?.resultado || 'Nenhum registro encontrado.';
+    return { 
+      success: false, 
+      message: sanitizeApiErrorMessage(rawMsg, 'cpf'),
+      rawMessage: rawMsg,
+      resultadoId: res.metaDados?.resultadoId,
+      provider: 'DirectData V3'
+    };
   } catch (error: any) {
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
-    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
+    return { 
+      success: false, 
+      message: sanitizeApiErrorMessage(apiMessage, 'cpf'),
+      rawMessage: apiMessage,
+      provider: 'DirectData V3'
+    };
   }
 }
 
@@ -723,10 +807,22 @@ export async function consultaCnpjPlus(cnpj: string, selectedModules: string[] =
       return { success: true, data };
     }
     
-    return { success: false, message: res.metaDados?.mensagem || 'Erro na consulta.' };
+    const rawMsg = res.metaDados?.mensagem || res.metaDados?.resultado || 'Nenhum registro encontrado.';
+    return { 
+      success: false, 
+      message: sanitizeApiErrorMessage(rawMsg, 'cnpj'),
+      rawMessage: rawMsg,
+      resultadoId: res.metaDados?.resultadoId,
+      provider: 'DirectData V3'
+    };
   } catch (error: any) {
     const apiMessage = error.response?.data?.metaDados?.mensagem || error.message;
-    return { success: false, message: sanitizeApiErrorMessage(apiMessage) };
+    return { 
+      success: false, 
+      message: sanitizeApiErrorMessage(apiMessage, 'cnpj'),
+      rawMessage: apiMessage,
+      provider: 'DirectData V3'
+    };
   }
 }
 

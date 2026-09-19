@@ -103,8 +103,30 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - `axiosV3` (`src/services/direct-data.ts`): Instanciado com `timeout: 8000` (8s padrão).
   - Micro-endpoints veiculares: Rota nacional do Senatran com 6s e gateway estadual com 3.5s estritos (se o Detran estadual demorar, a rota nacional já conclui e entrega o veículo em ~1s).
   - Processos Judiciais: Timeout de 5s para não atrasar a resposta de CPF/CNPJ.
-  - Server Actions (`realizarConsulta`): Proteção com `Promise.race` de 10s cortando qualquer travamento externo e gerando mensagem amigável.
+  - Server Actions (`realizarConsulta`): Proteção com `Promise.race` de 30s cortando qualquer travamento externo e gerando mensagem amigável.
   - Client-side: `Promise.race` com 15s no `DashboardPage`, `VeiculosPage` e `EmpresasPage`, garantindo que o spinner seja sempre desligado.
 - **Singleton PrismaClient:** Instância global persistida em todos os ambientes (`globalForPrisma.prisma = prisma`) para evitar esgotamento de sockets e conexões no pool do Neon PostgreSQL.
+
+### 5. Tratamento de "Entidade Não Encontrada" e Auditoria de Falhas (/admin/logs)
+- **Sanitização de Respostas da DirectData:** O status técnico `Documento Entidade Não Encontrada` retornado pelo backend da DirectData (`resultadoId: 6`) é interceptado por `sanitizeApiErrorMessage(rawMsg, target)`. O usuário final recebe uma explicação transparente ("Nenhum titular ou cadastro vinculado a este número de telefone foi localizado na base de dados nacional. Seu saldo não foi debitado.").
+- **Logs Enriquecidos no Painel Admin (`/admin/logs`):** Em caso de falha ou registro não localizado, o `SystemLog` grava um payload completo estruturado contendo:
+  - Dados do cliente: Nome, E-mail e Saldo no momento da busca.
+  - Dados da consulta: Alvo (`telefone`, `cpf`, etc.), termo pesquisado, módulos e custo poupado.
+  - Diagnóstico do provedor: Código do resultado, mensagem original do provedor e explicação de que o saldo foi preservado.
+- **Badges Visuais no Admin:** A interface do `/admin/logs` extrai automaticamente o e-mail do cliente, o termo pesquisado e exibe o badge de "Saldo Preservado", permitindo ao suporte responder com rapidez ao cliente no WhatsApp.
+
+### 6. Pesquisa Avançada (V2) para Telefone e Auditoria de Custos
+- **Mecanismo Híbrido V2 + Fallback V3:**
+  - **Etapa 1 (V2 Grátis):** Chamada inicial ao endpoint `AdvancedSearch/FilterNaturalPerson` com `{ phoneNumber: phone }`. Retorna a lista de titulares e vínculos encontrados (`isMultiple: true`). O termo é gravado em `searchHistory` com `target: 'telefone_candidatos'` e custo R$ 0,00.
+  - **Etapa 2 (V2 Processamento Pago):** Quando o cliente clica no perfil desejado (`candidateId`), o backend aciona `AdvancedSearch/ProcessingIds` e realiza polling em `AdvancedSearch/ViewSearch` (até 20s). O saldo do cliente é debitado e a transação é registrada no histórico.
+  - **Fallback V3 Transparente:** Caso a V2 não encontre nenhum candidato para o telefone, o sistema realiza uma tentativa automática na V3 de Leads (`EnriquecimentoLead?CELULAR=...`). Se localizar o cadastro diretamente, o saldo é debitado e o relatório completo é entregue sem necessidade de seleção.
+- **Auditoria de Custos de APIs (`/admin/custos` e Dashboard Admin):**
+  - As funções `calculateApiCostForSearch` e `calculateTotalApiCost` foram calibradas:
+    - `telefone_candidatos` / `nome_candidatos`: Custo de API R$ 0,00 (Etapa 1 é gratuita no provedor).
+    - `telefone` (V2 processamento) / `nome` (V2 processamento): Custo de API R$ 0,36.
+    - `email` (V3 leads): Custo de API R$ 0,16.
+    - `placa` / `veicular`: Custo de API R$ 1,10.
+    - `cpf` / `cnpj`: Custo de API R$ 0,36.
+
 
 

@@ -24,8 +24,20 @@ export async function realizarConsulta(
     return { error: 'Sessão expirada. Faça login novamente.' };
   }
 
-  // Validação de Segurança e Sanitização (Remoção de espaços)
-  const cleanQuery = query.trim();
+  // Validação de Segurança e Sanitização (Remoção de espaços, parênteses, traços e símbolos)
+  let cleanQuery = query.trim();
+  if (target === 'telefone') {
+    let digits = cleanQuery.replace(/\D/g, '');
+    if ((digits.length === 12 || digits.length === 13) && digits.startsWith('55')) {
+      digits = digits.substring(2);
+    }
+    cleanQuery = digits;
+  } else if (target === 'cpf' || target === 'cnpj') {
+    cleanQuery = cleanQuery.replace(/\D/g, '');
+  } else if (target === 'placa') {
+    cleanQuery = cleanQuery.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  }
+
   const validation = validarChave(target, cleanQuery);
   if (!validation.valid) {
     return { error: validation.message };
@@ -77,47 +89,123 @@ export async function realizarConsulta(
     // Só permite isTest se o usuário for ADMIN
     const effectiveIsTest = isTest && user.role === 'ADMIN';
 
-    // Se for busca por Nome e não forneceu candidateId, retorna a lista de candidatos
-    if (target === 'nome' && !candidateId) {
+    // Se for busca por Nome ou Telefone e não forneceu candidateId, retorna a lista de candidatos
+    if ((target === 'nome' || target === 'telefone') && !candidateId) {
       if (effectiveIsTest) {
         return {
           success: true,
           isMultiple: true,
           candidates: [
-            { id: "demo-1", name: `${cleanQuery.toUpperCase()} CANDIDATO 1`, dateOfBirth: "1985-04-12T00:00:00", motherName: "MARIA DA SILVA DE SOUZA", taxIdNumber: "***.123.456-**", state: "SP", city: "São Paulo" },
-            { id: "demo-2", name: `${cleanQuery.toUpperCase()} CANDIDATO 2`, dateOfBirth: "1990-08-20T00:00:00", motherName: "JOSEFA ALVES DE OLIVEIRA", taxIdNumber: "***.789.012-**", state: "RJ", city: "Rio de Janeiro" }
+            { id: "demo-1", name: target === 'telefone' ? `TITULAR DO TELEFONE ${cleanQuery}` : `${cleanQuery.toUpperCase()} CANDIDATO 1`, dateOfBirth: "1985-04-12T00:00:00", motherName: "MARIA DA SILVA DE SOUZA", taxIdNumber: "***.123.456-**", state: "SP", city: "São Paulo" },
+            { id: "demo-2", name: target === 'telefone' ? `VÍNCULO ADICIONAL ${cleanQuery}` : `${cleanQuery.toUpperCase()} CANDIDATO 2`, dateOfBirth: "1990-08-20T00:00:00", motherName: "JOSEFA ALVES DE OLIVEIRA", taxIdNumber: "***.789.012-**", state: "RJ", city: "Rio de Janeiro" }
           ]
         };
       }
 
-      const searchCandidates = async () => performSmartSearch('name', cleanQuery, selectedModules, state, undefined);
+      const searchType = target === 'telefone' ? 'phone' : 'name';
+      const searchCandidates = async () => performSmartSearch(searchType, cleanQuery, selectedModules, state, undefined);
       const timeoutCandidates = new Promise<{ success: boolean; message: string }>((resolve) =>
         setTimeout(() => resolve({ 
           success: false, 
-          message: 'A busca por candidatos demorou mais que o esperado (30s). Tente filtrar informando o Estado (UF).' 
+          message: target === 'telefone'
+            ? 'A busca por telefone demorou mais que o esperado (30s). Tente novamente.'
+            : 'A busca por candidatos demorou mais que o esperado (30s). Tente filtrar informando o Estado (UF).' 
         }), 30000)
       );
-      const apiResult = await Promise.race([searchCandidates(), timeoutCandidates]);
+      const apiResult: any = await Promise.race([searchCandidates(), timeoutCandidates]);
       if (!apiResult.success) {
-        return { error: apiResult.message || 'Erro na busca por candidatos.' };
-      }
-
-      // Log candidate list query to SearchHistory
-      try {
-        const sortedModules = [...selectedModules].sort().join(',');
-        await prisma.searchHistory.create({
+        await prisma.systemLog.create({
           data: {
-            userId: user.id,
-            query: cleanQuery,
-            target: 'nome_candidatos',
-            modules: sortedModules,
-            cost: 0,
-            status: 'SUCCESS',
-            result: apiResult as any,
+            level: 'WARNING',
+            message: `Busca de Candidatos Sem Resultado (${target.toUpperCase()}): ${apiResult.message || 'Nenhum registro encontrado'}`,
+            context: {
+              usuario: {
+                id: user.id,
+                nome: user.name || 'Não informado',
+                email: user.email,
+                saldoAtual: `R$ ${user.balance.toFixed(2).replace('.', ',')}`
+              },
+              consulta: {
+                alvo: target,
+                termoBuscado: cleanQuery,
+                estadoFiltro: state || 'Todos',
+                cobrado: false
+              },
+              provedor: {
+                nome: apiResult.provider || 'DirectData V2 (FilterNaturalPerson)',
+                diagnostico: 'Nenhum candidato localizado com o termo informado. Saldo preservado.'
+              }
+            }
           }
         });
-      } catch (logErr) {
-        console.error('Erro ao salvar historico de candidatos:', logErr);
+        return { error: apiResult.message || 'Nenhum registro localizado para os dados informados.' };
+      }
+
+      // Se retornou múltiplos candidatos (Etapa 1 V2 grátis)
+      if (apiResult.isMultiple) {
+        try {
+          const sortedModules = [...selectedModules].sort().join(',');
+          await prisma.searchHistory.create({
+            data: {
+              userId: user.id,
+              query: cleanQuery,
+              target: `${target}_candidatos`,
+              modules: sortedModules,
+              cost: 0,
+              status: 'SUCCESS',
+              result: apiResult as any,
+            }
+          });
+        } catch (logErr) {
+          console.error('Erro ao salvar historico de candidatos:', logErr);
+        }
+
+        return apiResult;
+      }
+
+      // Se NÃO for isMultiple mas tiver data (ex: fallback V3 de leads que já achou direto o registro!)
+      if (apiResult.data) {
+        if (user.balance < totalCost) {
+          return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
+        }
+
+        const sortedModules = [...selectedModules].sort().join(',');
+        const transactionResult = await prisma.$transaction(async (tx) => {
+          await tx.transaction.create({
+            data: {
+              userId: user.id,
+              amount: -totalCost,
+              type: 'USAGE',
+              description: `Consulta: ${target} / Módulos: ${selectedModules.length}`,
+            }
+          });
+
+          const updatedUser = await tx.user.update({
+            where: { id: user.id, balance: { gte: totalCost } },
+            data: { balance: { decrement: totalCost } }
+          });
+
+          const history = await tx.searchHistory.create({
+            data: {
+              userId: user.id,
+              query: cleanQuery,
+              target: target,
+              modules: sortedModules,
+              cost: totalCost,
+              status: 'SUCCESS',
+              result: apiResult.data,
+            }
+          });
+
+          return { updatedUser, history };
+        });
+
+        return {
+          success: true,
+          data: apiResult.data,
+          newBalance: transactionResult.updatedUser.balance,
+          historyId: transactionResult.history.id
+        };
       }
 
       return apiResult;
@@ -216,7 +304,7 @@ export async function realizarConsulta(
           return await consultaVeicular(cleanQuery, selectedModules);
         } else if (['email', 'telefone', 'nome'].includes(target)) {
           return await performSmartSearch(
-            target as 'email' | 'phone' | 'name', 
+            target === 'telefone' ? 'phone' : (target as 'email' | 'name'), 
             cleanQuery,
             selectedModules,
             state,
@@ -243,13 +331,46 @@ export async function realizarConsulta(
     }
 
     if (!apiResult.success) {
-      // Log de erro da API (se falhou e não era cache)
+      // Identifica se é registro não encontrado ou falha técnica
+      const isNotFound = apiResult.rawMessage?.includes('Não Encontrada') || 
+                         apiResult.message?.includes('Nenhum registro') || 
+                         apiResult.message?.includes('não localizado') || 
+                         apiResult.resultadoId === 6;
+
+      const logLevel = isNotFound ? 'WARNING' : 'ERROR';
+      const failureReason = isNotFound 
+        ? 'Registro não localizado na base do provedor' 
+        : (apiResult.message || 'Erro na consulta');
+
+      // Log detalhado e completo no painel admin para suporte ágil
       if (!cache) {
         await prisma.systemLog.create({
           data: {
-            level: 'ERROR',
-            message: `Falha na API de Consulta: ${apiResult.message || 'Erro desconhecido'}`,
-            context: { userId: user.id, target, query: cleanQuery, apiResult }
+            level: logLevel,
+            message: `Falha na Consulta (${target.toUpperCase()}): ${failureReason}`,
+            context: {
+              usuario: {
+                id: user.id,
+                nome: user.name || 'Não informado',
+                email: user.email,
+                saldoAtual: `R$ ${user.balance.toFixed(2).replace('.', ',')}`
+              },
+              consulta: {
+                alvo: target,
+                termoBuscado: cleanQuery,
+                modulosSelecionados: selectedModules,
+                cobrado: false,
+                custoPoupado: `R$ ${totalCost.toFixed(2).replace('.', ',')}`
+              },
+              provedor: {
+                nome: apiResult.provider || 'DirectData',
+                resultadoId: apiResult.resultadoId || null,
+                mensagemOriginal: apiResult.rawMessage || apiResult.message,
+                diagnostico: isNotFound 
+                  ? 'O número ou documento pesquisado não possui registro cadastrado na base do provedor. O saldo do cliente não foi cobrado.'
+                  : 'Falha ou instabilidade na resposta da API externa.'
+              }
+            }
           }
         });
       }
@@ -357,7 +478,17 @@ function hasMeaningfulData(val: any): boolean {
       data: {
         level: 'ERROR',
         message: `Erro crítico no servidor de consultas: ${error.message}`,
-        context: { userId: session.userId, target, query: cleanQuery, error: error.stack }
+        context: { 
+          usuario: {
+            id: session.userId,
+            email: (session as any).email || 'N/A'
+          },
+          consulta: {
+            alvo: target,
+            termoBuscado: cleanQuery
+          },
+          error: error.stack || error.message
+        }
       }
     });
 

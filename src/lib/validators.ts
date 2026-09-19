@@ -37,10 +37,14 @@ export function validarCPF(cpf: string): boolean {
 }
 
 /**
- * Valida Telefone (Formatos brasileiros: 10 ou 11 dígitos)
+ * Valida Telefone (Formatos brasileiros: 10 ou 11 dígitos, aceitando prefixo 55 opcional)
  */
 export function validarTelefone(telefone: string): boolean {
-  const cleanTelefone = telefone.replace(/\D/g, '');
+  let cleanTelefone = telefone.replace(/\D/g, '');
+  // Remove prefixo 55 do Brasil se presente
+  if ((cleanTelefone.length === 12 || cleanTelefone.length === 13) && cleanTelefone.startsWith('55')) {
+    cleanTelefone = cleanTelefone.substring(2);
+  }
   // Aceita (XX) XXXX-XXXX ou (XX) XXXXX-XXXX
   return cleanTelefone.length >= 10 && cleanTelefone.length <= 11;
 }

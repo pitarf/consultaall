@@ -92,17 +92,17 @@ async function checkAdminOrSeo() {
   return user;
 }
 
-// Helpers de Custo de API - Valores REAIS do painel DirectData (conferidos em 07/08/2026)
+// Helpers de Custo de API - Valores REAIS do painel DirectData
 // Cadastro Pessoa Física Plus = R$ 0,36 | Consulta Veicular Nacional = R$ 1,10
-// Enriquecimento de Lead (telefone/email) = R$ 0,16 | Pesquisa Avançada (nome) = R$ 0,36
-// FilterNaturalPerson (listagem candidatos) = GRÁTIS (R$ 0,00)
+// Enriquecimento de Lead (email) = R$ 0,16 | Pesquisa Avançada V2 (nome/telefone) = R$ 0,36
+// FilterNaturalPerson (listagem candidatos nome/telefone) = GRÁTIS (R$ 0,00)
 function calculateApiCostForSearch(target: string, _cost: number): number {
   const t = target.toLowerCase();
-  if (t === 'nome_candidatos') return 0;
+  if (t === 'nome_candidatos' || t === 'telefone_candidatos') return 0;
   if (t.includes('placa') || t.includes('veiculo') || t.includes('veicular')) return 1.10;
   if (t.includes('cpf') || t.includes('cnpj')) return 0.36;
-  if (t === 'nome' || t.includes('smart')) return 0.36;
-  if (t.includes('telefone') || t.includes('phone') || t.includes('email')) return 0.16;
+  if (t === 'nome' || t === 'telefone' || t.includes('smart')) return 0.36;
+  if (t.includes('email')) return 0.16;
   return 0.30; // fallback seguro
 }
 
@@ -113,11 +113,11 @@ function calculateTotalApiCost(searchesByTarget: { target: string; _count: { id:
     const count = g._count.id;
     
     let unitCost = 0;
-    if (t === 'nome_candidatos') unitCost = 0;
+    if (t === 'nome_candidatos' || t === 'telefone_candidatos') unitCost = 0;
     else if (t.includes('placa') || t.includes('veiculo') || t.includes('veicular')) unitCost = 1.10;
     else if (t.includes('cpf') || t.includes('cnpj')) unitCost = 0.36;
-    else if (t === 'nome' || t.includes('smart')) unitCost = 0.36;
-    else if (t.includes('telefone') || t.includes('phone') || t.includes('email')) unitCost = 0.16;
+    else if (t === 'nome' || t === 'telefone' || t.includes('smart')) unitCost = 0.36;
+    else if (t.includes('email')) unitCost = 0.16;
     else unitCost = 0.30;
     
     total += count * unitCost;

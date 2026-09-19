@@ -53,12 +53,59 @@ export default async function AdminLogsPage() {
             </div>
             
             <h3 className="text-slate-900 dark:text-white font-medium mb-3 leading-relaxed">{log.message}</h3>
- 
+
+            {/* Resumo Visual Inteligente para o Administrador */}
+            {log.context && (() => {
+              const ctx = log.context as any;
+              const userEmail = ctx?.usuario?.email || ctx?.userEmail || (ctx?.userId ? `Usuário ID: ${ctx.userId.substring(0, 8)}...` : null);
+              const userName = ctx?.usuario?.nome || ctx?.userName || null;
+              const target = ctx?.consulta?.alvo || ctx?.target || null;
+              const query = ctx?.consulta?.termoBuscado || ctx?.query || null;
+              const isNotCharged = ctx?.consulta?.cobrado === false || ctx?.cobrado === false;
+              const diagnostico = ctx?.provedor?.diagnostico || null;
+              const provider = ctx?.provedor?.nome || null;
+
+              if (!userEmail && !query && !target) return null;
+
+              return (
+                <div className="p-3.5 bg-slate-50 dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/10 text-xs mb-3 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {userEmail && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300 font-medium text-[11px] border border-blue-500/20">
+                        <Shield className="w-3.5 h-3.5 text-blue-500" />
+                        {userName && userName !== 'Não informado' ? `${userName} (${userEmail})` : userEmail}
+                      </span>
+                    )}
+                    {target && query && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-mono text-[11px] font-bold border border-primary/20">
+                        {target.toUpperCase()}: {query}
+                      </span>
+                    )}
+                    {isNotCharged && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium text-[11px] border border-emerald-500/20">
+                        Saldo Preservado (Não Cobrado)
+                      </span>
+                    )}
+                    {provider && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-400 font-medium">
+                        {provider}
+                      </span>
+                    )}
+                  </div>
+                  {diagnostico && (
+                    <p className="text-slate-600 dark:text-gray-300 text-[11px] pt-1.5 border-t border-slate-200 dark:border-white/5 leading-relaxed">
+                      💡 <strong>Diagnóstico:</strong> {diagnostico}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
             {log.context && (
-              <div className="mt-4">
+              <div className="mt-2">
                 <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                   <Shield className="w-3 h-3" />
-                  Contexto Técnico
+                  Contexto Técnico (JSON)
                 </p>
                 <pre className="bg-slate-900 dark:bg-black/40 p-4 rounded-xl text-[11px] text-blue-600 dark:text-blue-400/80 font-mono overflow-x-auto border border-slate-200 dark:border-white/5 shadow-inner">
                   {JSON.stringify(log.context, null, 2)}

@@ -2,6 +2,26 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.6] - 2026-09-19
+### Adicionado
+- **Pesquisa Avançada (V2) para Consultas de Telefone:**
+  - Migração do mecanismo de telefone para a API `AdvancedSearch/FilterNaturalPerson` (DirectData V2), permitindo encontrar proprietários e múltiplos vínculos associados ao número informado.
+  - Fluxo em duas etapas: a listagem de candidatos é gratuita (`target: 'telefone_candidatos'`, custo R$ 0,00), permitindo ao cliente conferir nome, CPF mascarado, mãe e cidade antes de confirmar.
+  - Débito do saldo e geração do relatório completo somente após o cliente confirmar o candidato desejado via `ProcessingIds` + `ViewSearch`.
+  - Fallback automático e transparente na API V3 de Leads (`EnriquecimentoLead`) caso a Pesquisa Avançada não encontre candidatos, garantindo a maior cobertura possível do mercado.
+  - Atualização do cálculo de custos de APIs no Admin (`/admin/custos` e métricas do dashboard): `telefone_candidatos` registrado a R$ 0,00 e consulta final de telefone computada a R$ 0,36.
+
+## [0.9.5] - 2026-09-18
+### Corrigido
+- **Tratamento Humano de 'Documento Entidade Não Encontrada':**
+  - O status técnico da DirectData (`Documento Entidade Não Encontrada`) foi traduzido para mensagens claras e amigáveis por tipo de consulta (`Telefone`, `CPF`, `CNPJ`, `Placa`, `Email`), explicitando que o número/documento não possui cadastro na base nacional e que o saldo do usuário não foi cobrado.
+  - Normalização de telefones com DDI `+55` (12 ou 13 dígitos) diretamente no `validarTelefone` e no fluxo de consulta, aceitando números colados do WhatsApp.
+
+### Adicionado
+- **Detalhamento Completo nos Logs do Painel Admin (`/admin/logs`):**
+  - Registro contextual de cada consulta que falha com nome do cliente, e-mail, telefone pesquisado, alvo, saldo atual, valor poupado e diagnóstico legível do provedor.
+  - Interface visual dos logs atualizada com badges de identificação rápida (E-mail do cliente, Alvo: Chave, Selo de Saldo Preservado e Diagnóstico Explicativo) para agilizar o suporte no WhatsApp.
+
 ## [0.9.4] - 2026-09-12
 ### Modificado
 - **Calibragem de Timeouts e Polling das APIs:**

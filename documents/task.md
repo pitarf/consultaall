@@ -110,5 +110,8 @@
 - [x] **Busca por Nome com Homônimos (Multi-Candidato):** Listagem inicial de candidatos de forma gratuita, permitindo o consumo de saldo somente após confirmação do perfil correto.
 - [x] **Eliminação de Carregamento Infinito e Blindagem de Timeouts:** Timeouts seguros no `axiosV3` (8s), otimização da rota veicular (3.5s no gateway estadual com resposta instantânea pelo Senatran nacional), Promise.race em Server Actions (10s) e timeout preventivo no frontend (15s).
 - [x] **Auditoria Completa ao Vivo de APIs e Calibragem de Timeouts (30s):** Diagnóstico em tempo real de CPF, CNPJ, Telefone, Email, Processos, Veículos, Nome, PushinPay, Brevo e Banco Neon. Ajuste dos timeouts de Server Action para 30s e ampliação do polling da Pesquisa Avançada por Nome (até 20s).
+- [x] **Tratamento Amigável de 'Entidade Não Encontrada' e Logs Ricos no Admin:** Tradução de erros técnicos da DirectData para mensagens humanas e transparentes (informando que o saldo não foi cobrado), suporte a números com `+55` e enriquecimento dos logs do sistema (`/admin/logs`) com dados do cliente (Nome, E-mail, Saldo) e diagnóstico explicativo.
+- [x] **Pesquisa Avançada (V2) para Telefone com Multi-Candidatos:** Integração com a API `AdvancedSearch/FilterNaturalPerson` (DirectData V2) com listagem prévia gratuita de candidatos (`telefone_candidatos`), seleção do perfil correto, cobrança somente na confirmação com `ProcessingIds` + `ViewSearch` e fallback automático para V3 (`EnriquecimentoLead`).
+- [x] **Auditoria de Custos de APIs para Telefone no Admin:** Inclusão de `telefone_candidatos` (R$ 0,00) e `telefone` V2 (R$ 0,36) nos cálculos de custos operacionais e margem de lucro em `/admin/custos` e no Dashboard Admin.
 
 
