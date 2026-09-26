@@ -128,5 +128,14 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
     - `placa` / `veicular`: Custo de API R$ 1,10.
     - `cpf` / `cnpj`: Custo de API R$ 0,36.
 
+### 7. Resiliência e Arquitetura Anti-Timeout do Webhook PushinPay
+- **Timeout Estrito de 2000ms da PushinPay:** O gateway PushinPay possui um limite severo de timeout de 2.0 segundos (`CURLOPT_CONNECTTIMEOUT / CURLOPT_TIMEOUT = 2s`). Se a resposta ultrapassar 2000ms, o cURL aborta com status 0 (`cURL error 28: Connection timeout after 2000 ms`).
+- **Solução de Aceleração Implementada (`/api/webhooks/pushinpay`):**
+  - **Validação em Memória (0ms):** Compara o token primeiramente com `process.env.PUSHINPAY_WEBHOOK_TOKEN`, poupando uma ida de 200ms ao banco Neon.
+  - **Transação Enxuta:** Somente as operações atômicas indispensáveis (atualizar a transação para `COMPLETED` e incrementar o saldo do usuário) rodam no caminho síncrono.
+  - **Desacoplamento em Background:** Logs de auditoria (`SystemLog`), comissões de afiliados e Web Push notifications rodam de forma assíncrona após o commit, sem segurar a resposta HTTP.
+  - **Idempotência Instantânea:** Se a transação já constar como `COMPLETED` (por aprovação manual do admin ou retentativa da PushinPay), a rota retorna HTTP 200 de imediato, permitindo que o botão "Reprocessar Webhook" no painel da PushinPay marque o status como verde com sucesso.
+
+
 
 

@@ -113,5 +113,7 @@
 - [x] **Tratamento Amigável de 'Entidade Não Encontrada' e Logs Ricos no Admin:** Tradução de erros técnicos da DirectData para mensagens humanas e transparentes (informando que o saldo não foi cobrado), suporte a números com `+55` e enriquecimento dos logs do sistema (`/admin/logs`) com dados do cliente (Nome, E-mail, Saldo) e diagnóstico explicativo.
 - [x] **Pesquisa Avançada (V2) para Telefone com Multi-Candidatos:** Integração com a API `AdvancedSearch/FilterNaturalPerson` (DirectData V2) com listagem prévia gratuita de candidatos (`telefone_candidatos`), seleção do perfil correto, cobrança somente na confirmação com `ProcessingIds` + `ViewSearch` e fallback automático para V3 (`EnriquecimentoLead`).
 - [x] **Auditoria de Custos de APIs para Telefone no Admin:** Inclusão de `telefone_candidatos` (R$ 0,00) e `telefone` V2 (R$ 0,36) nos cálculos de custos operacionais e margem de lucro em `/admin/custos` e no Dashboard Admin.
+- [x] **Otimização Crítica do Webhook PushinPay (Anti-Timeout 2000ms):** Diagnóstico de latência da rota e aceleração da resposta para menos de 400ms através de validação em memória do token, transação atômica enxuta e desacoplamento assíncrono de logs, comissões e push notifications.
+- [x] **Blindagem na Consulta de Telefone e Eliminação de Erro Inesperado:** Tratamento com `try/catch` no `FilterNaturalPerson` (V2) para garantir acionamento do fallback V3 e resposta transparente sem erros não tratados, com alinhamento de timeout no frontend para 32s.
 
 

@@ -341,9 +341,15 @@ export async function performSmartSearch(
       } else {
         // Etapa 1: Obter lista de candidatos (Pesquisa Avançada V2)
         const filterParams = isPhone ? { phoneNumber: phone } : { fullName: cleanQuery, state };
-        const filterRes = await filterNaturalPerson(filterParams);
+        let filterRes: any = null;
+        try {
+          filterRes = await filterNaturalPerson(filterParams);
+        } catch (v2Err: any) {
+          // V2 não encontrou ou deu critérios sem resultado; prossegue para fallback
+          filterRes = null;
+        }
         
-        if (filterRes.success && filterRes.listFilters && filterRes.listFilters.length > 0) {
+        if (filterRes?.success && filterRes?.listFilters && filterRes.listFilters.length > 0) {
           return {
             success: true,
             isMultiple: true,
@@ -359,7 +365,7 @@ export async function performSmartSearch(
           };
         }
 
-        // Se for telefone e a V2 não encontrou ninguém, tenta fallback na V3 de Leads
+        // Se for telefone e a V2 não encontrou candidatos, tenta fallback na V3 de Leads (Síncrono)
         if (isPhone) {
           try {
             const v3UrlDirect = `${v3Url}/api/EnriquecimentoLead?TOKEN=${token}&CELULAR=${phone}`;
@@ -377,13 +383,14 @@ export async function performSmartSearch(
           } catch {}
         }
 
-        if (filterRes.success && filterRes.numberOfPeople > 0) {
+        if (filterRes?.success && filterRes?.numberOfPeople > 0) {
           return { 
             success: false, 
             message: `Muitos resultados encontrados (${filterRes.numberOfPeople.toLocaleString('pt-BR')} homônimos). Por favor, refine a sua busca fornecendo o Estado ou nomes adicionais.` 
           };
         }
-        const errorMsg = filterRes.error?.message || filterRes.metaDados?.mensagem || 'Nenhum registro encontrado.';
+
+        const errorMsg = filterRes?.error?.message || filterRes?.metaDados?.mensagem || 'Documento Entidade Não Encontrada';
         return { 
           success: false, 
           message: sanitizeApiErrorMessage(errorMsg, isPhone ? 'telefone' : 'nome'),

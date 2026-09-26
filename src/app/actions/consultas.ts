@@ -103,16 +103,24 @@ export async function realizarConsulta(
       }
 
       const searchType = target === 'telefone' ? 'phone' : 'name';
-      const searchCandidates = async () => performSmartSearch(searchType, cleanQuery, selectedModules, state, undefined);
-      const timeoutCandidates = new Promise<{ success: boolean; message: string }>((resolve) =>
-        setTimeout(() => resolve({ 
-          success: false, 
-          message: target === 'telefone'
-            ? 'A busca por telefone demorou mais que o esperado (30s). Tente novamente.'
-            : 'A busca por candidatos demorou mais que o esperado (30s). Tente filtrar informando o Estado (UF).' 
-        }), 30000)
-      );
-      const apiResult: any = await Promise.race([searchCandidates(), timeoutCandidates]);
+      let apiResult: any = null;
+      try {
+        const searchCandidates = async () => performSmartSearch(searchType, cleanQuery, selectedModules, state, undefined);
+        const timeoutCandidates = new Promise<{ success: boolean; message: string }>((resolve) =>
+          setTimeout(() => resolve({ 
+            success: false, 
+            message: target === 'telefone'
+              ? 'A busca por telefone demorou mais que o esperado (30s). Tente novamente.'
+              : 'A busca por candidatos demorou mais que o esperado (30s). Tente filtrar informando o Estado (UF).' 
+          }), 30000)
+        );
+        apiResult = await Promise.race([searchCandidates(), timeoutCandidates]);
+      } catch (candErr: any) {
+        apiResult = {
+          success: false,
+          message: candErr.message || 'Nenhum registro localizado para os dados informados.'
+        };
+      }
       if (!apiResult.success) {
         await prisma.systemLog.create({
           data: {

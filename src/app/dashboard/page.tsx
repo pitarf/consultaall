@@ -181,7 +181,7 @@ export default function DashboardPage() {
 
     try {
       const timeoutPromise = new Promise<{ error?: string }>((resolve) => 
-        setTimeout(() => resolve({ error: 'Tempo limite excedido. O servidor demorou para responder. Tente novamente.' }), 15000)
+        setTimeout(() => resolve({ error: 'Tempo limite excedido. O servidor de consultas demorou para responder. Tente novamente.' }), 32000)
       );
       const res: any = await Promise.race([
         realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, undefined, chaveTipo === 'nome' ? chaveUf : undefined),
@@ -216,8 +216,10 @@ export default function DashboardPage() {
           setResultado(res.data);
         }
       }
-    } catch (err) {
-      toast.error('Erro inesperado ao realizar consulta.');
+    } catch (err: any) {
+      const msg = err?.message || 'Falha de conexão com o servidor. Verifique sua internet e tente novamente.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -238,7 +240,7 @@ export default function DashboardPage() {
 
     try {
       const timeoutPromise = new Promise<{ error?: string }>((resolve) => 
-        setTimeout(() => resolve({ error: 'Tempo limite excedido no processamento do candidato. Tente novamente.' }), 15000)
+        setTimeout(() => resolve({ error: 'Tempo limite excedido no processamento do candidato. Tente novamente.' }), 32000)
       );
       const res: any = await Promise.race([
         realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, candidateId),
@@ -267,8 +269,10 @@ export default function DashboardPage() {
         }
         setResultado(res.data);
       }
-    } catch (err) {
-      toast.error('Erro inesperado ao realizar consulta.');
+    } catch (err: any) {
+      const msg = err?.message || 'Falha de conexão no processamento do candidato. Tente novamente.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

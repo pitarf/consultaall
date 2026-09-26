@@ -2,6 +2,22 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.7] - 2026-09-26
+### Otimizado
+- **Aceleração e Blindagem contra Timeout no Webhook PushinPay:**
+  - Diagnóstico da causa do erro `cURL error 28: Connection timeout after 2000 ms` reportado pelo gateway PushinPay.
+  - Eliminação de queries bloqueantes ao banco de dados Neon durante a autenticação: validação em memória do token do webhook via `process.env.PUSHINPAY_WEBHOOK_TOKEN` (economia de ~200ms de latência de rede).
+  - Transação atômica ultra-enxuta: apenas a atualização de status da transação e incremento do saldo do usuário rodam no caminho crítico síncrono.
+  - Desacoplamento assíncrono de operações secundárias: logs de auditoria (`SystemLog`), comissões de afiliados e Web Push notifications disparados em background sem bloquear o retorno HTTP 200 para a PushinPay.
+  - Resposta imediata para eventos já processados (`alreadyProcessed: true`), garantindo que o botão "Reprocessar Webhook" do painel da PushinPay marque o status como verde instantaneamente.
+  - Inclusão dos handlers `GET` e `HEAD` para testes de conectividade e health check do gateway.
+
+### Corrigido
+- **Blindagem na Consulta de Telefone (Fim do 'Erro inesperado'):**
+  - Isolamento de exceções na Pesquisa Avançada V2 (`filterNaturalPerson`): quando um número não possui registro na V2, o erro 400/404 da API é capturado silenciosamente em `try/catch` e aciona imediatamente o fallback na V3 de Leads (`EnriquecimentoLead`).
+  - Alinhamento de timeouts: limite de espera do frontend no Dashboard expandido de 15s para 32s (compatível com os 30s da Server Action), eliminando cortes prematuros em conexões móveis (4G/5G).
+  - Mensagens amigáveis e não-genéricas: remoção definitiva do toast genérico "Erro inesperado ao realizar consulta", substituído pela explicação clara de que o número não consta na base nacional e que o saldo foi preservado.
+
 ## [0.9.6] - 2026-09-19
 ### Adicionado
 - **Pesquisa Avançada (V2) para Consultas de Telefone:**
