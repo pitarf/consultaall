@@ -2,6 +2,19 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.8] - 2026-10-01
+### Reativado & Aprimorado
+- **Reativação Completa do Módulo de Processos Judiciais:**
+  - Remoção do bloqueio (`isLiberado = false`) na página de processos (`/dashboard/processos`), liberando o formulário completo de busca.
+  - Ativação do link de navegação "Consultar processos" no menu lateral (`SidebarNav`) para desktop e mobile, removendo o status de indisponibilidade.
+  - Inclusão do módulo `processos` nas chaves de busca permitidas (`availableModules`) no Dashboard principal (`/dashboard`) para buscas por CPF e dados vinculados.
+  - Criação de interface visual com cartões explicativos detalhando exatamente o que pode ser pesquisado:
+    - **Pessoa Física (CPF):** Busca direta em tribunais estaduais (TJ) e federais (TRF) vinculados ao CPF.
+    - **Pessoa Jurídica (CNPJ):** Localização de processos cíveis, fiscais e trabalhistas envolvendo a empresa.
+    - **Nome Completo (Nominal):** Busca nominal com filtro opcional por Estado (UF) e pré-visualização gratuita de candidatos homônimos.
+  - Otimização do backend de consulta (`executeApi` em `realizarConsulta`): quando a consulta for exclusiva de processos via CPF ou CNPJ, a chamada vai diretamente para o endpoint de processos da DirectData (`ProcessosJudiciaisCompleta`), acelerando o retorno e poupando custos operacionais.
+  - Confirmação de exibição e sincronização da tabela de preços do módulo de processos no painel administrativo (`/admin/precos`) e na Home (`#precos`).
+
 ## [0.9.7] - 2026-09-26
 ### Otimizado
 - **Aceleração e Blindagem contra Timeout no Webhook PushinPay:**

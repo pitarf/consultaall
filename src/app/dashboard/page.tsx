@@ -104,7 +104,7 @@ export default function DashboardPage() {
     // Se for CPF (API V3 Plus)
     if (chaveTipo === 'cpf') {
       const filteredItems = category.items.filter(item => 
-        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'poder_aquisitivo', 'dados_trabalhistas'].includes(item.id)
+        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'poder_aquisitivo', 'dados_trabalhistas', 'processos'].includes(item.id)
       );
       if (filteredItems.length === 0) return null;
       return { ...category, items: filteredItems };
@@ -113,7 +113,7 @@ export default function DashboardPage() {
     // Se for Telefone, E-mail ou Nome (API V3 Smart Search)
     if (['telefone', 'email', 'nome'].includes(chaveTipo)) {
       const filteredItems = category.items.filter(item => 
-        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'poder_aquisitivo', 'dados_trabalhistas'].includes(item.id)
+        ['dados_basicos', 'documentos', 'emails', 'telefones', 'enderecos', 'parentes', 'poder_aquisitivo', 'dados_trabalhistas', 'processos'].includes(item.id)
       );
       if (filteredItems.length === 0) return null;
       return { ...category, items: filteredItems };

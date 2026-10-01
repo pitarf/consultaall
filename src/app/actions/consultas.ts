@@ -3,7 +3,7 @@
 import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { fazerConsultaAPI } from '@/services/api-consulta';
-import { performSmartSearch, consultaCpfPlus, consultaVeicular, consultaCnpjPlus } from '@/services/direct-data';
+import { performSmartSearch, consultaCpfPlus, consultaVeicular, consultaCnpjPlus, consultaProcessos } from '@/services/direct-data';
 import { validarChave } from '@/lib/validators';
 
 export async function getPricing() {
@@ -304,7 +304,25 @@ export async function realizarConsulta(
       }
 
       const executeApi = async () => {
-        if (target === 'cpf') {
+        // Se a busca for exclusivamente pelo módulo de processos judiciais via CPF ou CNPJ
+        if (selectedModules.length === 1 && selectedModules[0] === 'processos' && (target === 'cpf' || target === 'cnpj')) {
+          const procRes = await consultaProcessos(cleanQuery);
+          if (procRes.success) {
+            return {
+              success: true,
+              data: {
+                Documento: cleanQuery,
+                Tipo_Documento: target.toUpperCase(),
+                Processos_Judiciais: procRes.data
+              }
+            };
+          } else {
+            return {
+              success: false,
+              message: procRes.message || 'Nenhum processo judicial localizado para este documento.'
+            };
+          }
+        } else if (target === 'cpf') {
           return await consultaCpfPlus(cleanQuery, selectedModules);
         } else if (target === 'cnpj') {
           return await consultaCnpjPlus(cleanQuery, selectedModules);

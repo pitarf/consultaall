@@ -71,10 +71,10 @@ export function SidebarNav({ isAdmin, isSeo, role, whatsappLink }: SidebarNavPro
         <span className="text-sm">Consultar empresas</span>
       </Link>
 
-      <div title="Em desenvolvimento" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 cursor-not-allowed opacity-50 transition-colors">
+      <Link href="/dashboard/processos" className={navItemClass('/dashboard/processos')}>
         <Scale className="w-4 h-4" />
         <span className="text-sm">Consultar processos</span>
-      </div>
+      </Link>
 
       <div title="Em desenvolvimento" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 cursor-not-allowed opacity-50 transition-colors">
         <MapPin className="w-4 h-4" />

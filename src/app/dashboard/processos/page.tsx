@@ -5,23 +5,11 @@ import { realizarConsulta, getPricing } from '@/app/actions/consultas';
 import { getUserProfile } from '@/app/actions/perfil';
 import { validarChave } from '@/lib/validators';
 import { toast } from 'sonner';
-import { Search, Loader2, FlaskConical, HelpCircle, ChevronDown, Zap } from 'lucide-react';
+import { Search, Loader2, FlaskConical, HelpCircle, ChevronDown, Zap, User, Building2, Scale, Info } from 'lucide-react';
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 
 export default function ProcessosPage() {
-  const isLiberado = false; 
-
-  if (!isLiberado) {
-    return (
-      <div className="max-w-6xl mx-auto py-16 text-center space-y-4">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Módulo Indisponível</h1>
-        <p className="text-slate-500 dark:text-gray-400 max-w-md mx-auto">
-          Este módulo de dados não está ativo na sua conta ou plano atual. Entre em contato com o administrador do sistema para solicitar a ativação.
-        </p>
-      </div>
-    );
-  }
 
   const [chaveTipo, setChaveTipo] = useState('cpf');
   const [chaveValor, setChaveValor] = useState('');
@@ -167,10 +155,96 @@ export default function ProcessosPage() {
         </div>
       </div>
 
-      <section className="bg-white dark:bg-card rounded-lg shadow-sm border border-slate-200 dark:border-white/10 p-6">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">1. Chaves de busca</h2>
-        
-        <div className="flex flex-col md:flex-row shadow-sm rounded-md border border-slate-300 dark:border-white/10">
+      <section className="bg-white dark:bg-card rounded-xl shadow-sm border border-slate-200 dark:border-white/10 p-6 space-y-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Scale className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white">O que você pode pesquisar</h2>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-gray-400">
+            Selecione abaixo a modalidade de busca desejada para consultar histórico de processos judiciais:
+          </p>
+        </div>
+
+        {/* Cartões de seleção de modalidade */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => { setChaveTipo('cpf'); setChaveValor(''); }}
+            className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between ${
+              chaveTipo === 'cpf'
+                ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20 shadow-sm'
+                : 'border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className={`p-2 rounded-lg ${chaveTipo === 'cpf' ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-300'}`}>
+                  <User className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-sm text-slate-800 dark:text-white">Pessoa Física (CPF)</span>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${chaveTipo === 'cpf' ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
+                Recomendado
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-gray-400">
+              Busca direta e precisa em tribunais estaduais (TJ) e federais (TRF) vinculados ao CPF.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setChaveTipo('cnpj'); setChaveValor(''); }}
+            className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between ${
+              chaveTipo === 'cnpj'
+                ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20 shadow-sm'
+                : 'border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className={`p-2 rounded-lg ${chaveTipo === 'cnpj' ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-300'}`}>
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-sm text-slate-800 dark:text-white">Pessoa Jurídica (CNPJ)</span>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${chaveTipo === 'cnpj' ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
+                Empresas
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-gray-400">
+              Localize processos cíveis, fiscais e trabalhistas em que a empresa figura como parte.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setChaveTipo('nome'); setChaveValor(''); }}
+            className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between ${
+              chaveTipo === 'nome'
+                ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20 shadow-sm'
+                : 'border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className={`p-2 rounded-lg ${chaveTipo === 'nome' ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-300'}`}>
+                  <Search className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-sm text-slate-800 dark:text-white">Nome Completo</span>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${chaveTipo === 'nome' ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
+                Nominal
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-gray-400">
+              Busca nominal com filtro por UF. Lista candidatos homônimos para confirmação sem gastar saldo antecipadamente.
+            </p>
+          </button>
+        </div>
+
+        <div className="flex flex-col md:flex-row shadow-sm rounded-xl border border-slate-300 dark:border-white/10 overflow-hidden">
           <div className="md:w-1/4 bg-slate-50 dark:bg-black/20 border-b md:border-b-0 md:border-r border-slate-300 dark:border-white/10 relative">
             <select 
               value={chaveTipo}
@@ -178,13 +252,13 @@ export default function ProcessosPage() {
                 setChaveTipo(e.target.value);
                 setChaveValor('');
               }}
-              className="w-full h-full p-3 pr-12 bg-transparent text-slate-700 dark:text-gray-300 outline-none appearance-none cursor-pointer relative z-10 font-medium"
+              className="w-full h-full p-3.5 pr-12 bg-transparent text-slate-700 dark:text-gray-300 outline-none appearance-none cursor-pointer relative z-10 font-semibold text-sm"
             >
               <option value="cpf">CPF</option>
               <option value="cnpj">CNPJ</option>
-              <option value="nome">Nome</option>
+              <option value="nome">Nome Completo</option>
             </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary/10 text-primary p-1 rounded-md pointer-events-none z-0">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-primary/10 text-primary p-1 rounded-md pointer-events-none z-0">
               <ChevronDown className="w-4 h-4" />
             </div>
           </div>

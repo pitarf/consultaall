@@ -136,6 +136,17 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - **Desacoplamento em Background:** Logs de auditoria (`SystemLog`), comissões de afiliados e Web Push notifications rodam de forma assíncrona após o commit, sem segurar a resposta HTTP.
   - **Idempotência Instantânea:** Se a transação já constar como `COMPLETED` (por aprovação manual do admin ou retentativa da PushinPay), a rota retorna HTTP 200 de imediato, permitindo que o botão "Reprocessar Webhook" no painel da PushinPay marque o status como verde com sucesso.
 
+### 8. Módulo de Processos Judiciais e Otimização Direta
+- **Interface e Navegação (`/dashboard/processos` & `SidebarNav`):**
+  - Rota dedicada ativada na Sidebar desktop e mobile com ícone de balança (`Scale`).
+  - Formulário com três modalidades de busca visual: CPF (Pessoa Física), CNPJ (Pessoa Jurídica) e Nome Completo (Nominal com filtro por UF).
+  - Tabela de preços dinâmica: valor sincronizado com a tabela `ModulePricing` (`id: 'processos'`), com fallback padrão de R$ 1,00.
+- **Roteamento de API Otimizado (`executeApi` em `src/app/actions/consultas.ts`):**
+  - Quando a consulta contém exclusivamente o módulo `processos` via CPF ou CNPJ (`selectedModules.length === 1 && selectedModules[0] === 'processos'`), o sistema aciona diretamente o endpoint `consultaProcessos(cleanQuery)` (`/api/ProcessosJudiciaisCompleta`), sem gastar créditos com cadastros da V3 de Pessoa Física ou Jurídica.
+  - Para consultas compostas no Dashboard principal (`/dashboard`) onde o usuário marca Processos juntamente com outros módulos (ex: Dados Básicos, Telefones), a busca V3 integra a consulta de processos em paralelo anexando os dados sob a chave `Processos_Judiciais`.
+- **Pesquisa Nominal de Processos:**
+  - Realizada via `performSmartSearch('name', ...)` em duas etapas: lista homônimos gratuitamente para seleção de candidato (`candidateId`), acionando a busca de processos ao confirmar o perfil correto.
+
 
 
 

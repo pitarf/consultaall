@@ -54,5 +54,13 @@ Na página inicial do site, você encontra atalhos diretos para as páginas expl
 - Consulta de placa
 - Consulta de CNPJ
 - Consulta por nome
+- Consulta de processos judiciais
 Cada uma destas páginas explica o funcionamento técnico de cada consulta e a finalidade recomendada para cada busca.
+
+## Consulta de Processos Judiciais (/dashboard/processos)
+Agora você pode consultar o histórico de processos judiciais de qualquer pessoa física ou jurídica diretamente no painel:
+- **Pessoa Física (CPF):** Localiza ações cíveis, criminais, trabalhistas e execuções no âmbito Estadual (TJ) e Federal (TRF).
+- **Pessoa Jurídica (CNPJ):** Pesquisa processos cíveis, fiscais e trabalhistas em que a empresa figura como ré, autora ou executada.
+- **Nome Completo:** Permite buscar pelo nome completo com filtro opcional por Estado (UF). O sistema lista os candidatos homônimos primeiro de forma gratuita, permitindo que você confirme a pessoa antes de debitar seu saldo.
+- **Preço Transparente:** O valor da consulta de processos é exibido de forma dinâmica na tela antes de clicar no botão "Consultar processos".
 
