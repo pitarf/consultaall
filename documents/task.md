@@ -115,6 +115,6 @@
 - [x] **Auditoria de Custos de APIs para Telefone no Admin:** Inclusão de `telefone_candidatos` (R$ 0,00) e `telefone` V2 (R$ 0,36) nos cálculos de custos operacionais e margem de lucro em `/admin/custos` e no Dashboard Admin.
 - [x] **Otimização Crítica do Webhook PushinPay (Anti-Timeout 2000ms):** Diagnóstico de latência da rota e aceleração da resposta para menos de 400ms através de validação em memória do token, transação atômica enxuta e desacoplamento assíncrono de logs, comissões e push notifications.
 - [x] **Blindagem na Consulta de Telefone e Eliminação de Erro Inesperado:** Tratamento com `try/catch` no `FilterNaturalPerson` (V2) para garantir acionamento do fallback V3 e resposta transparente sem erros não tratados, com alinhamento de timeout no frontend para 32s.
-- [x] **Reativação do Módulo de Processos Judiciais:** Remoção de bloqueio da página (`/dashboard/processos`), ativação no menu lateral (`SidebarNav`), habilitação do módulo no Dashboard principal (`/dashboard`), cartões visuais explicativos do que dá para pesquisar (CPF, CNPJ, Nome com UF) e rota direta otimizada de consulta (`consultaProcessos`).
+- [x] **Reativação e Interface Completa de Processos Judiciais:** Remoção de bloqueio da página (`/dashboard/processos`), ativação no menu lateral (`SidebarNav`), habilitação do módulo no Dashboard principal (`/dashboard`), seletor visual de chaves (CPF, CNPJ, Nome), **seção de opções e tabela de preços com checkboxes interativos** e painel informativo de abrangência nacional.
 
 

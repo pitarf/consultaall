@@ -13,7 +13,11 @@ Todas as mudanças notáveis para este projeto serão documentadas neste arquivo
     - **Pessoa Jurídica (CNPJ):** Localização de processos cíveis, fiscais e trabalhistas envolvendo a empresa.
     - **Nome Completo (Nominal):** Busca nominal com filtro opcional por Estado (UF) e pré-visualização gratuita de candidatos homônimos.
   - Otimização do backend de consulta (`executeApi` em `realizarConsulta`): quando a consulta for exclusiva de processos via CPF ou CNPJ, a chamada vai diretamente para o endpoint de processos da DirectData (`ProcessosJudiciaisCompleta`), acelerando o retorno e poupando custos operacionais.
-  - Confirmação de exibição e sincronização da tabela de preços do módulo de processos no painel administrativo (`/admin/precos`) e na Home (`#precos`).
+  - **Tabela de Preços e Opções de Consulta (`/dashboard/processos`):**
+    - Implementação da seção "2. Opções de consulta e tabela de preços" com checkboxes interativos no mesmo padrão visual do restante do painel.
+    - Exibição transparente dos módulos e valores: Processos Judiciais (Completo - R$ 1,00), Certidões Negativas e Falências (R$ 1,00) e Score e Risco de Crédito (R$ 2,00).
+    - Totalizador dinâmico de custo em tempo real (`totalCost`), sincronizado com a tabela de preços do banco de dados (`ModulePricing`).
+    - Inclusão do painel "3. Abrangência e informações retornadas na consulta" detalhando a cobertura em Tribunais Estaduais (TJs), Justiça Federal (TRFs), Justiça do Trabalho (TRTs) e dados retornados no relatório (CNJ, partes, OAB, andamentos, valor da causa).
 
 ## [0.9.7] - 2026-09-26
 ### Otimizado

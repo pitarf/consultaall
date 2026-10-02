@@ -5,16 +5,48 @@ import { realizarConsulta, getPricing } from '@/app/actions/consultas';
 import { getUserProfile } from '@/app/actions/perfil';
 import { validarChave } from '@/lib/validators';
 import { toast } from 'sonner';
-import { Search, Loader2, FlaskConical, HelpCircle, ChevronDown, Zap, User, Building2, Scale, Info } from 'lucide-react';
+import { Search, Loader2, FlaskConical, HelpCircle, ChevronDown, Zap, User, Building2, Scale, Info, CheckCircle2, ShieldAlert, Gavel, FileCheck, Landmark } from 'lucide-react';
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 
-export default function ProcessosPage() {
+// Módulos e Opções de Consulta de Processos Judiciais com detalhamento completo
+const INITIAL_PROCESSOS_MODULES = [
+  {
+    title: 'Processos e Cobertura Judicial',
+    items: [
+      { 
+        id: 'processos', 
+        label: 'Processos Judiciais (Completo)', 
+        desc: 'Varas Cíveis, Família, Criminais, Fazenda Pública, Juizados Especiais e Execuções Fiscais em Tribunais de Justiça (TJs), Tribunais Regionais Federais (TRFs) e Justiça do Trabalho (TRTs). Inclui número CNJ, comarca, vara, assunto, partes e andamentos.',
+        cost: 1.0 
+      },
+      { 
+        id: 'certidoes', 
+        label: 'Certidões Negativas e Falências', 
+        desc: 'Checagem de certidões judiciais de distribuição, antecedentes cíveis, falências, concordatas e recuperações judiciais.',
+        cost: 1.0 
+      },
+    ]
+  },
+  {
+    title: 'Análise Jurídica e Risco Financeiro',
+    items: [
+      { 
+        id: 'analise_credito', 
+        label: 'Score e Risco de Crédito', 
+        desc: 'Avaliação de probabilidade de inadimplência, restrições financeiras e capacidade de pagamento associada ao histórico judicial.',
+        cost: 2.0 
+      },
+    ]
+  }
+];
 
+export default function ProcessosPage() {
   const [chaveTipo, setChaveTipo] = useState('cpf');
   const [chaveValor, setChaveValor] = useState('');
   const [chaveUf, setChaveUf] = useState('');
-  const [cost, setCost] = useState(1.0);
+  const [modules, setModules] = useState(INITIAL_PROCESSOS_MODULES);
+  const [selectedModules, setSelectedModules] = useState<string[]>(['processos']);
   
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<any>(null);
@@ -36,16 +68,44 @@ export default function ProcessosPage() {
           setIsAdmin(true);
         }
 
-        const processosPricing = pricing.find(p => p.id === 'processos');
-        if (processosPricing) {
-          setCost(processosPricing.price);
-        }
+        const updatedModules = INITIAL_PROCESSOS_MODULES.map(cat => ({
+          ...cat,
+          items: cat.items.map(item => {
+            const dbPrice = pricing.find(p => p.id === item.id);
+            return { ...item, cost: dbPrice ? dbPrice.price : item.cost };
+          })
+        }));
+        setModules(updatedModules);
       } catch (err) {
         console.error("Erro ao carregar dados iniciais:", err);
       }
     }
     loadData();
   }, []);
+
+  // Cálculo dinâmico do custo total baseado nos módulos selecionados
+  const totalCost = selectedModules.reduce((total, moduleId) => {
+    for (const category of modules) {
+      const found = category.items.find(item => item.id === moduleId);
+      if (found) return total + found.cost;
+    }
+    return total;
+  }, 0);
+
+  const toggleModule = (id: string) => {
+    setSelectedModules(prev => 
+      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+    );
+  };
+
+  const handleToggleAll = (categoryItems: {id: string}[], isChecked: boolean) => {
+    const ids = categoryItems.map(i => i.id);
+    if (isChecked) {
+      setSelectedModules(prev => [...new Set([...prev, ...ids])]);
+    } else {
+      setSelectedModules(prev => prev.filter(id => !ids.includes(id)));
+    }
+  };
 
   const handleSearch = async () => {
     if (loading) return;
@@ -59,16 +119,21 @@ export default function ProcessosPage() {
       return;
     }
 
+    if (selectedModules.length === 0) {
+      toast.warning('Selecione ao menos uma opção ou módulo de processo para consultar.');
+      return;
+    }
+
     setLoading(true);
     
     if (isDemo) {
       toast.info(`Iniciando consulta em modo DEMO (Sem custos)`);
     } else {
-      toast.info(`Consultando... Custo: R$ ${cost.toFixed(2).replace('.', ',')}`);
+      toast.info(`Consultando... Custo: R$ ${totalCost.toFixed(2).replace('.', ',')}`);
     }
 
     try {
-      const res = await realizarConsulta(chaveTipo, chaveValor, ['processos'], isDemo, undefined, chaveTipo === 'nome' ? chaveUf : undefined);
+      const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, undefined, chaveTipo === 'nome' ? chaveUf : undefined);
       
       if (res.error) {
         setError(res.error);
@@ -84,7 +149,7 @@ export default function ProcessosPage() {
           } else if (res.isCached) {
             toast.success(`Resultado recuperado do cache (Atualizado nas últimas 48h). Saldo preservado!`);
           } else {
-            toast.success(`Consulta realizada! Debitados: R$ ${cost.toFixed(2).replace('.', ',')}. Novo saldo: R$ ${res.newBalance.toFixed(2).replace('.', ',')}`);
+            toast.success(`Consulta realizada! Debitados: R$ ${totalCost.toFixed(2).replace('.', ',')}. Novo saldo: R$ ${res.newBalance.toFixed(2).replace('.', ',')}`);
           }
           setResultado(res.data);
         }
@@ -106,11 +171,11 @@ export default function ProcessosPage() {
     if (isDemo) {
       toast.info(`Iniciando consulta do candidato em modo DEMO (Sem custos)`);
     } else {
-      toast.info(`Consultando candidato... Custo: R$ ${cost.toFixed(2).replace('.', ',')}`);
+      toast.info(`Consultando candidato... Custo: R$ ${totalCost.toFixed(2).replace('.', ',')}`);
     }
 
     try {
-      const res = await realizarConsulta(chaveTipo, chaveValor, ['processos'], isDemo, candidateId);
+      const res = await realizarConsulta(chaveTipo, chaveValor, selectedModules, isDemo, candidateId);
       
       if (res.error) {
         setError(res.error);
@@ -121,7 +186,7 @@ export default function ProcessosPage() {
         } else if (res.isCached) {
           toast.success(`Resultado recuperado do cache (Atualizado nas últimas 48h). Saldo preservado!`);
         } else {
-          toast.success(`Consulta realizada! Debitados: R$ ${cost.toFixed(2).replace('.', ',')}. Novo saldo: R$ ${res.newBalance.toFixed(2).replace('.', ',')}`);
+          toast.success(`Consulta realizada! Debitados: R$ ${totalCost.toFixed(2).replace('.', ',')}. Novo saldo: R$ ${res.newBalance.toFixed(2).replace('.', ',')}`);
         }
         setResultado(res.data);
       }
@@ -145,13 +210,13 @@ export default function ProcessosPage() {
         </div>
       )}
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Consultar processos judiciais</h1>
-          <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Busque históricos de processos por CPF, CNPJ ou Nome.</p>
+          <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">Busque históricos de processos por CPF, CNPJ ou Nome em tribunais de todo o Brasil.</p>
         </div>
-        <div className="text-sm font-semibold bg-green-500/10 text-green-500 px-3 py-1.5 rounded-md">
-          Custo da consulta: R$ {cost.toFixed(2).replace('.', ',')}
+        <div className="text-sm font-semibold bg-green-500/10 text-green-500 px-3 py-1.5 rounded-md self-start sm:self-auto border border-green-500/20">
+          Custo da consulta: R$ {totalCost.toFixed(2).replace('.', ',')}
         </div>
       </div>
 
@@ -306,7 +371,139 @@ export default function ProcessosPage() {
         </div>
       </section>
 
-      <div className="flex flex-col md:flex-row items-center justify-end gap-6">
+      {/* 2. Opções e Tabela de Preços dos Módulos */}
+      <section className="space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <Gavel className="w-5 h-5 text-primary" />
+              2. Opções de consulta e tabela de preços
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-gray-400">
+              Escolha os conjuntos de dados jurídicos que deseja incluir no relatório:
+            </p>
+          </div>
+          <div className="text-sm font-semibold bg-green-500/10 text-green-500 px-3.5 py-1.5 rounded-lg border border-green-500/20">
+            Custo total: R$ {totalCost.toFixed(2).replace('.', ',')}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {modules.map((category, idx) => {
+            const allChecked = category.items.every(i => selectedModules.includes(i.id));
+            
+            return (
+              <div key={idx} className="bg-white dark:bg-card rounded-xl shadow-sm border border-slate-200 dark:border-white/10 p-5 flex flex-col h-full">
+                <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 dark:border-white/5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
+                    {category.title.includes('Processos') ? <Scale className="w-4 h-4 text-primary" /> : <ShieldAlert className="w-4 h-4 text-indigo-500" />}
+                    {category.title}
+                  </h3>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                    {category.items.length} opções
+                  </span>
+                </div>
+                
+                <div className="space-y-3 flex-1">
+                  {category.items.map((item: any) => (
+                    <div 
+                      key={item.id} 
+                      className={`p-3.5 rounded-xl border transition-all ${
+                        selectedModules.includes(item.id)
+                          ? 'border-primary/40 bg-primary/[0.03] dark:bg-primary/[0.06] shadow-sm'
+                          : 'border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20'
+                      }`}
+                    >
+                      <label className="flex items-start justify-between cursor-pointer gap-3">
+                        <div className="flex items-start gap-3">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedModules.includes(item.id)}
+                            onChange={() => toggleModule(item.id)}
+                            className="mt-0.5 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:bg-black/50 cursor-pointer"
+                          />
+                          <div>
+                            <span className="text-sm font-bold text-slate-800 dark:text-gray-100 block">
+                              {item.label}
+                            </span>
+                            {item.desc && (
+                              <span className="text-xs text-slate-500 dark:text-gray-400 mt-1 block leading-relaxed">
+                                {item.desc}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="shrink-0 bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-bold border border-primary/20">
+                          R$ {item.cost.toFixed(2).replace('.', ',')}
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={allChecked}
+                      onChange={(e) => handleToggleAll(category.items, e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:bg-black/50 cursor-pointer"
+                    />
+                    <span className="text-xs font-semibold text-slate-700 dark:text-gray-300">Marcar todos</span>
+                  </label>
+                  <span className="text-[11px] text-slate-400">
+                    {category.items.filter(i => selectedModules.includes(i.id)).length} de {category.items.length} ativos
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 3. Painel Informativo de Cobertura e Abrangência Nacional */}
+      <section className="bg-slate-50/80 dark:bg-black/20 rounded-xl border border-slate-200 dark:border-white/10 p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Landmark className="w-5 h-5 text-primary" />
+          <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+            3. Abrangência e informações retornadas na consulta
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div className="bg-white dark:bg-card/50 p-4 rounded-xl border border-slate-200 dark:border-white/5 space-y-1.5">
+            <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
+              <Scale className="w-4 h-4 text-blue-500" />
+              Tribunais Estaduais (TJ)
+            </div>
+            <p className="text-slate-500 dark:text-gray-400 leading-relaxed">
+              Varas Cíveis, Família, Fazenda Pública, Criminais e Juizados Especiais em todos os 27 estados do Brasil (1ª e 2ª Instâncias).
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-card/50 p-4 rounded-xl border border-slate-200 dark:border-white/5 space-y-1.5">
+            <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
+              <Landmark className="w-4 h-4 text-purple-500" />
+              Justiça Federal & Trabalho
+            </div>
+            <p className="text-slate-500 dark:text-gray-400 leading-relaxed">
+              Tribunais Regionais Federais (TRF1 a TRF6), Execuções Fiscais, Tribunais do Trabalho (TRTs - 24 regiões) e TST.
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-card/50 p-4 rounded-xl border border-slate-200 dark:border-white/5 space-y-1.5">
+            <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
+              <FileCheck className="w-4 h-4 text-emerald-500" />
+              Dados do Relatório
+            </div>
+            <p className="text-slate-500 dark:text-gray-400 leading-relaxed">
+              Número CNJ, Vara, Comarca, Assunto, Partes (Polo Ativo / Passivo), Advogados com OAB, Valor da Causa e Andamentos.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="flex flex-col md:flex-row items-center justify-end gap-6 pt-2">
         {isAdmin && (
           <div className="flex items-center gap-3 bg-white/5 p-2 px-4 rounded-2xl border border-white/5 animate-in fade-in">
             <div className={`p-1.5 rounded-lg ${isDemo ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary'}`}>
@@ -330,7 +527,7 @@ export default function ProcessosPage() {
 
         <button
           onClick={handleSearch}
-          disabled={loading || !chaveValor}
+          disabled={loading || !chaveValor || selectedModules.length === 0}
           className={`px-12 py-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-base shadow-2xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
             isDemo 
               ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-amber-500/20' 
@@ -338,7 +535,7 @@ export default function ProcessosPage() {
           }`}
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isDemo ? <FlaskConical className="w-5 h-5" /> : <Search className="w-5 h-5" />)}
-          {loading ? 'Consultando...' : (isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${cost.toFixed(2).replace('.', ',')})`)}
+          {loading ? 'Consultando...' : (isDemo ? 'Testar Consulta (Grátis)' : `Realizar Consulta (R$ ${totalCost.toFixed(2).replace('.', ',')})`)}
         </button>
       </div>
 

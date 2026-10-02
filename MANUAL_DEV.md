@@ -140,7 +140,8 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
 - **Interface e Navegação (`/dashboard/processos` & `SidebarNav`):**
   - Rota dedicada ativada na Sidebar desktop e mobile com ícone de balança (`Scale`).
   - Formulário com três modalidades de busca visual: CPF (Pessoa Física), CNPJ (Pessoa Jurídica) e Nome Completo (Nominal com filtro por UF).
-  - Tabela de preços dinâmica: valor sincronizado com a tabela `ModulePricing` (`id: 'processos'`), com fallback padrão de R$ 1,00.
+  - **Tabela de Preços e Opções de Consulta:** Módulos estruturados em `INITIAL_PROCESSOS_MODULES` (`processos`, `certidoes` e `analise_credito`) com seleção individual via checkbox, totalizador dinâmico de custo e sincronização com a tabela `ModulePricing` do banco de dados.
+  - **Painel Informativo de Cobertura Nacional:** Detalha a abrangência nos 27 Tribunais de Justiça estaduais, 6 Regiões Federais (TRF), 24 Tribunais do Trabalho (TRT/TST) e lista completa dos campos entregues no relatório (CNJ, partes, OABs, valor da causa, andamentos).
 - **Roteamento de API Otimizado (`executeApi` em `src/app/actions/consultas.ts`):**
   - Quando a consulta contém exclusivamente o módulo `processos` via CPF ou CNPJ (`selectedModules.length === 1 && selectedModules[0] === 'processos'`), o sistema aciona diretamente o endpoint `consultaProcessos(cleanQuery)` (`/api/ProcessosJudiciaisCompleta`), sem gastar créditos com cadastros da V3 de Pessoa Física ou Jurídica.
   - Para consultas compostas no Dashboard principal (`/dashboard`) onde o usuário marca Processos juntamente com outros módulos (ex: Dados Básicos, Telefones), a busca V3 integra a consulta de processos em paralelo anexando os dados sob a chave `Processos_Judiciais`.

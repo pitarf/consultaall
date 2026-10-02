@@ -62,5 +62,9 @@ Agora você pode consultar o histórico de processos judiciais de qualquer pesso
 - **Pessoa Física (CPF):** Localiza ações cíveis, criminais, trabalhistas e execuções no âmbito Estadual (TJ) e Federal (TRF).
 - **Pessoa Jurídica (CNPJ):** Pesquisa processos cíveis, fiscais e trabalhistas em que a empresa figura como ré, autora ou executada.
 - **Nome Completo:** Permite buscar pelo nome completo com filtro opcional por Estado (UF). O sistema lista os candidatos homônimos primeiro de forma gratuita, permitindo que você confirme a pessoa antes de debitar seu saldo.
-- **Preço Transparente:** O valor da consulta de processos é exibido de forma dinâmica na tela antes de clicar no botão "Consultar processos".
+- **Opções de Consulta e Tabela de Preços:**
+  - **Processos Judiciais (Completo) - R$ 1,00:** Varas Cíveis, Família, Criminais, Fazenda Pública, Juizados Especiais e Execuções Fiscais em Tribunais de Justiça (TJs), Tribunais Regionais Federais (TRFs) e Justiça do Trabalho (TRTs).
+  - **Certidões Negativas e Falências - R$ 1,00:** Certidões judiciais de distribuição, antecedentes cíveis, falências, concordatas e recuperações judiciais.
+  - **Score e Risco de Crédito - R$ 2,00:** Avaliação de probabilidade de inadimplência e capacidade financeira associada ao histórico judicial.
+- **Cálculo Dinâmico:** Você pode marcar ou desmarcar cada opção individualmente ou usar o botão "Marcar todos". O custo total é recalculado automaticamente e exibido no botão de consulta antes do débito no saldo.
 
