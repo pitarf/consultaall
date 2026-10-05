@@ -149,6 +149,15 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
 - **Pesquisa Nominal de Processos:**
   - Realizada via `performSmartSearch('name', ...)` em duas etapas: lista homônimos gratuitamente para seleção de candidato (`candidateId`), acionando a busca de processos ao confirmar o perfil correto.
 
+### 9. Gestão de Preços Dinâmica e Revalidação de Cache
+- **Tabela de Preços (`/admin/precos`):** Interface mobile-first (`PrecosClient.tsx`) com busca instantânea e filtros por categoria.
+- **Sanitização Monetária:** Permite digitação com vírgula ou ponto (ex: `4,90` ou `4.90`), convertendo automaticamente para ponto flutuante antes de salvar.
+- **Revalidação Imediata:** A Server Action `atualizarPrecoModulo` (`src/app/actions/precos.ts`) executa `revalidatePath` em cascata para:
+  - `/admin/precos` (atualiza os cards e lista do admin);
+  - `/admin/custos` (recalcula margens de lucro);
+  - `/dashboard`, `/dashboard/processos`, `/dashboard/veiculos`, `/dashboard/empresas` e `/dashboard/enderecos` (atualiza os custos das consultas para os clientes imediatamente).
+- **Auditoria de Custos de APIs (`/admin/custos`):** Alinhado o custo do módulo de *Processos Judiciais* para R$ 3,30 (custo real do provedor DirectData).
+
 
 
 

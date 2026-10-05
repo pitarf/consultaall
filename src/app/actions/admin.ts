@@ -94,11 +94,13 @@ async function checkAdminOrSeo() {
 
 // Helpers de Custo de API - Valores REAIS do painel DirectData
 // Cadastro Pessoa Física Plus = R$ 0,36 | Consulta Veicular Nacional = R$ 1,10
+// Processos Judiciais - Completa (Base) = R$ 3,30
 // Enriquecimento de Lead (email) = R$ 0,16 | Pesquisa Avançada V2 (nome/telefone) = R$ 0,36
 // FilterNaturalPerson (listagem candidatos nome/telefone) = GRÁTIS (R$ 0,00)
 function calculateApiCostForSearch(target: string, _cost: number): number {
   const t = target.toLowerCase();
   if (t === 'nome_candidatos' || t === 'telefone_candidatos') return 0;
+  if (t.includes('processo')) return 3.30;
   if (t.includes('placa') || t.includes('veiculo') || t.includes('veicular')) return 1.10;
   if (t.includes('cpf') || t.includes('cnpj')) return 0.36;
   if (t === 'nome' || t === 'telefone' || t.includes('smart')) return 0.36;
@@ -114,6 +116,7 @@ function calculateTotalApiCost(searchesByTarget: { target: string; _count: { id:
     
     let unitCost = 0;
     if (t === 'nome_candidatos' || t === 'telefone_candidatos') unitCost = 0;
+    else if (t.includes('processo')) unitCost = 3.30;
     else if (t.includes('placa') || t.includes('veiculo') || t.includes('veicular')) unitCost = 1.10;
     else if (t.includes('cpf') || t.includes('cnpj')) unitCost = 0.36;
     else if (t === 'nome' || t === 'telefone' || t.includes('smart')) unitCost = 0.36;

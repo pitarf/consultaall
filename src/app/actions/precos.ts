@@ -48,6 +48,12 @@ export async function atualizarPrecoModulo(id: string, novoPreco: number) {
   });
 
   revalidatePath('/admin/precos');
+  revalidatePath('/admin/custos');
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/processos');
+  revalidatePath('/dashboard/veiculos');
+  revalidatePath('/dashboard/empresas');
+  revalidatePath('/dashboard/enderecos');
   revalidatePath('/');
   return { success: true };
 }

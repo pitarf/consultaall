@@ -2,6 +2,17 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.0] - 2026-10-05
+### Aprimorado & Otimizado
+- **Tabela de Preços no Painel Admin (`/admin/precos`) com Design Mobile-First:**
+  - Adicionada barra de busca instantânea e tags de filtro rápido por categoria (Crédito e Histórico, Dados pessoais, Empresas, Patrimônio e Renda, etc.).
+  - Layout totalmente responsivo com cards e botões táteis largos, eliminando a compressão de colunas em telas de smartphones.
+  - Suporte inteligente na digitação de valores monetários: aceita tanto vírgula quanto ponto (ex: `4,90` ou `4.90`), com sanitização automática.
+  - Destaque informativo no módulo de *Processos Judiciais* indicando o custo real da DirectData (R$ 3,30).
+  - Revalidação imediata de cache (`revalidatePath`) para `/admin/precos`, `/admin/custos`, `/dashboard`, `/dashboard/processos` e demais páginas de consulta.
+- **Auditoria de Custos de API (`/admin/custos`):**
+  - Alinhamento do custo unitário da consulta de Processos Judiciais para R$ 3,30 (valor real cobrado pelo provedor DirectData).
+
 ## [0.9.9] - 2026-10-03
 ### Adicionado
 - **Guia Completo e Detalhado de Integração PushinPay (`documents/GUIA_PUSHINPAY.md`):**
