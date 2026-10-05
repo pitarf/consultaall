@@ -135,6 +135,7 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - **Transação Enxuta:** Somente as operações atômicas indispensáveis (atualizar a transação para `COMPLETED` e incrementar o saldo do usuário) rodam no caminho síncrono.
   - **Desacoplamento em Background:** Logs de auditoria (`SystemLog`), comissões de afiliados e Web Push notifications rodam de forma assíncrona após o commit, sem segurar a resposta HTTP.
   - **Idempotência Instantânea:** Se a transação já constar como `COMPLETED` (por aprovação manual do admin ou retentativa da PushinPay), a rota retorna HTTP 200 de imediato, permitindo que o botão "Reprocessar Webhook" no painel da PushinPay marque o status como verde com sucesso.
+- **Guia Completo da Integração:** Consulte o arquivo [`documents/GUIA_PUSHINPAY.md`](file:///c:/Git/React/ConsultaALL/documents/GUIA_PUSHINPAY.md) para o passo a passo detalhado de endpoints (CashIn, CashOut), assinaturas com Pix, QR Code e tratamento de payloads.
 
 ### 8. Módulo de Processos Judiciais e Otimização Direta
 - **Interface e Navegação (`/dashboard/processos` & `SidebarNav`):**

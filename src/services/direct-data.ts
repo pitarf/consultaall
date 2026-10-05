@@ -720,6 +720,28 @@ function pickBestCandidate(candidates: any[]) {
   return candidates[0];
 }
 
+function formatarTelefoneAvancado(t: any): string {
+  if (typeof t === 'string') return t;
+  if (!t || typeof t !== 'object') return '';
+
+  const numero = t.telefoneComDDD || 
+                 t.telefone || 
+                 (t.ddd && (t.numero || t.telefone) ? `(${t.ddd}) ${t.numero || t.telefone}` : null) || 
+                 t.numero || 
+                 t.number || 
+                 '';
+
+  const info = [
+    t.operadora,
+    t.whatsApp ? 'WhatsApp' : null,
+    t.tipoTelefone || (t.tipo && t.tipo !== 'N/I' ? t.tipo : null),
+    t.classificacao
+  ].filter(Boolean).join(' - ');
+
+  if (!numero) return '';
+  return info ? `${numero} (${info})` : numero;
+}
+
 function transformDirectDataAdvanced(rawResponse: any, selectedModules: string[]) {
   const result: any = {};
   const raw = rawResponse.retorno || rawResponse;
@@ -742,16 +764,20 @@ function transformDirectDataAdvanced(rawResponse: any, selectedModules: string[]
 
   if (selectedModules.includes('telefones')) {
     result['Telefones'] = {
-      lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => {
-        if (typeof t === 'string') return t;
-        return `${t.ddd || ''}${t.numero || ''} (${t.tipo || 'N/I'})`;
-      }) : []
+      lista: Array.isArray(raw.telefones) 
+        ? raw.telefones.map(formatarTelefoneAvancado).filter(Boolean)
+        : []
     };
   }
 
   if (selectedModules.includes('emails')) {
     result['Emails'] = {
-      lista: Array.isArray(raw.emails) ? raw.emails.map((e: any) => e.email || e) : []
+      lista: Array.isArray(raw.emails) 
+        ? raw.emails.map((e: any) => {
+            if (typeof e === 'string') return e;
+            return e.enderecoEmail || e.email || e.mail || '';
+          }).filter(Boolean)
+        : []
     };
   }
 
@@ -772,7 +798,28 @@ function transformDirectDataAdvanced(rawResponse: any, selectedModules: string[]
   if (selectedModules.includes('parentes')) {
     const parentes = raw.parentescos || raw.parentes;
     result['Vinculos_Familiares'] = {
-      lista: Array.isArray(parentes) ? parentes.map((p: any) => `${p.nome} (${p.vinculo || 'Parente'})`) : []
+      lista: Array.isArray(parentes) ? parentes.map((p: any) => {
+        if (typeof p === 'string') return p;
+        const vinculo = p.grauParentesco || p.vinculo || 'Parente';
+        return `${p.nome} (${vinculo})`;
+      }) : []
+    };
+  }
+
+  if (selectedModules.includes('poder_aquisitivo')) {
+    result['Poder_Aquisitivo'] = {
+      renda_estimada: raw.rendaEstimada ? `R$ ${raw.rendaEstimada}` : undefined,
+      faixa_salarial: raw.rendaFaixaSalarial,
+      classe_social: raw.classeSocial,
+      perfil_domiciliar: raw.perfilDomiciliar?.classeSocialFamiliar || raw.perfilDomiciliar?.tipoDomicilio
+    };
+  }
+
+  if (selectedModules.includes('dados_trabalhistas')) {
+    result['Dados_Trabalhistas'] = {
+      profissao: raw.cbo,
+      codigo_cbo: raw.codigoCBO,
+      renda_estimada: raw.rendaEstimada ? `R$ ${raw.rendaEstimada}` : undefined
     };
   }
 

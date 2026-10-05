@@ -116,5 +116,6 @@
 - [x] **Otimização Crítica do Webhook PushinPay (Anti-Timeout 2000ms):** Diagnóstico de latência da rota e aceleração da resposta para menos de 400ms através de validação em memória do token, transação atômica enxuta e desacoplamento assíncrono de logs, comissões e push notifications.
 - [x] **Blindagem na Consulta de Telefone e Eliminação de Erro Inesperado:** Tratamento com `try/catch` no `FilterNaturalPerson` (V2) para garantir acionamento do fallback V3 e resposta transparente sem erros não tratados, com alinhamento de timeout no frontend para 32s.
 - [x] **Reativação e Interface Completa de Processos Judiciais:** Remoção de bloqueio da página (`/dashboard/processos`), ativação no menu lateral (`SidebarNav`), habilitação do módulo no Dashboard principal (`/dashboard`), seletor visual de chaves (CPF, CNPJ, Nome), **seção de opções e tabela de preços com checkboxes interativos** e painel informativo de abrangência nacional.
+- [x] **Manual Detalhado de Integração PushinPay (`documents/GUIA_PUSHINPAY.md`):** Elaboração de guia completo com links oficiais, geração de QR Code Pix (Cash-In), arquitetura anti-timeout de Webhook (2000ms), modelo de assinaturas/recorrência com Pix e saques (Cash-Out).
 
 

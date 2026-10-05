@@ -2,6 +2,15 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [0.9.9] - 2026-10-03
+### Adicionado
+- **Guia Completo e Detalhado de Integração PushinPay (`documents/GUIA_PUSHINPAY.md`):**
+  - Passo a passo completo para emissão de cobranças Pix avulsas com QR Code dinâmico e código Copia e Cola (`POST /api/pix/cashIn`).
+  - Documentação detalhada sobre a arquitetura do Webhook, incluindo a blindagem obrigatória contra o timeout estrito de 2000ms da PushinPay e resposta HTTP 200 em menos de 500ms.
+  - Modelagem e fluxo arquitetural para pagamentos por assinatura e recorrência com Pix (gestão de ciclos, faturas e automação via Cron Job).
+  - Guia de transferências e saques Pix (Cash-Out via `POST /api/pix/cashOut`).
+  - Checklist completo de segurança, tratamento de valores em centavos e idempotência financeira.
+
 ## [0.9.8] - 2026-10-01
 ### Reativado & Aprimorado
 - **Reativação Completa do Módulo de Processos Judiciais:**
