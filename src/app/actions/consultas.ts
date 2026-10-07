@@ -10,6 +10,13 @@ export async function getPricing() {
   return prisma.modulePricing.findMany();
 }
 
+export async function getSearchSettings() {
+  const setting = await prisma.systemSetting.findFirst();
+  return {
+    allowNameSearch: setting?.allowNameSearch ?? true,
+  };
+}
+
 export async function realizarConsulta(
   target: string, 
   query: string, 
@@ -24,6 +31,14 @@ export async function realizarConsulta(
     return { error: 'Sessão expirada. Faça login novamente.' };
   }
 
+  // Se a busca for por Nome, verifica se está habilitada globalmente nas configurações do sistema
+  if (target === 'nome') {
+    const settings = await prisma.systemSetting.findFirst();
+    if (settings && settings.allowNameSearch === false) {
+      return { error: 'A consulta por Nome está temporariamente desativada pela plataforma.' };
+    }
+  }
+
   // Validação de Segurança e Sanitização (Remoção de espaços, parênteses, traços e símbolos)
   let cleanQuery = query.trim();
   if (target === 'telefone') {
@@ -36,6 +51,8 @@ export async function realizarConsulta(
     cleanQuery = cleanQuery.replace(/\D/g, '');
   } else if (target === 'placa') {
     cleanQuery = cleanQuery.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  } else if (target === 'nome') {
+    cleanQuery = cleanQuery.replace(/\s+/g, ' ');
   }
 
   const validation = validarChave(target, cleanQuery);
@@ -44,18 +61,36 @@ export async function realizarConsulta(
   }
 
   // Verifica se o dado está na Blocklist (Bloqueio LGPD)
-  const blocklistValue = target === 'placa' 
-    ? cleanQuery.replace(/-/g, '').toUpperCase() 
-    : cleanQuery.replace(/\D/g, '');
+  let isBlocked = false;
+  if (target === 'nome') {
+    const normalizedName = cleanQuery
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
 
-  if (blocklistValue) {
-    const isBlocked = await prisma.blockedData.findFirst({
-      where: { value: blocklistValue }
+    const blocked = await prisma.blockedData.findFirst({
+      where: { type: 'NOME', value: normalizedName }
     });
-
-    if (isBlocked) {
-      return { error: 'Este registro está indisponível para consulta por solicitação do titular (Direitos LGPD).' };
+    if (blocked) isBlocked = true;
+  } else if (target === 'placa') {
+    const cleanPlaca = cleanQuery.replace(/-/g, '').toUpperCase();
+    const blocked = await prisma.blockedData.findFirst({
+      where: { value: cleanPlaca }
+    });
+    if (blocked) isBlocked = true;
+  } else {
+    const digits = cleanQuery.replace(/\D/g, '');
+    if (digits) {
+      const blocked = await prisma.blockedData.findFirst({
+        where: { value: digits }
+      });
+      if (blocked) isBlocked = true;
     }
+  }
+
+  if (isBlocked) {
+    return { error: 'Este registro está indisponível para consulta por solicitação do titular (Direitos LGPD).' };
   }
 
   if (!selectedModules || selectedModules.length === 0) {
@@ -151,6 +186,33 @@ export async function realizarConsulta(
 
       // Se retornou múltiplos candidatos (Etapa 1 V2 grátis)
       if (apiResult.isMultiple) {
+        if (Array.isArray(apiResult.candidates) && apiResult.candidates.length > 0) {
+          const allBlocked = await prisma.blockedData.findMany({
+            select: { type: true, value: true }
+          });
+
+          if (allBlocked.length > 0) {
+            const blockedNames = new Set(allBlocked.filter(b => b.type === 'NOME').map(b => b.value));
+            const blockedCpfs = new Set(allBlocked.filter(b => b.type === 'CPF').map(b => b.value));
+
+            apiResult.candidates = apiResult.candidates.filter((cand: any) => {
+              const candNameNorm = cand.name
+                ? cand.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase()
+                : '';
+              if (blockedNames.has(candNameNorm)) return false;
+
+              const candCpf = cand.taxIdNumber ? cand.taxIdNumber.replace(/\D/g, '') : '';
+              if (candCpf && blockedCpfs.has(candCpf)) return false;
+
+              return true;
+            });
+
+            if (apiResult.candidates.length === 0) {
+              return { error: 'Este registro está indisponível para consulta por solicitação do titular (Direitos LGPD).' };
+            }
+          }
+        }
+
         try {
           const sortedModules = [...selectedModules].sort().join(',');
           await prisma.searchHistory.create({
@@ -406,6 +468,29 @@ export async function realizarConsulta(
     // Se for teste, retorna agora sem cobrar e sem salvar histórico (opcional salvar como rascunho)
     if (effectiveIsTest) {
       return { success: true, data: apiResult.data, newBalance: user.balance, isDemo: true };
+    }
+
+    // Checagem LGPD de segurança pós-retorno da API
+    if (apiResult.data) {
+      const pData = apiResult.data.Dados_Pessoais || apiResult.data.dados_pessoais;
+      const retCpf = pData?.cpf ? pData.cpf.replace(/\D/g, '') : null;
+      const retNome = pData?.nome
+        ? pData.nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase()
+        : null;
+
+      if (retCpf || retNome) {
+        const isBlockedPost = await prisma.blockedData.findFirst({
+          where: {
+            OR: [
+              ...(retCpf ? [{ type: 'CPF', value: retCpf }] : []),
+              ...(retNome ? [{ type: 'NOME', value: retNome }] : [])
+            ]
+          }
+        });
+        if (isBlockedPost) {
+          return { error: 'Este registro está indisponível para consulta por solicitação do titular (Direitos LGPD).' };
+        }
+      }
     }
 
 function hasMeaningfulData(val: any): boolean {

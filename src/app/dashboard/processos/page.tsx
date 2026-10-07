@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { realizarConsulta, getPricing } from '@/app/actions/consultas';
+import { realizarConsulta, getPricing, getSearchSettings } from '@/app/actions/consultas';
 import { getUserProfile } from '@/app/actions/perfil';
 import { validarChave } from '@/lib/validators';
 import { toast } from 'sonner';
@@ -54,18 +54,27 @@ export default function ProcessosPage() {
   const [candidatePage, setCandidatePage] = useState(1);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [allowNameSearch, setAllowNameSearch] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [pricing, profile] = await Promise.all([
+        const [pricing, profile, searchSettings] = await Promise.all([
           getPricing(),
-          getUserProfile()
+          getUserProfile(),
+          getSearchSettings()
         ]);
 
         if (profile?.role === 'ADMIN') {
           setIsAdmin(true);
+        }
+
+        if (searchSettings) {
+          setAllowNameSearch(searchSettings.allowNameSearch);
+          if (!searchSettings.allowNameSearch && chaveTipo === 'nome') {
+            setChaveTipo('cpf');
+          }
         }
 
         const updatedModules = INITIAL_PROCESSOS_MODULES.map(cat => ({
@@ -232,7 +241,7 @@ export default function ProcessosPage() {
         </div>
 
         {/* Cartões de seleção de modalidade */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className={`grid grid-cols-1 ${allowNameSearch ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-3`}>
           <button
             type="button"
             onClick={() => { setChaveTipo('cpf'); setChaveValor(''); }}
@@ -283,30 +292,32 @@ export default function ProcessosPage() {
             </p>
           </button>
 
-          <button
-            type="button"
-            onClick={() => { setChaveTipo('nome'); setChaveValor(''); }}
-            className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between ${
-              chaveTipo === 'nome'
-                ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20 shadow-sm'
-                : 'border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className={`p-2 rounded-lg ${chaveTipo === 'nome' ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-300'}`}>
-                  <Search className="w-4 h-4" />
+          {allowNameSearch && (
+            <button
+              type="button"
+              onClick={() => { setChaveTipo('nome'); setChaveValor(''); }}
+              className={`p-4 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                chaveTipo === 'nome'
+                  ? 'border-primary bg-primary/5 dark:bg-primary/10 ring-2 ring-primary/20 shadow-sm'
+                  : 'border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className={`p-2 rounded-lg ${chaveTipo === 'nome' ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-300'}`}>
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <span className="font-bold text-sm text-slate-800 dark:text-white">Nome Completo</span>
                 </div>
-                <span className="font-bold text-sm text-slate-800 dark:text-white">Nome Completo</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${chaveTipo === 'nome' ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
+                  Nominal
+                </span>
               </div>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${chaveTipo === 'nome' ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
-                Nominal
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-gray-400">
-              Busca nominal com filtro por UF. Lista candidatos homônimos para confirmação sem gastar saldo antecipadamente.
-            </p>
-          </button>
+              <p className="text-xs text-slate-500 dark:text-gray-400">
+                Busca nominal com filtro por UF. Lista candidatos homônimos para confirmação sem gastar saldo antecipadamente.
+              </p>
+            </button>
+          )}
         </div>
 
         <div className="flex flex-col md:flex-row shadow-sm rounded-xl border border-slate-300 dark:border-white/10 overflow-hidden">
@@ -321,7 +332,7 @@ export default function ProcessosPage() {
             >
               <option value="cpf">CPF</option>
               <option value="cnpj">CNPJ</option>
-              <option value="nome">Nome Completo</option>
+              {allowNameSearch && <option value="nome">Nome Completo</option>}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-primary/10 text-primary p-1 rounded-md pointer-events-none z-0">
               <ChevronDown className="w-4 h-4" />

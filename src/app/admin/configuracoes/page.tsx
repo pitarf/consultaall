@@ -39,6 +39,7 @@ export default function AdminSettingsPage() {
     directDataV3Url: '',
     apiConsultaToken: '',
     apiConsultaUrl: '',
+    allowNameSearch: true,
   });
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function AdminSettingsPage() {
           directDataV3Url: data.directDataV3Url || '',
           apiConsultaToken: data.apiConsultaToken || '',
           apiConsultaUrl: data.apiConsultaUrl || '',
+          allowNameSearch: data.allowNameSearch ?? true,
         });
       } catch {
         toast.error('Erro ao carregar configurações');
@@ -509,6 +511,39 @@ export default function AdminSettingsPage() {
               </div>
             </section>
           </>
+        )}
+
+        {/* ====== REGRAS DE CONSULTA E LGPD ====== */}
+        {role === 'ADMIN' && (
+          <section className="bg-white dark:bg-card border border-slate-200 dark:border-white/10 shadow-sm rounded-3xl p-8 space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4 mb-6">
+              <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Regras de Consulta e LGPD</h2>
+                <p className="text-slate-500 dark:text-gray-400 text-sm">Controle de chaves de busca disponíveis para os usuários na plataforma.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5">
+              <div className="space-y-1 max-w-xl">
+                <span className="font-bold text-slate-900 dark:text-white text-base">Permitir Consulta por Nome</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Quando desativado, a opção de busca por &quot;Nome Completo&quot; é ocultada e bloqueada no Dashboard, nos Processos e nas demais telas, mantendo permitidas apenas consultas por CPF, CNPJ, Placa e Telefone.
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.allowNameSearch}
+                  onChange={(e) => setSettings({ ...settings, allowNameSearch: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+          </section>
         )}
 
         {/* ====== INFORMAÇÕES LEGAIS (PARA TERMOS DE USO) ====== */}

@@ -19,7 +19,7 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
   const [loading, setLoading] = useState(false);
 
   // Form states
-  const [type, setType] = useState<'CPF' | 'TELEFONE' | 'CNPJ' | 'PLACA'>('CPF');
+  const [type, setType] = useState<'CPF' | 'TELEFONE' | 'CNPJ' | 'PLACA' | 'NOME'>('CPF');
   const [value, setValue] = useState('');
   const [reason, setReason] = useState('');
 
@@ -37,7 +37,7 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
     if (res.error) {
       toast.error(res.error);
     } else {
-      toast.success('Documento/Telefone bloqueado com sucesso!');
+      toast.success('Registro bloqueado com sucesso!');
       setValue('');
       setReason('');
       
@@ -73,7 +73,7 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
       <div className="bg-white dark:bg-card border border-slate-200 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <Ban className="w-5 h-5 text-red-500" />
-          Bloquear Novo CPF, CNPJ, Placa ou Telefone
+          Bloquear Novo CPF, CNPJ, Placa, Telefone ou Nome
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
           Os dados inseridos aqui serão bloqueados para consultas em todos os módulos da plataforma imediatamente.
@@ -91,16 +91,19 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
               <option value="TELEFONE">Telefone</option>
               <option value="CNPJ">CNPJ</option>
               <option value="PLACA">Placa</option>
+              <option value="NOME">Nome Completo</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Valor (ex: apenas números)</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
+              {type === 'NOME' ? 'Nome Completo (Mín. 2 palavras)' : type === 'PLACA' ? 'Placa do Veículo' : 'Valor (apenas números)'}
+            </label>
             <input
               type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder={type === 'PLACA' ? 'ABC1D23 ou ABC-1234' : 'Apenas números'}
+              placeholder={type === 'PLACA' ? 'ABC1D23 ou ABC-1234' : type === 'NOME' ? 'Ex: João da Silva Sauro' : 'Apenas números'}
               required
               className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl p-3.5 text-sm font-semibold text-slate-800 dark:text-white outline-none focus:border-red-500"
             />

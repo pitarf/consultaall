@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { realizarConsulta, getPricing } from '@/app/actions/consultas';
+import { realizarConsulta, getPricing, getSearchSettings } from '@/app/actions/consultas';
 import { getUserProfile } from '@/app/actions/perfil';
 import { validarChave } from '@/lib/validators';
 import { toast } from 'sonner';
@@ -65,6 +65,7 @@ export default function DashboardPage() {
   const [candidatePage, setCandidatePage] = useState(1);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [allowNameSearch, setAllowNameSearch] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
 
@@ -72,15 +73,23 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [pricing, profile] = await Promise.all([
+        const [pricing, profile, searchSettings] = await Promise.all([
           getPricing(),
-          getUserProfile()
+          getUserProfile(),
+          getSearchSettings()
         ]);
 
         if (profile) {
           setUserProfile(profile);
           if (profile.role === 'ADMIN') {
             setIsAdmin(true);
+          }
+        }
+
+        if (searchSettings) {
+          setAllowNameSearch(searchSettings.allowNameSearch);
+          if (!searchSettings.allowNameSearch && chaveTipo === 'nome') {
+            setChaveTipo('cpf');
           }
         }
 
@@ -326,7 +335,7 @@ export default function DashboardPage() {
               className="w-full h-full p-3 pr-12 bg-transparent text-slate-700 dark:text-gray-300 outline-none appearance-none cursor-pointer relative z-10 font-medium"
             >
               <option value="cpf">CPF</option>
-              <option value="nome">Nome</option>
+              {allowNameSearch && <option value="nome">Nome</option>}
               <option value="telefone">Telefone</option>
               <option value="email">E-mail</option>
             </select>

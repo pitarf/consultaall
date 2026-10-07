@@ -158,6 +158,24 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - `/dashboard`, `/dashboard/processos`, `/dashboard/veiculos`, `/dashboard/empresas` e `/dashboard/enderecos` (atualiza os custos das consultas para os clientes imediatamente).
 - **Auditoria de Custos de APIs (`/admin/custos`):** Alinhado o custo do módulo de *Processos Judiciais* para R$ 3,30 (custo real do provedor DirectData).
 
+### 10. Bloqueio de Consultas por Nome e Governança LGPD
+- **Modelagem de Bloqueios (`BlockedData`):**
+  - O model Prisma `BlockedData` suporta nativamente o tipo `'NOME'`, além de `'CPF'`, `'CNPJ'`, `'TELEFONE'` e `'PLACA'`.
+  - **Higienização:** Nomes são normalizados usando decomposição canônica (`normalize('NFD')`), removendo acentos diacríticos (`replace(/[\u0300-\u036f]/g, '')`), espaços redundantes e convertidos para maiúsculas.
+  - **Validação de Entrada:** A Server Action `addBlockedData` exige no mínimo 2 palavras (nome e sobrenome) para evitar bloqueios abrangentes indesejados.
+- **Controle Global no Sistema (`SystemSetting.allowNameSearch`):**
+  - Armazena um booleano (padrão `true`) indicando se a busca por nome está habilitada na plataforma.
+  - O painel administrativo (`/admin/configuracoes`) conta com a seção "Regras de Consulta e LGPD" com switch reativo para ativar/desativar consultas nominais a qualquer momento.
+- **Adaptação e Segurança no Frontend:**
+  - A Server Action `getSearchSettings()` exporta a configuração para os componentes do dashboard (`/dashboard`, `/dashboard/processos`, `/dashboard/enderecos`).
+  - Quando `allowNameSearch` é falso, as opções de busca nominal são omitidas dos formulários e seletores de chaves de busca. Se o usuário já estiver na aba de nome, o estado recai automaticamente para `'cpf'`.
+- **Blindagem no Backend de Consultas (`realizarConsulta`):**
+  - **Validação Prévia:** Se `target === 'nome'` e `allowNameSearch === false`, a requisição é rejeitada antes de qualquer consumo de API ou banco.
+  - **Verificação de Blocklist Direta:** Intercepta consultas quando o nome buscado consta na tabela `BlockedData`.
+  - **Filtragem de Homônimos (`candidates`):** Na busca por lista de candidatos, o backend filtra todos os perfis cujos nomes ou CPFs coincidam com registros de `BlockedData`.
+  - **Checagem Pós-API:** Impede a entrega de relatórios ou cobrança caso os dados finais retornados pela API pertençam a um titular bloqueado.
+
+
 
 
 

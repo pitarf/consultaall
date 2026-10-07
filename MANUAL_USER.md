@@ -68,3 +68,14 @@ Agora você pode consultar o histórico de processos judiciais de qualquer pesso
   - **Score e Risco de Crédito - R$ 2,00:** Avaliação de probabilidade de inadimplência e capacidade financeira associada ao histórico judicial.
 - **Cálculo Dinâmico:** Você pode marcar ou desmarcar cada opção individualmente ou usar o botão "Marcar todos". O custo total é recalculado automaticamente e exibido no botão de consulta antes do débito no saldo.
 
+## Bloqueios LGPD e Controle de Consultas por Nome (Apenas Administradores)
+No painel administrativo, foram integrados dois recursos fundamentais de governança e conformidade:
+- **Bloqueio de Nomes no Painel LGPD (`/admin/bloqueios`):**
+  - Agora você pode bloquear pessoas diretamente pelo **Nome Completo** (além de CPF, CNPJ, Placa e Telefone).
+  - O sistema normaliza automaticamente a digitação (remove acentos e espaços extras). Uma vez bloqueado, qualquer tentativa de pesquisar por esse nome em qualquer módulo da plataforma será impedida imediatamente, protegendo a privacidade do titular.
+  - Caso o titular apareça em uma listagem de homônimos de terceiros, o sistema também remove automaticamente o perfil da lista sem cobrar do cliente.
+- **Desativação Global de Consultas por Nome (`/admin/configuracoes`):**
+  - Caso prefira que os usuários realizem consultas exclusivamente por chaves exatas (CPF, CNPJ, Placa ou Telefone), basta acessar `/admin/configuracoes` > "Regras de Consulta e LGPD" e desativar o botão **"Permitir Consulta por Nome"**.
+  - Com essa opção desmarcada, a opção "Nome" é automaticamente ocultada do Dashboard, da busca de Processos Judiciais e demais telas da plataforma.
+
+

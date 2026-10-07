@@ -117,4 +117,22 @@
 - [x] **Blindagem na Consulta de Telefone e Eliminação de Erro Inesperado:** Tratamento com `try/catch` no `FilterNaturalPerson` (V2) para garantir acionamento do fallback V3 e resposta transparente sem erros não tratados, com alinhamento de timeout no frontend para 32s.
 - [x] **Tabela de Preços Mobile-First no Admin (`/admin/precos`):** Refatoração da interface de gestão de preços para dispositivos móveis com barra de busca rápida, tags de categorias, suporte inteligente a vírgula/ponto, destaque informativo do custo real de APIs (Processos Judiciais R$ 3,30) e revalidação instantânea de rotas.
 
+## SPLIT 7: Bloqueio de Consultas por Nome e Blindagem LGPD (✅ CONCLUÍDO)
+*Este split foca na conformidade com a LGPD e no controle administrativo granular de chaves de busca.*
+- [x] **Suporte a NOME no Painel de Bloqueios LGPD (`/admin/bloqueios`):**
+  - Inclusão da opção "Nome Completo" no formulário de inclusão de bloqueios ao lado de CPF, CNPJ, Placa e Telefone.
+  - Higienização com normalização NFD (remoção de acentos), caixa alta e exigência de nome e sobrenome.
+  - Exibição de badge e valor formatado na tabela de registros bloqueados.
+- [x] **Controle Global de Consultas por Nome (`/admin/configuracoes`):**
+  - Adição do campo `allowNameSearch` no schema do banco (`SystemSetting`).
+  - Seção visual "Regras de Consulta e LGPD" com botão liga/desliga para ativar ou desativar consultas nominais no sistema.
+- [x] **Ocultação Dinâmica nas Telas de Consulta:**
+  - `Dashboard` (`/dashboard`), `Processos Judiciais` (`/dashboard/processos`) e `Endereços` (`/dashboard/enderecos`) respeitam a flag `allowNameSearch`, ocultando cartões e opções de busca por nome caso desativada.
+- [x] **Blindagem no Backend (`realizarConsulta`):**
+  - Bloqueio imediato caso o usuário tente consultar por nome enquanto o recurso estiver desativado.
+  - Interceptação automática na blocklist `BlockedData` por nome completo normalizado.
+  - Filtragem preventiva na listagem de candidatos homônimos (`candidates`), expurgando candidatos bloqueados por Nome ou CPF.
+  - Checagem pós-API para impedir exibição de dados e cobrança indevida de titulares bloqueados.
+
+
 

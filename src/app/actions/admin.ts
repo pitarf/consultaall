@@ -417,6 +417,7 @@ export async function updateSystemSettings(data: {
   directDataV3Url?: string;
   apiConsultaToken?: string;
   apiConsultaUrl?: string;
+  allowNameSearch?: boolean;
 }) {
   const user = await checkAdminOrSeo();
   
@@ -1184,21 +1185,32 @@ export async function getBlockedDataList() {
 }
 
 /**
- * Adiciona um valor (CPF, Telefone, etc) à lista de bloqueios LGPD
+ * Adiciona um valor (CPF, Telefone, CNPJ, Placa ou Nome) à lista de bloqueios LGPD
  */
-export async function addBlockedData(type: 'CPF' | 'TELEFONE' | 'CNPJ' | 'PLACA', value: string, reason?: string) {
+export async function addBlockedData(type: 'CPF' | 'TELEFONE' | 'CNPJ' | 'PLACA' | 'NOME', value: string, reason?: string) {
   await checkAdmin();
 
   if (!value.trim()) {
     return { error: 'Por favor, insira um valor para bloquear.' };
   }
 
-  // Higieniza o valor (remove pontuações e espaços para CPF, CNPJ e Telefone)
+  // Higieniza o valor conforme o tipo
   let cleanValue = value.trim();
-  if (type !== 'PLACA') {
-    cleanValue = value.replace(/\D/g, '');
+  if (type === 'NOME') {
+    cleanValue = value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toUpperCase();
+
+    if (cleanValue.split(' ').length < 2) {
+      return { error: 'Por favor, insira o nome completo (ao menos nome e sobrenome) para aplicar o bloqueio.' };
+    }
+  } else if (type === 'PLACA') {
+    cleanValue = value.replace(/-/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
   } else {
-    cleanValue = value.replace(/-/g, '').toUpperCase();
+    cleanValue = value.replace(/\D/g, '');
   }
 
   try {
@@ -1207,7 +1219,7 @@ export async function addBlockedData(type: 'CPF' | 'TELEFONE' | 'CNPJ' | 'PLACA'
     });
 
     if (exists) {
-      return { error: 'Este documento/telefone já está bloqueado no sistema.' };
+      return { error: 'Este registro já está bloqueado no sistema.' };
     }
 
     await prisma.blockedData.create({

@@ -98,6 +98,9 @@ model SystemSetting {
   apiConsultaToken      String?
   apiConsultaUrl        String?
   
+  // Controle de Módulos de Busca
+  allowNameSearch       Boolean? @default(true)
+  
   updatedAt             DateTime @updatedAt
 }
 
@@ -199,7 +202,7 @@ model Redirect {
 
 model BlockedData {
   id        String   @id @default(uuid())
-  type      String   // "CPF", "TELEFONE", "CNPJ", "PLACA"
+  type      String   // "CPF", "TELEFONE", "CNPJ", "PLACA", "NOME"
   value     String   @unique // Valor higienizado/sem pontuação
   reason    String?
   createdAt DateTime @default(now())

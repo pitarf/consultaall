@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { realizarConsulta, getPricing } from '@/app/actions/consultas';
+import { realizarConsulta, getPricing, getSearchSettings } from '@/app/actions/consultas';
 import { getUserProfile } from '@/app/actions/perfil';
 import { validarChave } from '@/lib/validators';
 import { toast } from 'sonner';
@@ -35,18 +35,27 @@ export default function EnderecosPage() {
   const [candidatePage, setCandidatePage] = useState(1);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [allowNameSearch, setAllowNameSearch] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [pricing, profile] = await Promise.all([
+        const [pricing, profile, searchSettings] = await Promise.all([
           getPricing(),
-          getUserProfile()
+          getUserProfile(),
+          getSearchSettings()
         ]);
 
         if (profile?.role === 'ADMIN') {
           setIsAdmin(true);
+        }
+
+        if (searchSettings) {
+          setAllowNameSearch(searchSettings.allowNameSearch);
+          if (!searchSettings.allowNameSearch && chaveTipo === 'nome') {
+            setChaveTipo('cpf');
+          }
         }
 
         const dbEnderecos = pricing.find(p => p.id === 'enderecos');
@@ -187,7 +196,7 @@ export default function EnderecosPage() {
             >
               <option value="cpf">CPF</option>
               <option value="cnpj">CNPJ</option>
-              <option value="nome">Nome</option>
+              {allowNameSearch && <option value="nome">Nome</option>}
             </select>
             <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary/10 text-primary p-1 rounded-md pointer-events-none z-0">
               <ChevronDown className="w-4 h-4" />

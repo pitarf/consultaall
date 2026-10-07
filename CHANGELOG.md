@@ -2,7 +2,20 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
-## [1.0.0] - 2026-10-05
+## [1.0.1] - 2026-10-07
+### Adicionado & Aprimorado
+- **Bloqueio de Consultas por Nome e Conformidade LGPD Completa:**
+  - **Suporte a NOME no Painel de Bloqueios LGPD (`/admin/bloqueios`):** Agora é possível cadastrar nomes completos de titulares para bloqueio imediato, ao lado de CPF, CNPJ, Placa e Telefone.
+  - **Higienização e Normalização Estrita:** Normalização NFD para remoção automática de acentos, padronização em caixa alta e espaços limpos garantem que qualquer variação de grafia (ex: "João da Silva", "joao da silva") seja interceptada.
+  - **Controle Global de Consultas por Nome (`/admin/configuracoes`):**
+    - Adicionada a seção "Regras de Consulta e LGPD" com botão liga/desliga para "Permitir Consulta por Nome".
+    - Permite desativar globalmente a busca por Nome Completo em toda a plataforma, restringindo o sistema apenas a CPF, CNPJ, Placa e Telefone.
+  - **Adaptação Dinâmica das Interfaces de Consulta:**
+    - `Dashboard` (`/dashboard`), `Processos Judiciais` (`/dashboard/processos`) e `Endereços` (`/dashboard/enderecos`) ocultam automaticamente a opção de busca nominal quando desativada.
+  - **Blindagem no Backend de Consultas (`realizarConsulta`):**
+    - Rejeição imediata se a busca nominal estiver desativada pelo administrador.
+    - Filtragem preventiva na lista de candidatos (`candidates`), ocultando homônimos cujos nomes ou CPFs estejam na lista de bloqueios LGPD.
+    - Checagem pós-API para impedir exibição de dados ou cobrança de titulares bloqueados.
 ### Aprimorado & Otimizado
 - **Tabela de Preços no Painel Admin (`/admin/precos`) com Design Mobile-First:**
   - Adicionada barra de busca instantânea e tags de filtro rápido por categoria (Crédito e Histórico, Dados pessoais, Empresas, Patrimônio e Renda, etc.).
