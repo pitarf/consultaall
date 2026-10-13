@@ -175,6 +175,15 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - **Filtragem de Homônimos (`candidates`):** Na busca por lista de candidatos, o backend filtra todos os perfis cujos nomes ou CPFs coincidam com registros de `BlockedData`.
   - **Checagem Pós-API:** Impede a entrega de relatórios ou cobrança caso os dados finais retornados pela API pertençam a um titular bloqueado.
 
+### 11. Precisão Monetária e Eliminação de Resíduos IEEE 754
+- **Causa Raiz de Ponto Flutuante:** Operações com números decimais em JavaScript e PostgreSQL utilizam o padrão IEEE 754. Ao somar os preços dos módulos (ex: R$ 3,90 + 6x R$ 1,90 + R$ 8,90), o resultado binário é `24.200000000000003`. Ao comparar com um saldo exato de `24.20` (`user.balance < totalCost`), a condição avaliava como `true`, gerando a falsa mensagem de "Saldo insuficiente. Esta consulta requer R$ 24,20.".
+- **Tratamento Implementado:**
+  - `totalCost = Math.round(rawCost * 100) / 100` em todos os cálculos.
+  - Verificação de saldo baseada em centavos inteiros: `Math.round(user.balance * 100) < Math.round(totalCost * 100)`.
+  - Tolerância no update atômico do Prisma: `where: { id: user.id, balance: { gte: totalCost - 0.005 } }` para assegurar que resíduos acumulados não impeçam débitos válidos.
+  - Arredondamento dos totais também no frontend para manter sincronia visual rigorosa.
+
+
 
 
 

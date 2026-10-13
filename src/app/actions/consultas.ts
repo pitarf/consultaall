@@ -106,7 +106,8 @@ export async function realizarConsulta(
     return { error: 'Módulos inválidos ou não encontrados.' };
   }
 
-  const totalCost = prices.reduce((acc, module) => acc + module.price, 0);
+  const rawCost = prices.reduce((acc, module) => acc + module.price, 0);
+  const totalCost = Math.round(rawCost * 100) / 100;
 
   if (totalCost <= 0) {
     return { error: 'Custo de consulta inválido.' };
@@ -235,7 +236,10 @@ export async function realizarConsulta(
 
       // Se NÃO for isMultiple mas tiver data (ex: fallback V3 de leads que já achou direto o registro!)
       if (apiResult.data) {
-        if (user.balance < totalCost) {
+        const userCentavos = Math.round((user.balance || 0) * 100);
+        const costCentavos = Math.round(totalCost * 100);
+
+        if (userCentavos < costCentavos) {
           return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
         }
 
@@ -251,7 +255,7 @@ export async function realizarConsulta(
           });
 
           const updatedUser = await tx.user.update({
-            where: { id: user.id, balance: { gte: totalCost } },
+            where: { id: user.id, balance: { gte: totalCost - 0.005 } },
             data: { balance: { decrement: totalCost } }
           });
 
@@ -361,7 +365,10 @@ export async function realizarConsulta(
       };
     } else {
       // Se NÃO houver cache e não for teste, checa saldo e chama API REAL
-      if (user.balance < totalCost) {
+      const userCentavos = Math.round((user.balance || 0) * 100);
+      const costCentavos = Math.round(totalCost * 100);
+
+      if (userCentavos < costCentavos) {
         return { error: `Saldo insuficiente. Esta consulta requer R$ ${totalCost.toFixed(2).replace('.', ',')}.` };
       }
 
@@ -560,7 +567,7 @@ function hasMeaningfulData(val: any): boolean {
 
       // Atualiza saldo do usuário GARANTINDO que ele tem saldo suficiente no momento exato do débito (Prevenção de Race Condition)
       const updatedUser = await tx.user.update({
-        where: { id: user.id, balance: { gte: totalCost } },
+        where: { id: user.id, balance: { gte: totalCost - 0.005 } },
         data: { balance: { decrement: totalCost } },
       });
 

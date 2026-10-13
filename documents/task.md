@@ -134,5 +134,10 @@
   - Filtragem preventiva na listagem de candidatos homônimos (`candidates`), expurgando candidatos bloqueados por Nome ou CPF.
   - Checagem pós-API para impedir exibição de dados e cobrança indevida de titulares bloqueados.
 
-
-
+## SPLIT 8: Precisão Monetária e Eliminação de Falso Positivo de Saldo (✅ CONCLUÍDO)
+*Este split foca na integridade de cálculos monetários e eliminação de falhas causadas por ponto flutuante IEEE 754.*
+- [x] **Diagnóstico da Causa Raiz:** Identificada falha de precisão na soma de módulos decimais (ex: 3.9 + 1.9x6 + 8.9 = 24.200000000000003), provocando rejeição indevida para clientes com saldo exato (24.20).
+- [x] **Arredondamento Centesimal no Backend e Frontend:** `Math.round(total * 100) / 100` aplicado em `consultas.ts`, `DashboardPage` e `ProcessosPage`.
+- [x] **Comparação de Saldo por Centavos Inteiros:** `Math.round(user.balance * 100) < Math.round(totalCost * 100)` para eliminar discrepâncias binárias.
+- [x] **Tolerância contra Resíduos no Prisma Update:** `where: { balance: { gte: totalCost - 0.005 } }` para evitar falha no update atômico.
+- [x] **Higienização de Saldos no PostgreSQL da VPS:** Atualização em lote arredondando saldos com resíduos acumulados na base de produção.

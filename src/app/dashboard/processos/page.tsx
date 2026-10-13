@@ -93,13 +93,14 @@ export default function ProcessosPage() {
   }, []);
 
   // Cálculo dinâmico do custo total baseado nos módulos selecionados
-  const totalCost = selectedModules.reduce((total, moduleId) => {
+  const rawTotalCost = selectedModules.reduce((total, moduleId) => {
     for (const category of modules) {
       const found = category.items.find(item => item.id === moduleId);
       if (found) return total + found.cost;
     }
     return total;
   }, 0);
+  const totalCost = Math.round(rawTotalCost * 100) / 100;
 
   const toggleModule = (id: string) => {
     setSelectedModules(prev => 

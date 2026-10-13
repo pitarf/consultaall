@@ -2,6 +2,15 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.2] - 2026-10-13
+### Corrigido & Otimizado
+- **Correção de Precisão Monetária e Eliminação de Falso Positivo de Saldo Insuficiente:**
+  - **Causa Raiz Identificada:** A representação binária de ponto flutuante (IEEE 754) na soma de múltiplos módulos com centavos (ex: R$ 3,90 + 7x R$ 1,90 + R$ 8,90 = 24.200000000000003) causava a condição `user.balance (24.20) < totalCost (24.200000000000003)`, retornando falso positivo de "Saldo insuficiente" para usuários com saldo exato da consulta.
+  - **Arredondamento Monetário Rigoroso:** O cálculo de `totalCost` em todas as rotas e componentes (`consultas.ts`, `DashboardPage`, `ProcessosPage`) agora utiliza `Math.round(rawCost * 100) / 100`.
+  - **Comparação por Centavos Inteiros:** A validação de saldo agora compara centavos inteiros (`Math.round(user.balance * 100) < Math.round(totalCost * 100)`), garantindo que saldos exatos passem sem rejeição.
+  - **Tolerância contra Resíduos no Banco:** Ajustada a cláusula de débito no Prisma para `balance: { gte: totalCost - 0.005 }`, absorvendo eventuais resíduos fracionários de ponto flutuante acumulados no banco de dados.
+  - **Higienização Geral de Saldos:** Executado update em lote no PostgreSQL arredondando todos os saldos da base para 2 casas decimais exatas.
+
 ## [1.0.1] - 2026-10-07
 ### Adicionado & Aprimorado
 - **Bloqueio de Consultas por Nome e Conformidade LGPD Completa:**

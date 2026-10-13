@@ -138,7 +138,7 @@ export default function DashboardPage() {
   }).filter(Boolean) as typeof INITIAL_DATA_MODULES;
 
   // Calcula o custo total dinâmico baseado nos módulos DISPONÍVEIS e selecionados
-  const totalCost = chaveTipo === 'placa' 
+  const rawTotalCost = chaveTipo === 'placa' 
     ? (modules.find(cat => cat.title === 'Patrimônio e Renda')?.items.find(i => i.id === 'veiculos')?.cost || 1.10)
     : selectedModules.reduce((total, moduleId) => {
         for (const category of availableModules) {
@@ -147,6 +147,7 @@ export default function DashboardPage() {
         }
         return total;
       }, 0);
+  const totalCost = Math.round(rawTotalCost * 100) / 100;
 
   const toggleModule = (id: string) => {
     setSelectedModules(prev => 
