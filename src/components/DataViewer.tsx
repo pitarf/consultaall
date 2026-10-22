@@ -1,18 +1,36 @@
 import React, { useState } from 'react';
 import { 
   User, FileText, MapPin, Phone, CreditCard, Activity, 
-  Users, Car, Briefcase, GraduationCap, Eye, EyeOff 
+  Users, Car, Briefcase, GraduationCap, Eye, EyeOff, Scale 
 } from 'lucide-react';
+import { ProcessosJudiciaisViewer } from './ProcessosJudiciaisViewer';
 
 interface DataViewerProps {
   data: any;
   title?: string;
 }
 
+// Verifica se uma seção corresponde a dados de processos judiciais
+function isProcessosSection(key: string, value: any): boolean {
+  const k = key.toLowerCase();
+  if (k.includes('processo') || k.includes('judicial')) return true;
+  if (value && typeof value === 'object') {
+    if (Array.isArray(value.processos)) return true;
+    if (value.documentoConsultado && (value.totalProcessos !== undefined || value.observacoes)) return true;
+  }
+  return false;
+}
+
 export function DataViewer({ data, title }: DataViewerProps) {
   const [showRaw, setShowRaw] = useState(false);
 
   if (!data) return null;
+
+  // Se o objeto raiz data for diretamente o retorno de processos
+  const isDirectProcessos = !showRaw && (
+    Array.isArray(data?.processos) || 
+    (typeof data?.totalProcessos === 'number' && Boolean(data?.documentoConsultado || data?.processos))
+  );
 
   const getCategoryIcon = (category: string) => {
     const cat = category.toLowerCase();
@@ -25,6 +43,7 @@ export function DataViewer({ data, title }: DataViewerProps) {
     if (cat.includes('veiculo')) return <Car className="w-4 h-4" />;
     if (cat.includes('trabalhista')) return <Briefcase className="w-4 h-4" />;
     if (cat.includes('universitario')) return <GraduationCap className="w-4 h-4" />;
+    if (cat.includes('processo') || cat.includes('judicial')) return <Scale className="w-4 h-4" />;
     return <Activity className="w-4 h-4" />;
   };
 
@@ -61,8 +80,17 @@ export function DataViewer({ data, title }: DataViewerProps) {
   };
 
   // Renderiza uma seção de dados (Card)
-  const renderCard = (title: string, content: any) => {
+  const renderCard = (cardTitle: string, content: any) => {
     if (typeof content !== 'object' || Array.isArray(content) || content === null) return null;
+
+    // Se for seção de processos judiciais, renderiza em largura total estilizada
+    if (isProcessosSection(cardTitle, content)) {
+      return (
+        <div key={cardTitle} className="col-span-full">
+          <ProcessosJudiciaisViewer data={content} />
+        </div>
+      );
+    }
 
     // Separa campos simples de objetos complexos
     const simpleFields = Object.entries(content).filter(([_, v]) => typeof v !== 'object' || v === null);
@@ -71,6 +99,26 @@ export function DataViewer({ data, title }: DataViewerProps) {
 
     const formatObjectItem = (item: any) => {
       if (typeof item !== 'object' || item === null) return String(item);
+
+      // Se for um processo judicial
+      if (item.numeroProcesso) {
+        const raw = String(item.numeroProcesso);
+        const cnj = raw.length === 20 
+          ? raw.replace(/^(\d{7})(\d{2})(\d{4})(\d{1})(\d{2})(\d{4})$/, '$1-$2.$3.$4.$5.$6')
+          : raw;
+        const details = [
+          `Proc. ${cnj}`,
+          item.tribunal,
+          item.areaDireito,
+          item.detalhesStatusProcesso?.statusDetalhes
+        ].filter(Boolean);
+        return details.join(' • ');
+      }
+
+      // Se for aviso ou mensagem
+      if (item.aviso) {
+        return item.aviso;
+      }
 
       // Se for um endereço (tem logradouro ou cidade)
       if (item.logradouro || item.cidade) {
@@ -117,13 +165,13 @@ export function DataViewer({ data, title }: DataViewerProps) {
     };
 
     return (
-      <div key={title} className="bg-[#0f172a] rounded-xl border border-white/5 shadow-xl overflow-hidden flex flex-col h-full hover:border-primary/30 transition-colors duration-300">
+      <div key={cardTitle} className="bg-[#0f172a] rounded-xl border border-white/5 shadow-xl overflow-hidden flex flex-col h-full hover:border-primary/30 transition-colors duration-300">
         {/* Cabeçalho do Card */}
         <div className="bg-gradient-to-r from-primary/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
           <div className="p-2 bg-primary/20 rounded-lg text-primary shadow-[0_0_10px_rgba(79,70,229,0.2)]">
-            {getCategoryIcon(title)}
+            {getCategoryIcon(cardTitle)}
           </div>
-          <h3 className="font-bold text-white text-xs uppercase tracking-widest">{title.replace(/_/g, ' ')}</h3>
+          <h3 className="font-bold text-white text-xs uppercase tracking-widest">{cardTitle.replace(/_/g, ' ')}</h3>
         </div>
 
         <div className="p-5 space-y-6">
@@ -197,7 +245,7 @@ export function DataViewer({ data, title }: DataViewerProps) {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowRaw(!showRaw)}
-            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-slate-300 transition-all"
+            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
           >
             {showRaw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             {showRaw ? 'Esconder JSON' : 'Ver Dados Brutos'}
@@ -211,6 +259,8 @@ export function DataViewer({ data, title }: DataViewerProps) {
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>
+      ) : isDirectProcessos ? (
+        <ProcessosJudiciaisViewer data={data} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           {Object.entries(data).map(([key, value]) => {
@@ -222,8 +272,8 @@ export function DataViewer({ data, title }: DataViewerProps) {
         </div>
       )}
 
-      {/* Caso existam dados avulsos no root que não são objetos */}
-      {!showRaw && (
+      {/* Caso existam dados avulsos no root que não são objetos (quando não for direct processos) */}
+      {!showRaw && !isDirectProcessos && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Object.entries(data).map(([key, value]) => {
             if (typeof value !== 'object' || Array.isArray(value)) {

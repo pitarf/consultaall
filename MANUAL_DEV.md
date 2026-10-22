@@ -36,8 +36,19 @@ PUSHINPAY_WEBHOOK_TOKEN=token_de_seguranca_do_webhook
 DATABASE_URL=postgres://user:pass@host/db
 ```
 
-## Tratamento de Dados (DataViewer)
-O componente `src/components/DataViewer.tsx` foi refatorado para realizar uma leitura inteligente de arrays e JSONs aninhados. Em vez de despejar JSON puro na tela (o que afugenta o usuário), ele aplica o `formatObjectItem` transformando chaves em labels legíveis.
+## Tratamento de Dados (DataViewer e ProcessosJudiciaisViewer)
+- **Componente Principal (`src/components/DataViewer.tsx`):**
+  - Realiza a separação inteligente de campos primitivos, sub-objetos e arrays de dados.
+  - Intercepta seções de processos judiciais (`isProcessosSection`) e delega a renderização para o `ProcessosJudiciaisViewer`, atribuindo largura total (`col-span-full`) no grid responsivo.
+  - O método `formatObjectItem` possui formatadores dedicados para Processos (`formatCNJ`), Endereços, Veículos, Sócios e Filiais, eliminando o fallback agressivo de `JSON.stringify`.
+
+- **Visualizador Especializado de Processos (`src/components/ProcessosJudiciaisViewer.tsx`):**
+  - **Formatação CNJ Nacional:** Transforma chaves de 20 dígitos no padrão `NNNNNNN-DD.AAAA.J.TR.OOOO`.
+  - **Ação de Cópia Tátil:** Botão interativo com `navigator.clipboard` e feedback via Toast do Sonner.
+  - **Divisão por Polos:** Mapeia arrays de partes em Polo Passivo e Polo Ativo, destacando com badge dourada a pessoa consultada quando houver coincidência de documento.
+  - **Advogados e OAB:** Exibe identificação dos defensores e número da OAB/UF.
+  - **Card de 'Nada Consta':** Tratamento visual positivo quando `totalProcessos === 0` ou nenhum registro for localizado.
+
 
 ## Monitoramento de Logs
 - **SystemLog:** Registra falhas de API, trocas de senha e confirmações de saldo. Visualizável no admin via interface dedicada.

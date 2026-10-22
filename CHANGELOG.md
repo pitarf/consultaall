@@ -2,6 +2,20 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.3] - 2026-10-22
+### Adicionado & Aprimorado
+- **Novo Visualizador Premium de Processos Judiciais (`ProcessosJudiciaisViewer.tsx`):**
+  - **Eliminação de JSON Cru e Textos Desformatados:** Os resultados de processos judiciais retornados pela DirectData eram renderizados como string JSON bruta dentro de um card simples, dificultando a leitura. Foi criado um visualizador especializado, modular e responsivo (Mobile-First).
+  - **Formatação Nacional CNJ:** Número do processo formatado automaticamente no padrão nacional do CNJ (`NNNNNNN-DD.AAAA.J.TR.OOOO`) com botão tátil de cópia para a área de transferência ("Copiar CNJ" / "Copiado!").
+  - **Badges de Identificação Rápida:** Tribunal (ex: `TJ-SP`, `TRF`), Instância (`1ª Instância`, `2ª Instância`), Sistema (`ESAJ`, `PJe`) e Status do processo com cores contextuais (ex: `Em Andamento` em azul, `Arquivado` em cinza, `Julgado` em verde, `Suspenso` em âmbar).
+  - **Estruturação de Dados Jurídicos:** Apresentação clara de Área do Direito (`Direito Penal`, `Direito Civil`, `Trabalhista`), Classe Processual, Assuntos Principais e Secundários, Órgão Julgador / Vara, Comarca, Data de Distribuição/Autuação e Valor da Causa formatado em BRL (`R$`).
+  - **Separação Inteligente de Partes (Polos Ativo e Passivo):**
+    - Separação entre **Polo Passivo** (Réu / Executado / Apelante) e **Polo Ativo** (Autor / Exequente / Apelado).
+    - Identificação em destaque com badge `"★ Pessoa Consultada"` quando o documento pesquisado coincide com a parte envolvida.
+    - Listagem de Advogados e Representantes Legais com número da OAB e UF vinculada.
+  - **Card de 'Nada Consta':** Exibição amigável e segura caso não haja processos judiciais vinculados ao documento (`totalProcessos === 0`).
+  - **Integração no `DataViewer.tsx`:** A seção de processos ocupa largura total (`col-span-full`) no grid e foi adicionada blindagem no `formatObjectItem` para que qualquer objeto de processo em listas genéricas seja formatado elegantemente em vez de cair em `JSON.stringify`.
+
 ## [1.0.2] - 2026-10-13
 ### Corrigido & Otimizado
 - **Correção de Precisão Monetária e Eliminação de Falso Positivo de Saldo Insuficiente:**

@@ -67,6 +67,13 @@ Agora você pode consultar o histórico de processos judiciais de qualquer pesso
   - **Certidões Negativas e Falências - R$ 1,00:** Certidões judiciais de distribuição, antecedentes cíveis, falências, concordatas e recuperações judiciais.
   - **Score e Risco de Crédito - R$ 2,00:** Avaliação de probabilidade de inadimplência e capacidade financeira associada ao histórico judicial.
 - **Cálculo Dinâmico:** Você pode marcar ou desmarcar cada opção individualmente ou usar o botão "Marcar todos". O custo total é recalculado automaticamente e exibido no botão de consulta antes do débito no saldo.
+- **Relatório Completo e Visualizador Dedicado:**
+  - **Número CNJ Formatado:** Exibição oficial no padrão CNJ (`0000000-00.0000.0.00.0000`) com botão "Copiar" direto no celular ou desktop.
+  - **Badges de Tribunal e Status:** Indicação imediata do tribunal (ex: TJ-SP, TRF), instância e status da ação (`Em Andamento`, `Arquivado`, `Julgado`, `Suspenso`).
+  - **Dados da Causa:** Detalhamento do órgão julgador, comarca, data de distribuição, valor da causa e assunto principal/secundário.
+  - **Partes Envolvidas:** Separação visual entre Polo Passivo (réu/apelante) e Polo Ativo (autor/apelado), com destaque especial para a pessoa consultada e identificação de advogados e defensores com número da OAB.
+  - **Nada Consta:** Se a pessoa não possuir processos judiciais, o sistema exibe um card de segurança confirmando a inexistência de apontamentos.
+
 
 ## Bloqueios LGPD e Controle de Consultas por Nome (Apenas Administradores)
 No painel administrativo, foram integrados dois recursos fundamentais de governança e conformidade:

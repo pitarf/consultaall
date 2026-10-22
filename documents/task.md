@@ -141,3 +141,20 @@
 - [x] **Comparação de Saldo por Centavos Inteiros:** `Math.round(user.balance * 100) < Math.round(totalCost * 100)` para eliminar discrepâncias binárias.
 - [x] **Tolerância contra Resíduos no Prisma Update:** `where: { balance: { gte: totalCost - 0.005 } }` para evitar falha no update atômico.
 - [x] **Higienização de Saldos no PostgreSQL da VPS:** Atualização em lote arredondando saldos com resíduos acumulados na base de produção.
+
+## SPLIT 9: Visualizador Premium de Processos Judiciais (✅ CONCLUÍDO)
+*Este split foca na reformulação visual e estrutural do relatório de processos judiciais para eliminar JSON bruto e proporcionar UX impecável no celular e desktop.*
+- [x] **Criação do `ProcessosJudiciaisViewer.tsx`:**
+  - Formatação oficial CNJ com regex (`NNNNNNN-DD.AAAA.J.TR.OOOO`).
+  - Botão tátil "Copiar CNJ" com feedback visual de confirmação ("Copiado!").
+  - Badges de Tribunal, Instância, Sistema e Status processual colorido.
+  - Metadados: Vara, Comarca, Data de Distribuição, Valor da Causa em BRL e Trânsito em Julgado.
+  - Separação clara de partes em Polo Passivo e Polo Ativo.
+  - Destaque com badge `"Pessoa Consultada"` para o titular da busca.
+  - Advogados e defensores com número da OAB e UF.
+  - Card de "Nada Consta" com selo de segurança quando nenhum processo for localizado.
+- [x] **Integração no `DataViewer.tsx`:**
+  - Renderização da seção em largura total (`col-span-full`).
+  - Proteção e fallback elegante no `formatObjectItem` contra vazamento de `JSON.stringify`.
+- [x] **Validação e Compilação:** Teste de build do Next.js aprovado com 100% de sucesso.
+
