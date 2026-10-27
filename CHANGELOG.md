@@ -12,7 +12,7 @@ Todas as mudanças notáveis para este projeto serão documentadas neste arquivo
   - **Validação Dupla (Client e Server) & Extensão ao Google:** O botão de criação de conta tradicional e o botão de cadastro pelo Google (`loginWithGoogle`) permanecem desabilitados com cursor bloqueado até a marcação das duas opções. Qualquer tentativa de submissão do Google sem o aceite prévio é interceptada com notificação Toast explicativa. Complementado com validação rígida na Server Action `register` (`src/app/actions/auth.ts`).
 - **Novo Modal de Ciência e Uso Legítimo (`TermsModal.tsx`):**
   - **Pop-up Pós-Cadastro:** Implementado modal de bloqueio exibindo na íntegra o *Termo de Ciência, Responsabilidade e Uso Legítimo* (LGPD - Lei nº 13.709/2018).
-  - **Sequenciamento Inteligente de Modais:** O modal de termos possui prioridade máxima e bloqueia o acesso à plataforma até o clique no botão "Prosseguir", salvando `hasAcceptedTerms: true` e a data de aceite no banco de dados. O pop-up promocional de WhatsApp (`PromoModal`) só é liberado após a confirmação deste termo.
+  - **Correção da Server Action `acceptTerms`:** Corrigida ausência do import de `verifySession` e adicionado `revalidatePath('/dashboard')` em `src/app/actions/auth.ts`, eliminando erro 500 ao clicar no botão "Prosseguir" do modal de termos.
 
 ## [1.0.4] - 2026-10-26
 ### Otimizado & Corrigido

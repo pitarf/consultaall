@@ -3,8 +3,9 @@
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { createSession, deleteSession } from '@/lib/session';
+import { createSession, deleteSession, verifySession } from '@/lib/session';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 
 const loginSchema = z.object({
@@ -309,6 +310,7 @@ export async function acceptTerms() {
         termsAcceptedAt: new Date()
       }
     });
+    revalidatePath('/dashboard');
     return { success: true };
   } catch (error) {
     console.error('Accept terms error:', error);
