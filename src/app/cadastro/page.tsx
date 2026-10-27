@@ -185,10 +185,20 @@ function RegisterContent() {
             </div>
           </div>
 
-          <form action={loginWithGoogle} className="mt-6">
+          <form 
+            action={loginWithGoogle} 
+            className="mt-6"
+            onSubmit={(e) => {
+              if (!acceptTerms || !acceptPrivacy) {
+                e.preventDefault();
+                toast.error('Você precisa marcar os Termos de Uso e a Política de Privacidade antes de se cadastrar com o Google.');
+              }
+            }}
+          >
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-medium py-3 rounded-lg transition-colors shadow-sm cursor-pointer border border-slate-200"
+              disabled={!acceptTerms || !acceptPrivacy}
+              className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 disabled:hover:bg-white text-gray-900 font-medium py-3 rounded-lg transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed border border-slate-200 disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -198,6 +208,11 @@ function RegisterContent() {
               </svg>
               Google
             </button>
+            {(!acceptTerms || !acceptPrivacy) && (
+              <p className="text-[11px] text-center text-slate-400 dark:text-gray-500 mt-2">
+                Aceite os Termos e a Política de Privacidade acima para liberar o cadastro com o Google.
+              </p>
+            )}
           </form>
         </div>
 

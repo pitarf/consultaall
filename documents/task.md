@@ -170,6 +170,7 @@
 - [x] **Acordeão de Termos de Uso no Cadastro (`src/app/cadastro/page.tsx`):**
   - Título clicável "Termos de Uso e Responsabilidade" com expansão do texto de uso legítimo e vedação de atos ilícitos.
   - Dois checkboxes visíveis e obrigatórios de consentimento (Termos de Uso e Política de Privacidade).
+  - Bloqueio mútuo e preventivo tanto do formulário tradicional quanto do botão de cadastro pelo Google (`loginWithGoogle`), com interceptação via Toast e botão desabilitado.
 - [x] **Validação no Backend (`src/app/actions/auth.ts`):**
   - Checagem rigorosa de `acceptTerms` e `acceptPrivacy` antes de autorizar a criação da conta.
 - [x] **Modelagem no Banco e Server Action:**

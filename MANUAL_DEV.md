@@ -63,6 +63,7 @@ Para conformidade com o Google Ads e LGPD, a plataforma expõe uma rota `/protec
 - **Checkboxes no Cadastro (`src/app/cadastro/page.tsx`):**
   - O formulário exige consentimento explícito em dois checkboxes (`acceptTerms` e `acceptPrivacy`).
   - O acordeão "Termos de Uso e Responsabilidade" permite ler na tela as cláusulas de finalidade legítima antes do cadastro.
+  - Bloqueio mútuo: tanto o botão "Cadastrar" tradicional quanto o botão do Google OAuth (`loginWithGoogle`) permanecem desabilitados até a seleção das opções.
   - A Server Action `register` (`src/app/actions/auth.ts`) valida no servidor a presença de ambos os consentimentos.
 - **Modal de Primeiro Acesso (`src/components/TermsModal.tsx`):**
   - Renderizado no Dashboard principal se `userProfile.hasAcceptedTerms === false`.
