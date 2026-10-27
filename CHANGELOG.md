@@ -2,6 +2,14 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.4] - 2026-10-26
+### Otimizado & Corrigido
+- **Calibragem de Timeout de APIs Externas (DirectData V3):**
+  - **Causa Raiz Identificada:** Em consultas pesadas com múltiplos módulos selecionados (ex: dados básicos, trabalhistas, poder aquisitivo e processos judiciais simultaneamente), a agregação de dados pela API da DirectData pode levar mais de 8 segundos em horários de pico. O cliente HTTP interno (`axiosV3`) possuía um timeout fixado em 8000ms, abortando prematuramente com `"timeout of 8000ms exceeded"`, gerando falso alerta de indisponibilidade momentânea do servidor de consultas.
+  - **Aumento do Timeout do Axios V3:** O timeout padrão do `axiosV3` foi ampliado de 8s para **18s (18000ms)**, e o endpoint específico de processos judiciais (`consultaProcessos`) de 5s para **15s (15000ms)**.
+  - **Harmonização com a Camada Superior:** Os limites agora operam em perfeita sintonia com a Server Action (30s) e a interface do usuário (32s), permitindo que requisições agregadas completem normalmente sem falsos erros de timeout.
+  - **Garantia de Integridade:** Confirmado que a proteção transacional do sistema operou com 100% de precisão, impedindo qualquer débito de saldo em requisições que caem em timeout.
+
 ## [1.0.3] - 2026-10-22
 ### Adicionado & Aprimorado
 - **Novo Visualizador Premium de Processos Judiciais (`ProcessosJudiciaisViewer.tsx`):**

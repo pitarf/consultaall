@@ -36,10 +36,10 @@ async function getDirectDataConfig() {
   return { token, baseUrl, v3Url };
 }
 
-// Agente para ignorar erros de SSL na V3 com timeout global seguro de 8s (evita travamentos infinitos)
+// Agente para ignorar erros de SSL na V3 com timeout global seguro calibrado para consultas pesadas (18s)
 const axiosV3 = axios.create({
   httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-  timeout: 8000
+  timeout: 18000
 });
 
 // Helper para sanitizar mensagens de erro da API evitando expor termos técnicos ou JSONs brutos
@@ -468,7 +468,7 @@ export async function consultaProcessos(cpfOrCnpj: string) {
   const url = `${v3Url}/api/ProcessosJudiciaisCompleta?TOKEN=${token}&${paramName}=${cleanDoc}`;
 
   try {
-    const response = await axiosV3.get(url, { timeout: 5000 });
+    const response = await axiosV3.get(url, { timeout: 15000 });
     const res = response.data;
 
     if (res.retorno) {

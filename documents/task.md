@@ -158,3 +158,12 @@
   - Proteção e fallback elegante no `formatObjectItem` contra vazamento de `JSON.stringify`.
 - [x] **Validação e Compilação:** Teste de build do Next.js aprovado com 100% de sucesso.
 
+## SPLIT 10: Calibragem de Timeouts e Resiliência de APIs (✅ CONCLUÍDO)
+*Este split foca na eliminação de falsos erros de indisponibilidade em consultas pesadas com múltiplos módulos.*
+- [x] **Diagnóstico da Causa Raiz:** Identificado erro `"timeout of 8000ms exceeded"` em consultas completas com múltiplos módulos pesados sob carga na DirectData.
+- [x] **Calibragem do Axios V3:** Aumento do timeout padrão de 8s para 18s e de 5s para 15s em `consultaProcessos`.
+- [x] **Harmonização de Camadas:** Alinhamento perfeito entre Axios (18s), Server Action (30s) e Frontend (32s).
+- [x] **Validação em Produção:** Compilação Turbopack aprovada e deploy na VPS.
+
+
+

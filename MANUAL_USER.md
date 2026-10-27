@@ -85,4 +85,9 @@ No painel administrativo, foram integrados dois recursos fundamentais de governa
   - Caso prefira que os usuários realizem consultas exclusivamente por chaves exatas (CPF, CNPJ, Placa ou Telefone), basta acessar `/admin/configuracoes` > "Regras de Consulta e LGPD" e desativar o botão **"Permitir Consulta por Nome"**.
   - Com essa opção desmarcada, a opção "Nome" é automaticamente ocultada do Dashboard, da busca de Processos Judiciais e demais telas da plataforma.
 
+## Garantia de Integridade e Proteção de Saldo
+- **Cobrança Atômica Segura:** O saldo da sua conta é debitado estritamente após a conclusão bem-sucedida da consulta. Caso o servidor de provedor de dados apresente instabilidade, lentidão ou tempo limite excedido em horários de pico, o sistema interrompe a operação imediatamente e **nenhum valor é cobrado da sua carteira**.
+- **Tolerância Aumentada para Consultas Completas:** Consultas volumosas que reúnem dezenas de fontes (dados pessoais, histórico de trabalho, poder aquisitivo e processos judiciais) contam com uma janela estendida de processamento para garantir que todos os dados sejam entregues com fidelidade mesmo sob alto tráfego nos tribunais e bases nacionais.
+
+
 

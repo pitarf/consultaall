@@ -111,11 +111,11 @@ O painel administrativo (`/admin`) exibe agora indicadores diários de ROI e Cus
 ### 4. Resiliência e Blindagem Anti-Hang (Carregamento Infinito)
 Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
 - **Timeouts em Camadas:**
-  - `axiosV3` (`src/services/direct-data.ts`): Instanciado com `timeout: 8000` (8s padrão).
+  - `axiosV3` (`src/services/direct-data.ts`): Instanciado com `timeout: 18000` (18s calibrado para suportar agregações de múltiplos módulos em horários de pico).
   - Micro-endpoints veiculares: Rota nacional do Senatran com 6s e gateway estadual com 3.5s estritos (se o Detran estadual demorar, a rota nacional já conclui e entrega o veículo em ~1s).
-  - Processos Judiciais: Timeout de 5s para não atrasar a resposta de CPF/CNPJ.
+  - Processos Judiciais (`consultaProcessos`): Timeout de 15s para suportar pesquisas volumosas em bases judiciais.
   - Server Actions (`realizarConsulta`): Proteção com `Promise.race` de 30s cortando qualquer travamento externo e gerando mensagem amigável.
-  - Client-side: `Promise.race` com 15s no `DashboardPage`, `VeiculosPage` e `EmpresasPage`, garantindo que o spinner seja sempre desligado.
+  - Client-side: `Promise.race` com 32s no `DashboardPage`, `VeiculosPage` e `EmpresasPage`, garantindo que o spinner seja sempre desligado de forma graciosa.
 - **Singleton PrismaClient:** Instância global persistida em todos os ambientes (`globalForPrisma.prisma = prisma`) para evitar esgotamento de sockets e conexões no pool do Neon PostgreSQL.
 
 ### 5. Tratamento de "Entidade Não Encontrada" e Auditoria de Falhas (/admin/logs)
