@@ -89,5 +89,10 @@ No painel administrativo, foram integrados dois recursos fundamentais de governa
 - **Cobrança Atômica Segura:** O saldo da sua conta é debitado estritamente após a conclusão bem-sucedida da consulta. Caso o servidor de provedor de dados apresente instabilidade, lentidão ou tempo limite excedido em horários de pico, o sistema interrompe a operação imediatamente e **nenhum valor é cobrado da sua carteira**.
 - **Tolerância Aumentada para Consultas Completas:** Consultas volumosas que reúnem dezenas de fontes (dados pessoais, histórico de trabalho, poder aquisitivo e processos judiciais) contam com uma janela estendida de processamento para garantir que todos os dados sejam entregues com fidelidade mesmo sob alto tráfego nos tribunais e bases nacionais.
 
+## Termos de Uso e Responsabilidade (Cadastro e Primeiro Acesso)
+- **Aceite Prévio no Cadastro:** Para criar uma conta, é obrigatório marcar as caixas de ciência e aceite dos Termos de Uso e da Política de Privacidade. Clicando em "Termos de Uso e Responsabilidade", o texto explicativo sobre o uso legítimo das informações e vedação de ilícitos é expandido para conferência.
+- **Termo de Ciência e Uso Legítimo:** No primeiro acesso à plataforma, é apresentado o pop-up formal de responsabilidade nos termos da LGPD (Lei nº 13.709/2018). Basta clicar em "Prosseguir" para confirmar a adesão e liberar as funcionalidades do painel.
+
+
 
 

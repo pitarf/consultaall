@@ -9,6 +9,7 @@ import { Search, Loader2, HelpCircle, FlaskConical, Zap, ChevronDown } from 'luc
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 import PromoModal from '@/components/PromoModal';
+import TermsModal from '@/components/TermsModal';
 
 // Estrutura visual base (custos serão sobrescritos pelo banco)
 const INITIAL_DATA_MODULES = [
@@ -594,10 +595,19 @@ export default function DashboardPage() {
       )}
 
       {userProfile && (
-        <PromoModal 
-          hasSeenPopup={userProfile.hasSeenPromoPopup} 
-          userWhatsapp={userProfile.whatsapp} 
-        />
+        <>
+          <TermsModal 
+            isOpen={!userProfile.hasAcceptedTerms}
+            onAccepted={() => {
+              setUserProfile((prev: any) => ({ ...prev, hasAcceptedTerms: true }));
+            }}
+          />
+          <PromoModal 
+            hasSeenPopup={userProfile.hasSeenPromoPopup} 
+            userWhatsapp={userProfile.whatsapp} 
+            canShow={Boolean(userProfile.hasAcceptedTerms)}
+          />
+        </>
       )}
     </div>
   );

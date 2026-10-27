@@ -1,15 +1,18 @@
 'use client';
 
-import { useActionState, useEffect, Suspense } from 'react';
+import { useActionState, useEffect, useState, Suspense } from 'react';
 import { register, loginWithGoogle } from '@/app/actions/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { Database, Lock, Mail, User } from 'lucide-react';
+import { Database, Lock, Mail, User, ShieldAlert, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 function RegisterContent() {
   const [state, formAction, isPending] = useActionState(register, null);
+  const [showTerms, setShowTerms] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -96,10 +99,77 @@ function RegisterContent() {
             </div>
           </div>
 
+          {/* Termos de Uso e Responsabilidade */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowTerms(!showTerms)}
+              className="flex items-center justify-between w-full py-2.5 px-3.5 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-xs font-semibold text-slate-700 dark:text-gray-200 transition-all border border-slate-200 dark:border-white/10 text-left cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <span>Termos de Uso e Responsabilidade</span>
+              </div>
+              {showTerms ? (
+                <ChevronUp className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+
+            {showTerms && (
+              <div className="mt-2.5 p-4 bg-slate-50 dark:bg-black/40 border border-slate-200/80 dark:border-white/10 rounded-xl text-xs leading-relaxed text-slate-600 dark:text-gray-300 space-y-2 animate-in fade-in duration-200">
+                <p className="font-semibold text-slate-800 dark:text-white">
+                  Antes de criar sua conta, leia e aceite as condições de utilização da plataforma.
+                </p>
+                <p>
+                  Os serviços destinam-se exclusivamente a consultas com finalidade legítima e fundamento jurídico adequado.
+                </p>
+                <p className="text-amber-600 dark:text-amber-400 font-medium">
+                  É proibido utilizar as informações para perseguição, fraude, discriminação, exposição indevida, ameaças ou qualquer atividade ilícita.
+                </p>
+                <p>
+                  O usuário responde por suas condutas e pelo tratamento posterior que realizar, sem prejuízo das responsabilidades legais da operadora.
+                </p>
+              </div>
+            )}
+
+            {/* As 2 caixinhas visíveis para serem marcadas */}
+            <div className="mt-3.5 space-y-2.5">
+              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-600 dark:text-gray-300 select-none">
+                <input 
+                  type="checkbox" 
+                  name="acceptTerms"
+                  required
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:bg-black/50 cursor-pointer"
+                />
+                <span className="leading-tight">
+                  Li e aceito os Termos de Uso e as regras de utilização responsável.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-600 dark:text-gray-300 select-none">
+                <input 
+                  type="checkbox" 
+                  name="acceptPrivacy"
+                  required
+                  checked={acceptPrivacy}
+                  onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:bg-black/50 cursor-pointer"
+                />
+                <span className="leading-tight">
+                  Declaro ter tomado conhecimento da Política de Privacidade.
+                </span>
+              </label>
+            </div>
+          </div>
+
           <button 
             type="submit" 
-            disabled={isPending}
-            className="w-full btn-premium py-3 rounded-lg font-medium mt-6 flex items-center justify-center cursor-pointer"
+            disabled={isPending || !acceptTerms || !acceptPrivacy}
+            className="w-full btn-premium py-3 rounded-lg font-medium mt-6 flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isPending ? 'Criando...' : 'Cadastrar'}
           </button>

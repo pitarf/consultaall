@@ -51,6 +51,14 @@ export async function login(prevState: any, formData: FormData) {
 
 export async function register(prevState: any, formData: FormData) {
   const data = Object.fromEntries(formData);
+
+  const acceptTermsCheck = data.acceptTerms === 'on' || data.acceptTerms === 'true';
+  const acceptPrivacyCheck = data.acceptPrivacy === 'on' || data.acceptPrivacy === 'true';
+
+  if (!acceptTermsCheck || !acceptPrivacyCheck) {
+    return { error: 'É obrigatório aceitar os Termos de Uso e a Política de Privacidade para criar sua conta.' };
+  }
+
   const result = registerSchema.safeParse(data);
 
   if (!result.success) {
@@ -284,4 +292,26 @@ export async function resetPassword(prevState: any, formData: FormData) {
   });
 
   return { success: true };
+}
+
+/**
+ * Registra formalmente a ciência e o aceite do usuário aos Termos de Uso e LGPD
+ */
+export async function acceptTerms() {
+  const session = await verifySession();
+  if (!session) return { error: 'Não autenticado.' };
+
+  try {
+    await prisma.user.update({
+      where: { id: session.userId },
+      data: { 
+        hasAcceptedTerms: true,
+        termsAcceptedAt: new Date()
+      }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Accept terms error:', error);
+    return { error: 'Erro ao registrar aceite dos termos.' };
+  }
 }

@@ -2,6 +2,18 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.5] - 2026-10-27
+### Adicionado & Aprimorado
+- **Termos de Uso, Responsabilidade e Conformidade LGPD no Cadastro:**
+  - **Acordeão Interativo no Cadastro (`/cadastro`):** Adicionado título clicável "Termos de Uso e Responsabilidade" abaixo dos campos de criação de conta que expande as diretrizes de utilização responsável e finalidade jurídica legítima.
+  - **Checkboxes Obrigatórios de Consentimento:** Exibição clara e obrigatória de duas caixas de marcação antes da submissão:
+    - `[ ] Li e aceito os Termos de Uso e as regras de utilização responsável.`
+    - `[ ] Declaro ter tomado conhecimento da Política de Privacidade.`
+  - **Validação Dupla (Client e Server):** O botão de criação de conta permanece desabilitado até a marcação das duas opções, complementado com validação rígida na Server Action `register` (`src/app/actions/auth.ts`).
+- **Novo Modal de Ciência e Uso Legítimo (`TermsModal.tsx`):**
+  - **Pop-up Pós-Cadastro:** Implementado modal de bloqueio exibindo na íntegra o *Termo de Ciência, Responsabilidade e Uso Legítimo* (LGPD - Lei nº 13.709/2018).
+  - **Sequenciamento Inteligente de Modais:** O modal de termos possui prioridade máxima e bloqueia o acesso à plataforma até o clique no botão "Prosseguir", salvando `hasAcceptedTerms: true` e a data de aceite no banco de dados. O pop-up promocional de WhatsApp (`PromoModal`) só é liberado após a confirmação deste termo.
+
 ## [1.0.4] - 2026-10-26
 ### Otimizado & Corrigido
 - **Calibragem de Timeout de APIs Externas (DirectData V3):**

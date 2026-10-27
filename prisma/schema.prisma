@@ -25,6 +25,8 @@ model User {
   lastActiveAt      DateTime?
   whatsapp          String?
   hasSeenPromoPopup Boolean   @default(true)
+  hasAcceptedTerms  Boolean   @default(false)
+  termsAcceptedAt   DateTime?
   trafficSource     String?   @default("orgânico")
   
   // Sistema de Indicações (Auto-relacionamento)

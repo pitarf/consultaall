@@ -59,6 +59,19 @@ Para conformidade com o Google Ads e LGPD, a plataforma expõe uma rota `/protec
 - **Armazenamento sem Migrations:** O formulário consome a Server Action `registrarOptOut` (`src/app/actions/optout.ts`). Ela valida o CPF pelo motor interno e registra a solicitação diretamente na tabela `SystemLog` com o nível `WARNING`. Isso permite ao administrador realizar auditorias e dar baixa técnica em solicitações sem a necessidade de migrações complexas de esquema no PostgreSQL.
 - **Componentização SSR:** A Landing Page principal (`src/app/page.tsx`) roda em modo de servidor (Server Component) para otimização extrema de SEO e metadados dinâmicos vindos da tabela `SystemSetting`. Elementos com estado dinâmico como abas (`HomeTabs`), accordions (`FaqAccordion`) e menus (`NavbarClient`) são carregados modularmente como Client Components híbridos.
 
+## Termos de Uso e Pop-up Bloqueante de Ciência LGPD
+- **Checkboxes no Cadastro (`src/app/cadastro/page.tsx`):**
+  - O formulário exige consentimento explícito em dois checkboxes (`acceptTerms` e `acceptPrivacy`).
+  - O acordeão "Termos de Uso e Responsabilidade" permite ler na tela as cláusulas de finalidade legítima antes do cadastro.
+  - A Server Action `register` (`src/app/actions/auth.ts`) valida no servidor a presença de ambos os consentimentos.
+- **Modal de Primeiro Acesso (`src/components/TermsModal.tsx`):**
+  - Renderizado no Dashboard principal se `userProfile.hasAcceptedTerms === false`.
+  - Exibe o *Termo de Ciência, Responsabilidade e Uso Legítimo* com backdrop bloqueante.
+  - O botão "Prosseguir" chama a Server Action `acceptTerms()` gravando `hasAcceptedTerms: true` e `termsAcceptedAt: new Date()` no banco.
+- **Sequenciamento com o `PromoModal` (WhatsApp):**
+  - O componente `PromoModal` recebe a prop `canShow={Boolean(userProfile.hasAcceptedTerms)}`.
+  - Isso garante que o pop-up de inserção de número de telefone só seja disparado após o usuário ter aprovado e passado pelo termo de responsabilidade.
+
 ## Reatividade de Temas Claro e Escuro (Clean / Dark)
 A plataforma possui suporte completo a temas dinâmicos em toda a sua área pública, painel do cliente (`/dashboard`) e área administrativa (`/admin`).
 - **Prevenção de Flicadas (Anti-Flicker):** O `layout.tsx` injeta um scripthead síncrono que lê o `localStorage` no primeiro milissegundo de carregamento do DOM. Ele atribui a classe `.dark` ao elemento raiz `<html>` de forma síncrona antes que qualquer renderização ocorra, mitigando flashes brancos em visitas com modo escuro.

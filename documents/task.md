@@ -165,5 +165,21 @@
 - [x] **Harmonização de Camadas:** Alinhamento perfeito entre Axios (18s), Server Action (30s) e Frontend (32s).
 - [x] **Validação em Produção:** Compilação Turbopack aprovada e deploy na VPS.
 
+## SPLIT 11: Governança Jurídica, Termos de Uso e Pop-up LGPD (✅ CONCLUÍDO)
+*Este split foca no compliance jurídico, consentimento explícito e transparência de responsabilidades no cadastro e primeiro acesso.*
+- [x] **Acordeão de Termos de Uso no Cadastro (`src/app/cadastro/page.tsx`):**
+  - Título clicável "Termos de Uso e Responsabilidade" com expansão do texto de uso legítimo e vedação de atos ilícitos.
+  - Dois checkboxes visíveis e obrigatórios de consentimento (Termos de Uso e Política de Privacidade).
+- [x] **Validação no Backend (`src/app/actions/auth.ts`):**
+  - Checagem rigorosa de `acceptTerms` e `acceptPrivacy` antes de autorizar a criação da conta.
+- [x] **Modelagem no Banco e Server Action:**
+  - Adição dos campos `hasAcceptedTerms` e `termsAcceptedAt` no schema Prisma (`User`).
+  - Execução de migração com `ALTER TABLE` no PostgreSQL da VPS e sincronização no Neon.
+  - Server Action `acceptTerms()` para gravação atômica da ciência do titular.
+- [x] **Componente `TermsModal.tsx` & Sequenciamento:**
+  - Pop-up bloqueante de primeiro acesso exibindo o "Termo de Ciência, Responsabilidade e Uso Legítimo" com botão "Prosseguir".
+  - Bloqueio do `PromoModal` (WhatsApp) até que o aceite formal dos termos seja registrado pelo usuário.
+
+
 
 
