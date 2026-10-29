@@ -95,4 +95,8 @@ No painel administrativo, foram integrados dois recursos fundamentais de governa
 - **Fechamento Mensal Transparente:** Ao selecionar essa opção (que é o padrão ao entrar no painel), todos os cartões de faturamento bruto Pix, custos operacionais de APIs, taxas de gateway, lucro operacional e novos usuários cadastrados passam a considerar estritamente as movimentações ocorridas a partir do primeiro dia do mês corrente até a data e hora atual.
 - **Gráfico de Evolução:** O gráfico de desempenho diário plota toda a sequência de dias do mês atual de forma contínua, permitindo visualizar com facilidade o crescimento acumulado no mês.
 
+## Experiência Mobile no Painel Administrativo
+- **Interface Inteligente em Smartphones:** Administradores agora podem gerenciar clientes, recargas e métricas diretamente pelo celular sem quebras de layout. Em telas menores, as tabelas se transformam automaticamente em cartões modulares fáceis de visualizar e tocar.
+- **Paginação Rápida de Usuários:** A tela de gestão de clientes carrega em blocos de 25 usuários, garantindo navegação rápida e sem travamentos.
+- **Aprovação de Pix de 1-Toque:** Botões de ação como "Aprovar Pix" contam com botões destacados e feedback instantâneo no celular.
 

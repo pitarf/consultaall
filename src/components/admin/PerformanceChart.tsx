@@ -31,57 +31,57 @@ export default function PerformanceChart({ data }: { data: ChartData[] }) {
   };
 
   return (
-    <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm p-8">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <span className="w-1.5 h-6 bg-[#00B87C] rounded-full mr-1"></span>
+    <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/5 bg-white dark:bg-card shadow-sm p-4 sm:p-6 md:p-8">
+      {/* Cabeçalho do Gráfico */}
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span className="w-1.5 h-6 bg-[#00B87C] rounded-full mr-1 shrink-0"></span>
           Relatório de Desempenho
         </h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-white/5 p-6 shadow-sm">
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Métricas de Crescimento</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Acompanhe a evolução temporal de depósitos e cadastros</p>
+      <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-white/5 p-3.5 sm:p-6 shadow-sm">
+        <div className="mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-white">Métricas de Crescimento</h3>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Acompanhe a evolução temporal de depósitos e cadastros</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex bg-slate-50 dark:bg-slate-800 p-1 rounded-xl w-fit mb-8 border border-slate-100 dark:border-slate-700">
+        {/* Abas responsivas com touch target adequado */}
+        <div className="flex bg-slate-50 dark:bg-slate-800 p-1 rounded-xl w-full sm:w-fit mb-6 sm:mb-8 border border-slate-100 dark:border-slate-700 gap-1">
           <button
             onClick={() => setActiveTab('amount')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-5 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
               activeTab === 'amount'
                 ? 'bg-[#00B87C] text-white shadow-md'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            <TrendingUp className="w-4 h-4" />
-            Volume de Depósitos
+            <TrendingUp className="w-4 h-4 shrink-0" />
+            <span className="truncate">Volume de Depósitos</span>
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-5 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
               activeTab === 'users'
                 ? 'bg-[#2872fa] text-white shadow-md'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            <Users className="w-4 h-4" />
-            Novos Usuários
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="truncate">Novos Usuários</span>
           </button>
         </div>
 
-        {/* Legend */}
+        {/* Legenda */}
         <div className="flex items-center gap-2 mb-4">
-          <div className={`w-3 h-3 rounded-full ${activeTab === 'amount' ? 'bg-[#00B87C]' : 'bg-[#2872fa]'}`}></div>
-          <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+          <div className={`w-3 h-3 rounded-full shrink-0 ${activeTab === 'amount' ? 'bg-[#00B87C]' : 'bg-[#2872fa]'}`}></div>
+          <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
             {activeTab === 'amount' ? 'Total em Reais (R$)' : 'Quantidade de Cadastros'}
           </span>
         </div>
 
-        {/* Chart */}
-        <div className="h-[350px] w-full">
+        {/* Área do Gráfico */}
+        <div className="h-[260px] sm:h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
@@ -102,14 +102,14 @@ export default function PerformanceChart({ data }: { data: ChartData[] }) {
                 dataKey="day" 
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 12 }}
-                tickMargin={15}
-                minTickGap={30} // Evita vazamento
+                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                tickMargin={12}
+                minTickGap={25}
               />
               <YAxis 
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                tick={{ fill: '#94a3b8', fontSize: 11 }}
                 tickFormatter={(val) => activeTab === 'amount' ? `R$${val}` : val}
               />
               <Tooltip content={<CustomTooltip />} />

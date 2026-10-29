@@ -147,16 +147,20 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main Content - Fundo dinâmico adaptável ao tema claro ou escuro */}
-      <div className="flex-1 flex flex-col bg-[#f8fafc] dark:bg-background">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#f8fafc] dark:bg-background overflow-x-hidden">
         {/* Header superior adaptativo unificado com ThemeToggle */}
-        <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-card/30 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shadow-sm sticky top-0 z-50 animate-in fade-in duration-300">
-          <div className="flex items-center gap-2">
+        <header className="h-16 border-b border-slate-200 dark:border-white/5 bg-white/70 dark:bg-card/40 backdrop-blur-md flex items-center justify-between px-3 sm:px-4 md:px-6 shadow-sm sticky top-0 z-40 animate-in fade-in duration-300 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <AdminMobileMenu role={user.role} />
-            <ShieldCheck className="text-red-500 w-5 h-5 hidden xs:inline" />
-            <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm md:text-base">Painel Administrativo</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <ShieldCheck className="text-red-500 w-5 h-5 shrink-0 hidden xs:inline" />
+              <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm md:text-base truncate">
+                Painel Administrativo
+              </span>
+            </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Botão de Ativar Notificações Push */}
             <PushNotificationManager />
             
@@ -165,15 +169,16 @@ export default async function AdminLayout({
             
             <Link 
               href="/dashboard" 
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 transition-all shadow-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 transition-all shadow-sm active:scale-95 min-h-[36px]"
+              title="Voltar ao App"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden sm:inline">Voltar ao App</span>
             </Link>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300 min-w-0">
           {children}
         </main>
       </div>

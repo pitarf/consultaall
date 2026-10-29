@@ -8,6 +8,9 @@ import { ShieldAlert, ShieldCheck, Wallet, Ban, CheckCircle, Eye, Loader2, X, Hi
 export default function UserTableClient({ initialUsers }: { initialUsers: any[] }) {
   const [users, setUsers] = useState(initialUsers);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 25; // 25 usuários por página para alta performance em celulares
+
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
@@ -31,6 +34,16 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
       (user.whatsapp || '').includes(term)
     );
   });
+
+  // Cálculo da paginação client-side para evitar renderizar milhares de nós no DOM móvel
+  const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  // Manipulador de busca com reset de página
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
 
   // Função para exportar os dados dos usuários para CSV (Excel pt-BR compatível)
   const handleExportCSV = () => {
@@ -238,9 +251,9 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
 
   return (
     <>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6">
         {/* Barra de pesquisa */}
-        <div className="relative flex-grow max-w-md">
+        <div className="relative flex-grow max-w-md w-full">
           <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
             <Search className="w-4 h-4" />
           </span>
@@ -248,23 +261,24 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
             type="text"
             placeholder="Pesquisar por nome, e-mail ou WhatsApp..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/30 text-sm transition-all shadow-sm"
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/30 text-xs sm:text-sm transition-all shadow-sm min-h-[44px]"
           />
         </div>
 
         {/* Botão de Exportar */}
         <button
           onClick={handleExportCSV}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-blue-500/10 active:scale-95 cursor-pointer"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-xl transition-all shadow-md hover:shadow-blue-500/10 active:scale-95 cursor-pointer min-h-[44px]"
         >
-          <Download className="w-4 h-4" />
+          <Download className="w-4 h-4 shrink-0" />
           Exportar Leads (CSV)
         </button>
       </div>
 
       <div className="glass-panel rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-card shadow-sm hover:shadow-md transition-all">
-        <div className="overflow-x-auto">
+        {/* Visualização Desktop: Tabela completa */}
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm text-slate-700 dark:text-gray-300">
             <thead className="bg-slate-50 dark:bg-black/40 text-xs uppercase text-slate-500 dark:text-gray-500 font-bold border-b border-slate-200 dark:border-white/5">
               <tr>
@@ -277,7 +291,7 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5 bg-transparent dark:bg-black/10">
-              {filteredUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
@@ -397,23 +411,190 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && (
+              {paginatedUsers.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-slate-400 dark:text-gray-500">Nenhum usuário encontrado.</td>
+                  <td colSpan={6} className="text-center py-8 text-slate-400 dark:text-gray-500">Nenhum usuário encontrado.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Visualização Mobile: Cards Elegantes com touch target confortável */}
+        <div className="block md:hidden p-3.5 space-y-3">
+          {paginatedUsers.map((user) => (
+            <div
+              key={user.id}
+              className="p-4 bg-slate-50 dark:bg-white/[0.03] rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 shadow-sm"
+            >
+              {/* Header do Card */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-slate-900 dark:text-white text-sm truncate">
+                      {user.name || 'Sem Nome'}
+                    </span>
+                    {user.role === 'ADMIN' && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                        <Crown className="w-2.5 h-2.5 text-amber-500" />
+                        ADMIN
+                      </span>
+                    )}
+                    {user.role === 'SEO' && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full border border-blue-500/20">
+                        <Globe className="w-2.5 h-2.5 text-blue-500" />
+                        SEO
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 dark:text-gray-500 truncate mt-0.5">
+                    {user.email}
+                  </p>
+                  {user.whatsapp && (
+                    <p className="text-xs text-blue-500 dark:text-blue-400 font-mono mt-0.5 flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-blue-400 shrink-0" />
+                      {formatWhatsapp(user.whatsapp)}
+                    </p>
+                  )}
+                </div>
+
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                  user.active ? 'bg-green-500/15 text-green-600 dark:text-green-400' : 'bg-red-500/15 text-red-600 dark:text-red-400'
+                }`}>
+                  {user.active ? 'ATIVO' : 'BANIDO'}
+                </span>
+              </div>
+
+              {/* Informações centrais */}
+              <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-200/50 dark:border-white/5">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Saldo em Conta</span>
+                  <span className="text-base font-bold font-mono text-green-600 dark:text-green-400">
+                    R$ {user.balance.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Cadastro</span>
+                  <span className="text-slate-700 dark:text-gray-300 font-medium">
+                    {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+                <div className="col-span-2 text-[11px] text-slate-400 dark:text-gray-500">
+                  Último acesso: {user.lastActiveAt ? `${new Date(user.lastActiveAt).toLocaleDateString('pt-BR')} às ${new Date(user.lastActiveAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Nunca'}
+                </div>
+              </div>
+
+              {/* Barra de Ações com touch target de 40-44px */}
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-200/50 dark:border-white/5 overflow-x-auto no-scrollbar">
+                <button 
+                  onClick={() => handleToggleRole(user.id, user.role, user.email)}
+                  disabled={loading}
+                  className={`flex-1 min-h-[42px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm ${
+                    user.role === 'ADMIN' 
+                      ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400' 
+                      : user.role === 'SEO'
+                      ? 'bg-blue-500/15 text-blue-700 dark:text-blue-400'
+                      : 'bg-slate-200/60 dark:bg-white/10 text-slate-700 dark:text-gray-300'
+                  }`}
+                  title="Alterar Cargo"
+                >
+                  <Crown className="w-4 h-4 shrink-0" />
+                  <span>Cargo</span>
+                </button>
+
+                <button 
+                  onClick={() => handleOpenAuditModal(user)}
+                  disabled={loading}
+                  className="flex-1 min-h-[42px] flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-500/15 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-semibold transition-colors shadow-sm"
+                  title="Auditoria de Pedidos"
+                >
+                  <Eye className="w-4 h-4 shrink-0" />
+                  <span>Auditoria</span>
+                </button>
+
+                <button 
+                  onClick={() => handleOpenBalanceModal(user)}
+                  disabled={loading}
+                  className="flex-1 min-h-[42px] flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-500/15 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-semibold transition-colors shadow-sm"
+                  title="Ajuste de Saldo"
+                >
+                  <Wallet className="w-4 h-4 shrink-0" />
+                  <span>Saldo</span>
+                </button>
+
+                <button 
+                  onClick={() => handleOpenPixValidationModal(user)}
+                  disabled={loading}
+                  className="flex-1 min-h-[42px] flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-semibold transition-colors shadow-sm"
+                  title="Validar Pix Manual"
+                >
+                  <QrCode className="w-4 h-4 shrink-0" />
+                  <span>Pix</span>
+                </button>
+                
+                {user.role !== 'ADMIN' && (
+                  <button 
+                    onClick={() => handleToggleStatus(user.id, user.active)}
+                    disabled={loading}
+                    className={`min-h-[42px] px-3 py-2 rounded-xl text-xs font-semibold transition-colors shadow-sm flex items-center justify-center ${
+                      user.active 
+                        ? 'bg-red-500/15 text-red-600 dark:text-red-400' 
+                        : 'bg-green-500/15 text-green-600 dark:text-green-400'
+                    }`}
+                    title={user.active ? "Banir Usuário" : "Restaurar Usuário"}
+                  >
+                    {user.active ? <Ban className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          {paginatedUsers.length === 0 && (
+            <p className="text-center py-8 text-slate-400 dark:text-gray-500 text-sm">Nenhum usuário encontrado.</p>
+          )}
+        </div>
+
+        {/* Barra de Paginação Client-Side */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 text-xs text-slate-600 dark:text-gray-400">
+            <div>
+              Mostrando <span className="font-bold text-slate-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> a{' '}
+              <span className="font-bold text-slate-900 dark:text-white">{Math.min(currentPage * pageSize, filteredUsers.length)}</span> de{' '}
+              <span className="font-bold text-slate-900 dark:text-white">{filteredUsers.length}</span> usuários
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card font-bold hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm min-h-[38px]"
+              >
+                Anterior
+              </button>
+              <span className="px-2 font-semibold">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card font-bold hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm min-h-[38px]"
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal de Saldo */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-6 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Gerenciar Saldo</h3>
-            <p className="text-sm text-slate-500 dark:text-gray-400 mb-6">
-              Gerenciamento de saldo para o usuário <strong className="text-slate-900 dark:text-white">{selectedUser?.email}</strong>.
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-4 sm:p-6 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col overflow-hidden">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2">Gerenciar Saldo</h3>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-gray-400 mb-4 sm:mb-6 truncate">
+              Usuário: <strong className="text-slate-900 dark:text-white">{selectedUser?.email}</strong>
             </p>
 
             {/* Abas */}
@@ -596,29 +777,29 @@ export default function UserTableClient({ initialUsers }: { initialUsers: any[] 
 
       {/* Modal de Auditoria */}
       {auditOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-3xl w-full max-w-5xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2.5 sm:p-4">
+          <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl w-full max-w-5xl max-h-[92vh] sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
             {/* Header Audit */}
-            <div className="p-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-white/5">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-500/20 rounded-2xl text-purple-600 dark:text-purple-400 shadow-xl shadow-purple-500/10">
-                  <History className="w-6 h-6" />
+            <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50 dark:bg-white/5">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="p-2.5 sm:p-3 bg-purple-500/20 rounded-2xl text-purple-600 dark:text-purple-400 shadow-xl shadow-purple-500/10 shrink-0">
+                  <History className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Auditoria de Usuário</h3>
-                  <p className="text-sm text-slate-500 dark:text-gray-400">{selectedUser?.email}</p>
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight truncate">Auditoria de Usuário</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-gray-400 truncate">{selectedUser?.email}</p>
                 </div>
               </div>
               <button 
                 onClick={() => { setAuditOpen(false); setAuditData(null); }}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-slate-400 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+                className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-slate-400 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-colors shrink-0"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
 
             {/* Content Audit */}
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/50 dark:bg-card/30">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar bg-slate-50/50 dark:bg-card/30">
               {loading && !auditData ? (
                 <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-gray-500 gap-4">
                   <Loader2 className="w-10 h-10 animate-spin text-primary" />

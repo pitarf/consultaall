@@ -212,4 +212,10 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - O gráfico de desempenho diário preenche todas as datas do mês atual (do dia 01 até o último dia do mês corrente) sequencialmente com formatação `DD/MM` e valor zerado por padrão, garantindo que o gráfico reflita a evolução completa do mês sem quebras de continuidade.
   - O seletor rápido no componente `DashboardClient.tsx` exibe o rótulo "Mês Atual", e o cabeçalho em `src/app/admin/page.tsx` identifica o período como "Mês Atual".
 
+### 13. Arquitetura Responsiva Híbrida do Painel Administrativo
+- **Padrão Dual (Desktop Table / Mobile Cards):** Em todas as telas administrativas (`/admin`, `/admin/usuarios`, `/admin/vendas`, `/admin/custos`, `/admin/traffic`, `/admin/bloqueios`), elementos tabulares extensos são encapsulados em `hidden md:table` ou `hidden md:block`. Em resoluções móveis (`block md:hidden`), renderizam-se cards modulares otimizados para touch.
+- **Paginação Local de Alta Densidade:** O componente `UserTableClient.tsx` segmenta os registros em páginas de 25 itens com controle de estado `currentPage`, evitando gargalos de renderização no DOM do navegador em conexões móveis.
+- **Ergonomia Tátil (Touch Targets):** Botões críticos de ação (Aprovar Pix, Gerenciar Saldo, Bloquear) possuem altura mínima de 40px/44px, respeitando as diretrizes de acessibilidade e usabilidade para smartphones.
+
+
 

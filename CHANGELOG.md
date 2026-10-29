@@ -2,6 +2,15 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.7] - 2026-10-29
+### Aprimorado
+- **Responsividade 100% Mobile-First no Painel Administrativo (`/admin`):**
+  - **Eliminação de Tabelas Rígidas no Mobile:** Todas as listagens administrativas (`/admin`, `/admin/usuarios`, `/admin/vendas`, `/admin/custos`, `/admin/traffic`, `/admin/bloqueios`) agora utilizam o padrão híbrido: tabelas analíticas ricas no desktop (`hidden md:table` / `hidden md:block`) e cards modulares compactos no celular (`block md:hidden`).
+  - **Paginação Client-Side na Gestão de Usuários (`UserTableClient.tsx`):** Implementada paginação com 25 usuários por página, eliminando travamento e lentidão de DOM provocados pela renderização simultânea de mais de 2.000 usuários em navegadores móveis.
+  - **Otimização de Toque e Ações:** Botões de aprovação de Pix manual, gerenciamento de saldos, banimento, auditoria e desbloqueio LGPD ganharam áreas de toque ergonomicamente adequadas (mínimo de 40px a 44px) com feedback tátil e loaders visuais.
+  - **Gráfico de Desempenho Responsivo (`PerformanceChart.tsx`):** Padding reduzido de `p-8` para `p-4 sm:p-6 md:p-8`, abas fluídas (`w-full sm:w-fit`) e altura dinâmica (`h-[260px] sm:h-[350px]`).
+  - **Blindagem contra Overflow:** Adição de `min-w-0` e `overflow-x-hidden` em containers flexíveis do layout administrativo, impedindo barras de rolagem horizontal acidentais.
+
 ## [1.0.6] - 2026-10-29
 ### Aprimorado
 - **Filtro de Período do Dashboard Administrativo ("Mês Atual"):**

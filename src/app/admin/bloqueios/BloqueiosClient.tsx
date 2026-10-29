@@ -68,9 +68,9 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
   );
 
   return (
-    <div className="space-y-8 text-left">
+    <div className="space-y-6 sm:space-y-8 text-left">
       {/* Form de Adicionar Bloqueio */}
-      <div className="bg-white dark:bg-card border border-slate-200 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
+      <div className="bg-white dark:bg-card border border-slate-200 dark:border-white/5 rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <Ban className="w-5 h-5 text-red-500" />
           Bloquear Novo CPF, CNPJ, Placa, Telefone ou Nome
@@ -133,7 +133,7 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
       </div>
 
       {/* Lista de Bloqueios */}
-      <div className="bg-white dark:bg-card border border-slate-200 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
+      <div className="bg-white dark:bg-card border border-slate-200 dark:border-white/5 rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -156,8 +156,8 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
           </div>
         </div>
 
-        {/* Tabela de registros */}
-        <div className="overflow-x-auto">
+        {/* Visualização Desktop: Tabela de registros */}
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm text-slate-600 dark:text-gray-300">
             <thead className="text-xs uppercase bg-slate-50 dark:bg-black/20 text-slate-400 dark:text-gray-500 tracking-wider">
               <tr>
@@ -212,6 +212,53 @@ export default function BloqueiosClient({ initialBlockedList }: { initialBlocked
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Visualização Mobile: Cards Elegantes com touch target confortável */}
+        <div className="block md:hidden space-y-3">
+          {filteredList.map((item) => (
+            <div key={item.id} className="p-4 bg-slate-50 dark:bg-white/[0.03] rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-600 dark:text-red-400">
+                    {item.type}
+                  </span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
+                    {item.type === 'CPF'
+                      ? item.value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+                      : item.type === 'CNPJ'
+                      ? item.value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+                      : item.type === 'TELEFONE'
+                      ? item.value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+                      : item.value}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleRemoveBlock(item.id)}
+                  className="p-2.5 text-slate-400 hover:text-red-500 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl transition-all min-h-[40px] min-w-[40px] flex items-center justify-center active:scale-95 shadow-sm"
+                  title="Desbloquear registro"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </button>
+              </div>
+
+              <div className="text-xs pt-1 border-t border-slate-200/50 dark:border-white/5 space-y-1">
+                <p className="text-slate-600 dark:text-gray-300">
+                  <span className="font-bold text-slate-400 dark:text-gray-500 text-[10px] uppercase">Motivo: </span>
+                  {item.reason || 'Solicitação LGPD'}
+                </p>
+                <p className="text-[11px] text-slate-400 dark:text-gray-500">
+                  Bloqueado em: {new Date(item.createdAt).toLocaleDateString('pt-BR')}{' '}
+                  {new Date(item.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          ))}
+          {filteredList.length === 0 && (
+            <p className="text-center py-8 text-slate-400 dark:text-gray-600 italic text-sm">
+              Nenhum registro bloqueado encontrado.
+            </p>
+          )}
         </div>
       </div>
     </div>

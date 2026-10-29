@@ -189,3 +189,11 @@
   - Atualização dinâmica do gráfico diário para cobrir toda a extensão do mês civil com pre-fill contínuo de dados.
   - Alinhamento de cabeçalho e descrições contextuais em `src/app/admin/page.tsx`.
 
+## SPLIT 13: Responsividade Mobile-First no Painel Administrativo (✅ CONCLUÍDO)
+*Este split foca na usabilidade móvel integral de todas as telas, gráficos e relatórios do painel administrativo.*
+- [x] **Eliminação de Quebras e Tabelas Rígidas:** Conversão para padrão híbrido (cards no mobile e tabelas no desktop) em todas as abas (`/admin`, `/admin/usuarios`, `/admin/vendas`, `/admin/custos`, `/admin/traffic`, `/admin/bloqueios`, `/admin/logs`).
+- [x] **Paginação da Gestão de Usuários:** Adição de paginação (25 usuários por página) para evitar sobrecarga de DOM no mobile.
+- [x] **Ajustes de Altura e Padding em Gráficos:** Redução de espaçamentos em `PerformanceChart.tsx` e abas responsivas fluídas.
+- [x] **Ergonomia e Áreas de Toque:** Botões com altura mínima de 40px/44px facilitando o uso em smartphones.
+- [x] **Validação Visual com Playwright:** Captura e inspeção de telas móveis simulando dispositivos reais.
+

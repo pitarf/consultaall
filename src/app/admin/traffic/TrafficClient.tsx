@@ -124,13 +124,14 @@ export default function TrafficClient({
       </div>
 
       {/* 3. Tabela de Origem de Canais */}
-      <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card shadow-sm p-6 md:p-8">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary" />
+      <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card shadow-sm p-4 sm:p-6 md:p-8">
+        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-primary shrink-0" />
           Desempenho Geral de Canais
         </h2>
         
-        <div className="overflow-x-auto">
+        {/* Visualização Desktop: Tabela */}
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm text-slate-600 dark:text-gray-300">
             <thead className="text-xs uppercase bg-slate-50 dark:bg-black/20 text-slate-400 dark:text-gray-500 tracking-wider">
               <tr>
@@ -181,18 +182,69 @@ export default function TrafficClient({
             </tbody>
           </table>
         </div>
+
+        {/* Visualização Mobile: Cards */}
+        <div className="block md:hidden space-y-3">
+          {initialChannels.map((row, idx) => (
+            <div key={idx} className="p-4 bg-slate-50 dark:bg-white/[0.03] rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-900 dark:text-white text-sm capitalize">
+                  {row.source}
+                </span>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                  row.roi > 100 
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                    : row.roi > 0 
+                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                    : 'bg-red-500/10 text-red-600 dark:text-red-400'
+                }`}>
+                  ROI: {row.roi > 0 ? `+${row.roi}%` : `${row.roi}%`}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-200/50 dark:border-white/5">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Cadastros</span>
+                  <span className="font-semibold text-slate-800 dark:text-white">{row.usersCount}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Faturamento</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 font-mono">
+                    R$ {row.faturamento.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Custos</span>
+                  <span className="font-medium text-red-500 font-mono">
+                    R$ {row.custos.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Lucro Líquido</span>
+                  <span className="font-bold text-slate-900 dark:text-white font-mono">
+                    R$ {row.lucro.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+          {initialChannels.length === 0 && (
+            <p className="text-center py-8 text-slate-400 dark:text-gray-600 italic text-sm">
+              Nenhum canal registrado até o momento.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* 4. Busca, Filtros e Lista Detalhada */}
-      <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card shadow-sm p-6 md:p-8 space-y-6">
+      <div className="glass-panel rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-card shadow-sm p-4 sm:p-6 md:p-8 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-white/5 pb-6">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             Lista Detalhada de Clientes Rastreados
           </h2>
 
-          <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
             {/* Input de Busca */}
-            <div className="relative flex-1 md:w-64">
+            <div className="relative flex-1 sm:w-64">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <Search className="w-4 h-4" />
               </span>
@@ -201,7 +253,7 @@ export default function TrafficClient({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por nome ou e-mail..."
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-black/20 text-slate-950 dark:text-white focus:bg-white outline-none focus:border-primary text-xs font-semibold"
+                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-black/20 text-slate-950 dark:text-white focus:bg-white outline-none focus:border-primary text-xs font-semibold min-h-[42px]"
               />
             </div>
 
@@ -213,7 +265,7 @@ export default function TrafficClient({
               <select
                 value={sourceFilter}
                 onChange={(e) => handleSourceChange(e.target.value)}
-                className="pl-9 pr-8 py-2 border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-black/20 text-slate-950 dark:text-white outline-none focus:border-primary text-xs font-semibold appearance-none cursor-pointer"
+                className="w-full sm:w-auto pl-9 pr-8 py-2.5 border border-slate-200 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-black/20 text-slate-950 dark:text-white outline-none focus:border-primary text-xs font-semibold appearance-none cursor-pointer min-h-[42px]"
               >
                 <option value="">Todas as Origens</option>
                 {sources.map(s => (
@@ -227,7 +279,7 @@ export default function TrafficClient({
               <button
                 type="button"
                 onClick={clearFilters}
-                className="p-2 border border-slate-200 dark:border-white/10 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="p-2.5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center justify-center min-h-[42px]"
                 title="Limpar Filtros"
               >
                 <X className="w-4 h-4" />
@@ -236,8 +288,8 @@ export default function TrafficClient({
           </form>
         </div>
 
-        {/* Tabela de Usuários */}
-        <div className="overflow-x-auto">
+        {/* Visualização Desktop: Tabela de Usuários */}
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm text-slate-600 dark:text-gray-300">
             <thead className="text-xs uppercase bg-slate-50 dark:bg-black/20 text-slate-400 dark:text-gray-500 tracking-wider">
               <tr>
@@ -289,24 +341,68 @@ export default function TrafficClient({
           </table>
         </div>
 
+        {/* Visualização Mobile: Cards Detalhados */}
+        <div className="block md:hidden space-y-3">
+          {currentUsers.map((user) => (
+            <div key={user.id} className="p-4 bg-slate-50 dark:bg-white/[0.03] rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{user.name}</p>
+                  <p className="text-xs text-slate-400 dark:text-gray-500 truncate">{user.email}</p>
+                </div>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                  user.source === 'orgânico' 
+                    ? 'bg-slate-200/60 text-slate-600 dark:bg-white/10 dark:text-gray-400' 
+                    : 'bg-blue-500/15 text-[#2872fa]'
+                }`}>
+                  {user.source}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-200/50 dark:border-white/5">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Saldo Atual</span>
+                  <span className="font-mono font-bold text-slate-700 dark:text-gray-300">
+                    R$ {user.balance.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-gray-500 block">Total Depositado</span>
+                  <span className="font-mono font-bold text-emerald-500">
+                    R$ {user.totalDeposited.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+                <div className="col-span-2 text-[11px] text-slate-400 dark:text-gray-500 pt-1">
+                  Cadastrado em: {new Date(user.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                </div>
+              </div>
+            </div>
+          ))}
+          {currentUsers.length === 0 && (
+            <p className="text-center py-10 text-slate-400 dark:text-gray-600 italic text-sm">
+              Nenhum usuário cadastrado com estes filtros.
+            </p>
+          )}
+        </div>
+
         {/* Paginação */}
         {totalPages > 1 && (
-          <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-white/5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <span className="text-xs text-slate-500">
               Página {currentPage} de {totalPages} ({initialUsers.length} cadastros)
             </span>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                className="px-3 py-1.5 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 transition-colors"
+                className="flex-1 sm:flex-initial px-4 py-2 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 transition-colors min-h-[40px] flex items-center justify-center"
               >
                 Anterior
               </button>
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                className="px-3 py-1.5 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 transition-colors"
+                className="flex-1 sm:flex-initial px-4 py-2 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50 transition-colors min-h-[40px] flex items-center justify-center"
               >
                 Próximo
               </button>
