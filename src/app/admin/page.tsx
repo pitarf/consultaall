@@ -22,7 +22,7 @@ export default async function AdminDashboardPage({
     switch (p) {
       case 'today': return 'Hoje';
       case 'week': return 'Últimos 7 Dias';
-      case 'month': return 'Últimos 30 Dias';
+      case 'month': return 'Mês Atual';
       case 'year': return 'Ano Atual';
       case 'all': return 'Histórico Completo';
       case 'custom':
@@ -109,7 +109,9 @@ export default async function AdminDashboardPage({
               <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mt-1">
                 R$ {advanced.monthlyRevenue.toFixed(2).replace('.', ',')}
               </p>
-              <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">Mês consolidado</span>
+              <span className="text-slate-400 dark:text-gray-500 text-[10px] font-semibold block mt-1">
+                {currentPeriod === 'month' ? 'Mês atual consolidado' : 'Período consolidado'}
+              </span>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl p-4 text-left">
               <p className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Custo de APIs</p>

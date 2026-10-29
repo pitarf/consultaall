@@ -181,6 +181,11 @@
   - Pop-up bloqueante de primeiro acesso exibindo o "Termo de Ciência, Responsabilidade e Uso Legítimo" com botão "Prosseguir".
   - Bloqueio do `PromoModal` (WhatsApp) até que o aceite formal dos termos seja registrado pelo usuário.
 
-
-
+## SPLIT 12: Refinamento de Métricas e Filtros do Dashboard Administrativo (✅ CONCLUÍDO)
+*Este split foca no alinhamento temporal dos indicadores operacionais e contábeis do painel de administração.*
+- [x] **Substituição do Filtro de 30 Dias por Mês Atual:**
+  - Ajuste do seletor rápido no `DashboardClient.tsx` para "Mês Atual".
+  - Recálculo da janela temporal em `getAdvancedMetrics` (`src/app/actions/admin.ts`), definindo o início exato como o primeiro dia do mês corrente às 00:00:00 (Brasília).
+  - Atualização dinâmica do gráfico diário para cobrir toda a extensão do mês civil com pre-fill contínuo de dados.
+  - Alinhamento de cabeçalho e descrições contextuais em `src/app/admin/page.tsx`.
 

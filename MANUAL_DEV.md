@@ -206,10 +206,10 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - `totalCost = Math.round(rawCost * 100) / 100` em todos os cálculos.
   - Verificação de saldo baseada em centavos inteiros: `Math.round(user.balance * 100) < Math.round(totalCost * 100)`.
   - Tolerância no update atômico do Prisma: `where: { id: user.id, balance: { gte: totalCost - 0.005 } }` para assegurar que resíduos acumulados não impeçam débitos válidos.
-  - Arredondamento dos totais também no frontend para manter sincronia visual rigorosa.
-
-
-
-
+  - Arredondamento dos totais também no frontend para manter sincronia visual rigorosa.### 12. Métricas Administrativas e Filtro Temporal ("Mês Atual")
+- **Período `month` (`src/app/actions/admin.ts`):**
+  - A janela temporal para o período `month` inicia às `00:00:00` do dia 1 do mês civil corrente no fuso de Brasília (UTC-3), e estende-se até o timestamp atual (`now`).
+  - O gráfico de desempenho diário preenche todas as datas do mês atual (do dia 01 até o último dia do mês corrente) sequencialmente com formatação `DD/MM` e valor zerado por padrão, garantindo que o gráfico reflita a evolução completa do mês sem quebras de continuidade.
+  - O seletor rápido no componente `DashboardClient.tsx` exibe o rótulo "Mês Atual", e o cabeçalho em `src/app/admin/page.tsx` identifica o período como "Mês Atual".
 
 

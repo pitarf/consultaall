@@ -74,7 +74,6 @@ Agora você pode consultar o histórico de processos judiciais de qualquer pesso
   - **Partes Envolvidas:** Separação visual entre Polo Passivo (réu/apelante) e Polo Ativo (autor/apelado), com destaque especial para a pessoa consultada e identificação de advogados e defensores com número da OAB.
   - **Nada Consta:** Se a pessoa não possuir processos judiciais, o sistema exibe um card de segurança confirmando a inexistência de apontamentos.
 
-
 ## Bloqueios LGPD e Controle de Consultas por Nome (Apenas Administradores)
 No painel administrativo, foram integrados dois recursos fundamentais de governança e conformidade:
 - **Bloqueio de Nomes no Painel LGPD (`/admin/bloqueios`):**
@@ -91,8 +90,9 @@ No painel administrativo, foram integrados dois recursos fundamentais de governa
 
 ## Termos de Uso e Responsabilidade (Cadastro e Primeiro Acesso)
 - **Aceite Prévio no Cadastro:** Para criar uma conta, é obrigatório marcar as caixas de ciência e aceite dos Termos de Uso e da Política de Privacidade. Clicando em "Termos de Uso e Responsabilidade", o texto explicativo sobre o uso legítimo das informações e vedação de ilícitos é expandido para conferência. Esse bloqueio se aplica tanto ao cadastro tradicional quanto ao cadastro com conta Google (o botão do Google fica bloqueado até o aceite).
-- **Termo de Ciência e Uso Legítimo:** No primeiro acesso à plataforma, é apresentado o pop-up formal de responsabilidade nos termos da LGPD (Lei nº 13.709/2018). Basta clicar em "Prosseguir" para confirmar a adesão e liberar as funcionalidades do painel.
-
-
+- **Termo de Ciência e Uso Legítimo:** No primeiro acesso à plataforma, é apresentado o pop-up formal de responsabilidade nos termos da LGPD (Lei nº 13.709/2018). Basta clicar em "Prosseguir" para confirmar a adesão e liberar as funcionalidades do painel.## Filtros de Período no Painel Administrativo ("Mês Atual")
+- **Visão do Mês Atual:** No topo do Painel Administrativo (`/admin`), o botão de filtro rápido agora traz a opção **"Mês Atual"** (substituindo o antigo "30 Dias").
+- **Fechamento Mensal Transparente:** Ao selecionar essa opção (que é o padrão ao entrar no painel), todos os cartões de faturamento bruto Pix, custos operacionais de APIs, taxas de gateway, lucro operacional e novos usuários cadastrados passam a considerar estritamente as movimentações ocorridas a partir do primeiro dia do mês corrente até a data e hora atual.
+- **Gráfico de Evolução:** O gráfico de desempenho diário plota toda a sequência de dias do mês atual de forma contínua, permitindo visualizar com facilidade o crescimento acumulado no mês.
 
 

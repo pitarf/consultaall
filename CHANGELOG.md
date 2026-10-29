@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.6] - 2026-10-29
+### Aprimorado
+- **Filtro de Período do Dashboard Administrativo ("Mês Atual"):**
+  - **Transição de "30 Dias" para "Mês Atual":** Substituído o filtro móvel de 30 dias corridos pelo recorte do mês civil atual (`month`), exibindo as métricas consolidadas a partir do primeiro dia do mês corrente (01/MM às 00:00:00 no fuso de Brasília) até o momento atual.
+  - **Interface & Rótulos:** Atualizado o botão de filtro rápido em `DashboardClient.tsx` para `Mês Atual` e ajustado o cabeçalho e descrições do painel em `src/app/admin/page.tsx`.
+  - **Gráfico de Desempenho Diário:** Em `getAdvancedMetrics` (`src/app/actions/admin.ts`), a linha do tempo do gráfico mensal agora gera dinamicamente todos os dias do mês atual (do dia 01 até o último dia do mês corrente, ex: 01/10 a 31/10) sequencialmente com pre-fill zero e sem lacunas.
+
 ## [1.0.5] - 2026-10-27
 ### Adicionado & Aprimorado
 - **Termos de Uso, Responsabilidade e Conformidade LGPD no Cadastro:**
