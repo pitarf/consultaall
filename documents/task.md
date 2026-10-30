@@ -197,3 +197,10 @@
 - [x] **Ergonomia e Áreas de Toque:** Botões com altura mínima de 40px/44px facilitando o uso em smartphones.
 - [x] **Validação Visual com Playwright:** Captura e inspeção de telas móveis simulando dispositivos reais.
 
+
+
+## SPLIT 14: Enriquecimento de Filiação e Busca Avançada para CPF (✅ CONCLUÍDO)
+*Este split foca na máxima completude dos relatórios de CPF, garantindo que filiação (nome da mãe e pai) e dados pessoais nunca faltem ao usuário.*
+- [x] **Dados Pessoais Universais:** Bloco `Dados_Pessoais` (Nome, CPF, RG, Nascimento, Mãe, Pai, Idade, Signo, Situação Cadastral) sempre retornado, mesmo em seleções exclusivas de módulos complementares.
+- [x] **Enriquecimento Inteligente de Filiação:** Implementada função `enriquecerFiliacaoViaV2` em `src/services/direct-data.ts`, que aciona automaticamente a Pesquisa Avançada V2 para resgatar o Nome da Mãe quando a base inicial federal do CPF vier vazia.
+- [x] **Mesclagem de Dossiê:** Integração dos dados sem máscaras e vínculos de parentesco ao resultado final sem alteração do custo base de R$ 0,36.

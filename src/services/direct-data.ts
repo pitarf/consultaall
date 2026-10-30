@@ -483,8 +483,80 @@ export async function consultaProcessos(cpfOrCnpj: string) {
 }
 
 // -----------------------------------------------------------------------------
-// SEÇÃO: PESSOA FÍSICA PLUS (V3) - CPF
+// SEÇÃO: PESSOA FÍSICA PLUS (V3) - CPF & ENRIQUECIMENTO PESQUISA AVANÇADA (R$ 0,36)
 // -----------------------------------------------------------------------------
+
+/**
+ * Helper para enriquecer dados de filiação (Nome da Mãe/Pai) e parentes via Pesquisa Avançada V2
+ * Acionado automaticamente quando a consulta de CPF retorna sem nome da mãe cadastrado.
+ */
+async function enriquecerFiliacaoViaV2(nome: string, cpfLimpo: string): Promise<{ nomeMae?: string | null; nomePai?: string | null; rg?: string | null; parentescos?: any[] } | null> {
+  try {
+    const cleanName = nome?.trim();
+    if (!cleanName || cleanName.length < 5) return null;
+
+    // 1. Busca candidato na Pesquisa Avançada V2 pelo nome completo
+    const filterRes = await filterNaturalPerson({ fullName: cleanName });
+    if (!filterRes?.success || !Array.isArray(filterRes.listFilters) || filterRes.listFilters.length === 0) {
+      return null;
+    }
+
+    // 2. Localiza o melhor candidato (matching de CPF com máscara parcial ou candidato único/com mãe)
+    let targetCand = filterRes.listFilters.find((c: any) => {
+      if (c.taxIdNumber) {
+        const maskedDigits = c.taxIdNumber.replace(/\D/g, '');
+        const meioCpf = cpfLimpo.substring(3, 9);
+        if (maskedDigits.includes(meioCpf)) return true;
+      }
+      return false;
+    });
+
+    if (!targetCand) {
+      if (filterRes.listFilters.length === 1) {
+        targetCand = filterRes.listFilters[0];
+      } else {
+        targetCand = filterRes.listFilters.find((c: any) => c.motherName && !c.motherName.includes('Indisponível'));
+      }
+    }
+
+    if (!targetCand || !targetCand.id) return null;
+
+    // 3. Processa o ID do candidato na Pesquisa Avançada V2 para obter o dossiê completo e filiação
+    const procRes = await processingIds([targetCand.id], `Enriquecimento Filiação CPF ${cpfLimpo}`);
+    if (!procRes.success || !procRes.searchUid) {
+      if (targetCand.motherName && !targetCand.motherName.includes('Indisponível') && !targetCand.motherName.startsWith('***')) {
+        return { nomeMae: targetCand.motherName };
+      }
+      return null;
+    }
+
+    const searchUid = procRes.searchUid;
+
+    // 4. Polling ágil (até 4 tentativas de 2s - máx 8s)
+    for (let i = 0; i < 4; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      const viewRes = await viewSearch(searchUid);
+      if (viewRes.success && viewRes.viewSearch) {
+        const item = viewRes.viewSearch.searchItems?.[0];
+        if (item && [4, 5, 6, 7].includes(item.resultId)) {
+          const raw = item.returnJson?.retorno || item.returnJson || {};
+          const nomeMae = raw.nomeMae || raw.mae || (raw.filiacao?.mae);
+          const nomePai = raw.nomePai || raw.pai || (raw.filiacao?.pai);
+          const parentescos = raw.parentescos || raw.parentes || [];
+          return {
+            nomeMae: nomeMae && !nomeMae.includes('Indisponível') ? nomeMae : null,
+            nomePai: nomePai && !nomePai.includes('Indisponível') ? nomePai : null,
+            rg: raw.rg || null,
+            parentescos: Array.isArray(parentescos) ? parentescos : []
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Enriquecimento V2 para filiação de CPF falhou de forma não-bloqueante:', err);
+  }
+  return null;
+}
 
 export async function consultaCpfPlus(cpf: string, selectedModules: string[] = []) {
   const { token, v3Url } = await getDirectDataConfig();
@@ -497,7 +569,22 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
     const res = response.data;
 
     if (res.retorno) {
-      const data = transformDirectDataPlus(res.retorno, selectedModules);
+      let rawData = res.retorno;
+
+      // Se o retorno da V3 Plus não trouxe o nome da mãe, executa enriquecimento automático via Pesquisa Avançada V2
+      if (!rawData.nomeMae && rawData.nome) {
+        const v2Enrich = await enriquecerFiliacaoViaV2(rawData.nome, cleanCpf);
+        if (v2Enrich) {
+          if (v2Enrich.nomeMae) rawData.nomeMae = v2Enrich.nomeMae;
+          if (v2Enrich.nomePai && !rawData.nomePai) rawData.nomePai = v2Enrich.nomePai;
+          if (v2Enrich.rg && !rawData.rg) rawData.rg = v2Enrich.rg;
+          if ((!rawData.parentescos || rawData.parentescos.length === 0) && v2Enrich.parentescos && v2Enrich.parentescos.length > 0) {
+            rawData.parentescos = v2Enrich.parentescos;
+          }
+        }
+      }
+
+      const data = transformDirectDataPlus(rawData, selectedModules);
       
       // Se selecionou o módulo de processos judiciais, busca em paralelo
       if (selectedModules.includes('processos')) {
@@ -518,7 +605,7 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
       message: sanitizeApiErrorMessage(rawMsg, 'cpf'),
       rawMessage: rawMsg,
       resultadoId: res.metaDados?.resultadoId,
-      provider: 'DirectData V3'
+      provider: 'DirectData V3 Plus'
     };
   } catch (error: any) {
     const apiMessage = error.response?.data?.error?.message || error.response?.data?.metaDados?.mensagem || error.message;
@@ -526,28 +613,29 @@ export async function consultaCpfPlus(cpf: string, selectedModules: string[] = [
       success: false, 
       message: sanitizeApiErrorMessage(apiMessage, 'cpf'),
       rawMessage: apiMessage,
-      provider: 'DirectData V3'
+      provider: 'DirectData V3 Plus'
     };
   }
 }
 
 function transformDirectDataPlus(raw: any, selectedModules: string[]) {
   const result: any = {};
-  if (selectedModules.includes('dados_basicos') || selectedModules.includes('documentos')) {
-    result['Dados_Pessoais'] = {
-      nome: raw.nome,
-      cpf: raw.cpf,
-      sexo: raw.sexo,
-      data_nascimento: raw.dataNascimento,
-      idade: raw.idade,
-      signo: raw.signo,
-      nome_mae: raw.nomeMae,
-      nome_pai: raw.nomePai,
-      situacao_cadastral: raw.situacaoCadastral,
-      data_situacao: raw.dataSituacaoCadastral,
-      obito: raw.obito
-    };
-  }
+
+  // Dados Pessoais / Identificação Básica (sempre inclusos para garantir identificação e transparência da filiação do titular)
+  result['Dados_Pessoais'] = {
+    nome: raw.nome,
+    cpf: raw.cpf,
+    rg: raw.rg || undefined,
+    sexo: raw.sexo,
+    data_nascimento: raw.dataNascimento,
+    idade: raw.idade,
+    signo: raw.signo,
+    nome_mae: raw.nomeMae || 'Não informado / Não consta na base federal',
+    nome_pai: raw.nomePai || 'Não informado / Não consta na base federal',
+    situacao_cadastral: raw.situacaoCadastral,
+    data_situacao: raw.dataSituacaoCadastral,
+    obito: raw.obito
+  };
   if (selectedModules.includes('telefones')) {
     result['Telefones'] = {
       lista: Array.isArray(raw.telefones) ? raw.telefones.map((t: any) => {

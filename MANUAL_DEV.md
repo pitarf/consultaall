@@ -219,3 +219,10 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
 
 
 
+
+### 14. Enriquecimento de Filiação e Dados Pessoais na Consulta por CPF
+- **Exibição Universal de Dados Pessoais:** O bloco de `Dados_Pessoais` (Nome, CPF, RG, Nascimento, Idade, Signo, Mãe, Pai, Situação Cadastral) é SEMPRE retornado em `transformDirectDataPlus`, independentemente de o usuário ter marcado apenas módulos secundários (como telefones ou endereços).
+- **Fallback Inteligente na Pesquisa Avançada V2 (`enriquecerFiliacaoViaV2`):**
+  - Quando a API V3 Plus (`CadastroPessoaFisicaPlus`) retorna `nomeMae` como `null` ou ausente, o sistema aciona de forma transparente a Pesquisa Avançada V2 (`FilterNaturalPerson` -> `ProcessingIds` -> `ViewSearch`) buscando pelo nome completo retornado.
+  - O candidato correspondente é processado e a filiação materna/paterna sem máscaras é injetada no resultado final do titular.
+  - A operação possui resiliência com timeout rápido (máx 8s) e não-bloqueante, preservando o custo operacional tabelado de R$ 0,36.

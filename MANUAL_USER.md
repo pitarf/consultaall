@@ -100,3 +100,7 @@ No painel administrativo, foram integrados dois recursos fundamentais de governa
 - **Paginação Rápida de Usuários:** A tela de gestão de clientes carrega em blocos de 25 usuários, garantindo navegação rápida e sem travamentos.
 - **Aprovação de Pix de 1-Toque:** Botões de ação como "Aprovar Pix" contam com botões destacados e feedback instantâneo no celular.
 
+
+## Consultas por CPF com Enriquecimento Completo
+- **Filiação e Dados Cadastrais Garantidos:** Sempre que você pesquisar um CPF na plataforma, os dados básicos (Nome Completo, CPF, Data de Nascimento, Idade, Signo e Filiação: Nome da Mãe e Nome do Pai) serão sempre incluídos no resultado, mesmo que você opte por consultar apenas módulos adicionais específicos como telefones ou endereços.
+- **Enriquecimento com Busca Avançada:** Caso a base de dados cadastral inicial não possua o nome da mãe registrado para aquele documento, a plataforma aciona automaticamente o motor de Pesquisa Avançada para localizar a filiação materna e paterna, entregando o dossiê mais completo e detalhado do mercado pelo mesmo valor de consulta.
