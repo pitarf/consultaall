@@ -204,3 +204,11 @@
 - [x] **Dados Pessoais Universais:** Bloco `Dados_Pessoais` (Nome, CPF, RG, Nascimento, Mãe, Pai, Idade, Signo, Situação Cadastral) sempre retornado, mesmo em seleções exclusivas de módulos complementares.
 - [x] **Enriquecimento Inteligente de Filiação:** Implementada função `enriquecerFiliacaoViaV2` em `src/services/direct-data.ts`, que aciona automaticamente a Pesquisa Avançada V2 para resgatar o Nome da Mãe quando a base inicial federal do CPF vier vazia.
 - [x] **Mesclagem de Dossiê:** Integração dos dados sem máscaras e vínculos de parentesco ao resultado final sem alteração do custo base de R$ 0,36.
+
+
+## SPLIT 15: Exportação Universal de Consultas em PDF (✅ CONCLUÍDO)
+*Este split foca na entrega de dossiês cadastrais e relatórios de inteligência para download e impressão em PDF em alta resolução vetorial.*
+- [x] **Motor Utilitário de PDF (`src/utils/pdf-report.ts`):** Layout limpo de Dossiê Oficial em folha A4 timbrada com protocolo único, data/hora de emissão e aviso de conformidade LGPD.
+- [x] **Compatibilidade com Todas as Consultas:** Suporte formatado para CPF, Nome, Telefone, E-mail, CNPJ (Empresas), Veículos (Placa), Processos Judiciais e Endereços.
+- [x] **Botão "Exportar PDF" Integrado:** Inclusão no cabeçalho do `DataViewer.tsx` e `ProcessosJudiciaisViewer.tsx`, cobrindo automaticamente 100% dos relatórios do sistema e histórico de buscas.
+- [x] **Prompt Mestre para Clones (`documents/PROMPT_REPLICAR_EXPORTACAO_PDF.md`):** Criação de guia e prompt pronto para replicação em sistemas derivados com outros nomes de marca.

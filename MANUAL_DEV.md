@@ -226,3 +226,12 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - Quando a API V3 Plus (`CadastroPessoaFisicaPlus`) retorna `nomeMae` como `null` ou ausente, o sistema aciona de forma transparente a Pesquisa Avançada V2 (`FilterNaturalPerson` -> `ProcessingIds` -> `ViewSearch`) buscando pelo nome completo retornado.
   - O candidato correspondente é processado e a filiação materna/paterna sem máscaras é injetada no resultado final do titular.
   - A operação possui resiliência com timeout rápido (máx 8s) e não-bloqueante, preservando o custo operacional tabelado de R$ 0,36.
+
+### 15. Exportação Universal de Consultas em PDF
+- **Arquitetura Client-Side Vetorial (`src/utils/pdf-report.ts`):** O gerador constrói um documento HTML autônomo formatado com estilo timbrado de Dossiê Oficial e dispara o diálogo nativo `window.print()`. Evita qualquer consumo de RAM ou instalação de pacotes pesados como Puppeteer no servidor Node/Docker.
+- **Formatação Especializada por Tipo de Dado:**
+  - Pessoas Físicas: Grids de identificação, telefones com operadora/WhatsApp, endereços em tabela estruturada, vínculos familiares e situação cadastral.
+  - Empresas: Dados societários (QSA), CNAEs, faturamento, filiais e contatos corporativos.
+  - Veículos: Dados do Senatran/Detran, histórico de proprietários, débitos discriminados (IPVA, multas, licenciamento) e restrições.
+  - Processos: Padronização CNJ (`NNNNNNN-DD.AAAA.J.TR.OOOO`), identificação de partes e advogados com OAB, status e valores da causa em BRL.
+- **Quebras de Página e Impressão:** Regras `@page` no padrão A4 com margens calibradas e propriedades `break-inside: avoid;` para preservar a integridade dos blocos de dados.

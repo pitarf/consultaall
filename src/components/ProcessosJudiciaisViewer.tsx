@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import { 
   Scale, Copy, Check, ShieldCheck, AlertTriangle, FileText, 
-  Landmark, UserCheck, Briefcase, Calendar, DollarSign, ChevronDown, ChevronUp, Users
+  Landmark, UserCheck, Briefcase, Calendar, DollarSign, ChevronDown, ChevronUp, Users,
+  FileDown
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportToPdf } from '@/utils/pdf-report';
 
 interface Advogado {
   nomeCompleto?: string;
@@ -215,11 +217,21 @@ export function ProcessosJudiciaisViewer({ data }: ProcessosJudiciaisViewerProps
           </div>
         </div>
 
-        {cleanDocConsultado && (
-          <div className="text-xs text-slate-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 self-start sm:self-auto">
-            Doc. Consultado: <span className="text-white font-mono font-medium">{formatDocumento(cleanDocConsultado)}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+          {cleanDocConsultado && (
+            <div className="text-xs text-slate-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+              Doc. Consultado: <span className="text-white font-mono font-medium">{formatDocumento(cleanDocConsultado)}</span>
+            </div>
+          )}
+          <button
+            onClick={() => exportToPdf({ data, title: 'Relatório de Processos Judiciais', query: cleanDocConsultado })}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg shadow-sm transition-all cursor-pointer"
+            title="Exportar Relatório de Processos em PDF"
+          >
+            <FileDown className="w-3.5 h-3.5" />
+            <span>Exportar PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* Caixa de Alerta/Observações Gerais */}

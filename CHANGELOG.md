@@ -2,6 +2,15 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.9] - 2026-11-03
+### Adicionado
+- **Exportação Universal de Consultas em PDF (Dossiê Timbrado & Relatório de Inteligência):**
+  - **Novo Utilitário `src/utils/pdf-report.ts`:** Motor nativo e leve que transforma os dados de qualquer consulta (CPF, Nome, Telefone, E-mail, CNPJ, Veículos, Processos Judiciais e Endereços) em um documento HTML com layout de Dossiê Oficial pronto para impressão e salvamento em PDF de alta qualidade vetorial.
+  - **Zero Dependências Pesadas:** Geração 100% no navegador (Client-Side) com `@media print` e regras de quebra de página (`page-break-inside: avoid`), sem consumir memória RAM no servidor Docker/VPS.
+  - **Layout Profissional e Elegante:** Cabeçalho com logo/marca dinâmica, badge de "Documento Confidencial", Protocolo único gerado com timestamp, data/hora de emissão, tabelas zebradas, badges de status, formatação monetária (BRL), CNJ oficial, máscaras de documentos e rodapé de conformidade LGPD (Lei nº 13.709/2018).
+  - **Botão "Exportar PDF" Integrado:** Adicionado diretamente nos componentes `DataViewer.tsx` e `ProcessosJudiciaisViewer.tsx`, cobrindo automaticamente 100% das páginas de consulta do sistema e do histórico de buscas.
+  - **Prompt Mestre de Replicação (`documents/PROMPT_REPLICAR_EXPORTACAO_PDF.md`):** Criado guia e prompt modular pronto para replicar exatamente a mesma feature em outros sistemas clones/cópia com outros nomes de marca.
+
 ## [1.0.8] - 2026-10-30
 ### Aprimorado & Corrigido
 - **Enriquecimento Completo de Filiação e Dados Pessoais na Consulta por CPF (R$ 0,36):**

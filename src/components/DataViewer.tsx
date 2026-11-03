@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { 
   User, FileText, MapPin, Phone, CreditCard, Activity, 
-  Users, Car, Briefcase, GraduationCap, Eye, EyeOff, Scale 
+  Users, Car, Briefcase, GraduationCap, Eye, EyeOff, Scale,
+  FileDown
 } from 'lucide-react';
 import { ProcessosJudiciaisViewer } from './ProcessosJudiciaisViewer';
+import { exportToPdf } from '@/utils/pdf-report';
 
 interface DataViewerProps {
   data: any;
@@ -242,7 +244,15 @@ export function DataViewer({ data, title }: DataViewerProps) {
           <div className="w-2 h-8 bg-primary rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)]" />
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{title || 'Relatório de Consulta'}</h2>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <button 
+            onClick={() => exportToPdf({ data, title: title || 'Relatório de Consulta' })}
+            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg shadow-sm transition-all cursor-pointer"
+            title="Exportar ou Imprimir Relatório em PDF"
+          >
+            <FileDown className="w-3.5 h-3.5" />
+            <span>Exportar PDF</span>
+          </button>
           <button 
             onClick={() => setShowRaw(!showRaw)}
             className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
