@@ -10,6 +10,12 @@ import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 import PromoModal from '@/components/PromoModal';
 import TermsModal from '@/components/TermsModal';
+import { 
+  formatCandidateLocation, 
+  formatCandidateMother, 
+  formatCandidateBirth, 
+  formatCandidateTaxId 
+} from '@/utils/candidate-helpers';
 
 // Estrutura visual base (custos serão sobrescritos pelo banco)
 const INITIAL_DATA_MODULES = [
@@ -537,10 +543,49 @@ export default function DashboardPage() {
                     >
                       <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
                         <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
-                        <p><span className="font-semibold text-slate-400">CPF:</span> {c.taxIdNumber || 'Não informado'}</p>
-                        <p><span className="font-semibold text-slate-400">Nascimento:</span> {c.dateOfBirth ? (c.dateOfBirth.includes('/') || c.dateOfBirth.includes('*') ? c.dateOfBirth : new Date(c.dateOfBirth).toLocaleDateString('pt-BR', { timeZone: 'UTC' })) : 'Não informado'}</p>
-                        <p><span className="font-semibold text-slate-400">Mãe:</span> {c.motherName ? c.motherName.toUpperCase() : 'Não informado'}</p>
-                        <p><span className="font-semibold text-slate-400">Localização:</span> {c.city || 'Desconhecida'} - {c.state || 'XX'}</p>
+                        {(() => {
+                          const cpf = formatCandidateTaxId(c.taxIdNumber);
+                          const birth = formatCandidateBirth(c.dateOfBirth);
+                          const mother = formatCandidateMother(c.motherName);
+                          const loc = formatCandidateLocation(c.city, c.state);
+
+                          return (
+                            <>
+                              <p>
+                                <span className="font-semibold text-slate-400">CPF:</span>{' '}
+                                {cpf.isPlaceholder ? (
+                                  <span className="text-primary font-medium">{cpf.text}</span>
+                                ) : (
+                                  cpf.text
+                                )}
+                              </p>
+                              <p>
+                                <span className="font-semibold text-slate-400">Nascimento:</span>{' '}
+                                {birth.isPlaceholder ? (
+                                  <span className="text-primary font-medium">{birth.text}</span>
+                                ) : (
+                                  birth.text
+                                )}
+                              </p>
+                              <p>
+                                <span className="font-semibold text-slate-400">Mãe:</span>{' '}
+                                {mother.isPlaceholder ? (
+                                  <span className="text-primary font-medium">{mother.text}</span>
+                                ) : (
+                                  mother.text
+                                )}
+                              </p>
+                              <p>
+                                <span className="font-semibold text-slate-400">Localização:</span>{' '}
+                                {loc.isPlaceholder ? (
+                                  <span className="text-primary font-medium">{loc.text}</span>
+                                ) : (
+                                  loc.text
+                                )}
+                              </p>
+                            </>
+                          );
+                        })()}
                       </div>
                       <button
                         onClick={() => handleSelectCandidate(c.id)}

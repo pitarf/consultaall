@@ -235,3 +235,12 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
   - Veículos: Dados do Senatran/Detran, histórico de proprietários, débitos discriminados (IPVA, multas, licenciamento) e restrições.
   - Processos: Padronização CNJ (`NNNNNNN-DD.AAAA.J.TR.OOOO`), identificação de partes e advogados com OAB, status e valores da causa em BRL.
 - **Quebras de Página e Impressão:** Regras `@page` no padrão A4 com margens calibradas e propriedades `break-inside: avoid;` para preservar a integridade dos blocos de dados.
+
+### 16. Formatação e Otimização Comercial de Prévia de Candidatos
+- **Módulo Utilitário (`src/utils/candidate-helpers.ts`):**
+  - Funções especializadas (`formatCandidateLocation`, `formatCandidateMother`, `formatCandidateBirth`, `formatCandidateTaxId`) para sanitizar e normalizar dados prévios de candidatos.
+  - Substitui termos negativos como `"Desconhecido"`, `"Desconhecida"`, `"Não informado"`, `"Indisponível"` e `"XX"` pela mensagem de valor: `"Resultado após confirmar e consultar"`.
+  - Estilização com a cor primária do tema (`text-primary font-medium`) para evidenciar que a informação é mantida segura e liberada após a confirmação do pagamento da consulta.
+- **Sanitização de Provedores (`src/services/direct-data.ts`):**
+  - A função `sanitizeCandidateStr` filtra strings brutas como `"DESCONHECIDO"` ou siglas de placeholders na montagem do array de `candidates`.
+- **Compatibilidade Inter-Páginas:** Aplicado de maneira uniforme em `/dashboard` (Pessoas), `/dashboard/enderecos` e `/dashboard/processos`.

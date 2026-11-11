@@ -109,3 +109,7 @@ No painel administrativo, foram integrados dois recursos fundamentais de governa
 - **Como Exportar:** Ao concluir qualquer consulta no sistema (seja de CPF, Nome, Telefone, E-mail, CNPJ, Veículos, Processos Judiciais ou no Histórico de Consultas), você verá o botão roxo **"Exportar PDF"** no canto superior direito do relatório.
 - **Dossiê Formatado:** Ao clicar no botão, uma janela de impressão é aberta automaticamente com o documento já organizado no padrão A4 timbrado, exibindo o número de protocolo do relatório, data/hora de emissão e aviso de conformidade LGPD.
 - **Salvando o Arquivo:** No diálogo de impressão do seu navegador ou celular, basta selecionar o destino como **"Salvar como PDF"** para gravar o relatório completo diretamente em seu computador ou smartphone com textos nítidos e selecionáveis.
+
+## Prévia de Perfis e Candidatos (Antes de Confirmar)
+- **Seleção Segura de Candidatos:** Ao realizar pesquisas por Nome ou dados que retornem múltiplos perfis, o sistema lista os candidatos encontrados para que você selecione a pessoa exata antes de ser tarifado.
+- **Informações Protegidas na Prévia:** Dados cadastrais que dependem da execução completa da consulta (como endereço, filiação ou nascimento quando ocultados por proteção) são identificados como **"Resultado após confirmar e consultar"**. Dessa forma, você sabe exatamente que o relatório completo e detalhado estará à sua disposição assim que confirmar a seleção do perfil desejado.

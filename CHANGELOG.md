@@ -2,6 +2,14 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.10] - 2026-11-11
+### Aprimorado
+- **Conversão de Consultas e Substituição de "Desconhecido" por "Resultado após confirmar e consultar":**
+  - **Novo Utilitário `src/utils/candidate-helpers.ts`:** Centralização da regra de negócio para formatação dos cards de candidatos pré-consulta. Substitui termos negativos e desencorajadores ("Desconhecido", "Desconhecida", "Não informado", "XX", "Indisponível") pelo indicativo comercial persuasivo: `"Resultado após confirmar e consultar"`.
+  - **Atualização das Telas de Busca:** Atualizados os cards de seleção prévia em `/dashboard` (Pessoas), `/dashboard/enderecos` (Endereços) e `/dashboard/processos` (Processos Judiciais), destacando os campos com visual elegante em azul (`text-primary font-medium`).
+  - **Sanitização de Provedores na API (`direct-data.ts`):** Tratamento no mapeamento de candidatos para evitar a propagação de valores brutos como `"DESCONHECIDO"` ou `"XX"` vindos da DirectData.
+  - **Guia de Replicação para Clones (`documents/ATUALIZACAO_DESCONHECIDO_PARA_CONFIRMAR.md`):** Documento detalhado para aplicar a mesma melhoria nos outros sites e marcas que utilizam a mesma base de código.
+
 ## [1.0.9] - 2026-11-03
 ### Adicionado
 - **Exportação Universal de Consultas em PDF (Dossiê Timbrado & Relatório de Inteligência):**

@@ -212,3 +212,11 @@
 - [x] **Compatibilidade com Todas as Consultas:** Suporte formatado para CPF, Nome, Telefone, E-mail, CNPJ (Empresas), Veículos (Placa), Processos Judiciais e Endereços.
 - [x] **Botão "Exportar PDF" Integrado:** Inclusão no cabeçalho do `DataViewer.tsx` e `ProcessosJudiciaisViewer.tsx`, cobrindo automaticamente 100% dos relatórios do sistema e histórico de buscas.
 - [x] **Prompt Mestre para Clones (`documents/PROMPT_REPLICAR_EXPORTACAO_PDF.md`):** Criação de guia e prompt pronto para replicação em sistemas derivados com outros nomes de marca.
+
+## SPLIT 16: Otimização de Conversão e Exibição de Prévia de Candidatos (✅ CONCLUÍDO)
+*Este split foca em melhorar a taxa de conversão nas buscas com prévia (candidatos), substituindo mensagens negativas por gatilhos de ação.*
+- [x] **Utilitário de Normalização (`src/utils/candidate-helpers.ts`):** Criação de helpers para formatação de campos pré-consulta (CPF, Nascimento, Mãe e Localização).
+- [x] **Substituição de "Desconhecido" por "Resultado após confirmar e consultar":** Troca de termos desencorajadores ("Desconhecido", "Desconhecida", "Não informado", "XX") pela indicação comercial amigável de liberação pós-confirmação.
+- [x] **Aplicação nas Telas de Busca:** Atualizados os cards de seleção prévia em `/dashboard`, `/dashboard/enderecos` e `/dashboard/processos`.
+- [x] **Sanitização de Provedores na API (`direct-data.ts`):** Tratamento no mapeamento de candidatos para evitar propagação de valores brutos como `"DESCONHECIDO"` ou `"XX"`.
+- [x] **Guia para Clones (`documents/ATUALIZACAO_DESCONHECIDO_PARA_CONFIRMAR.md`):** Documento detalhado para aplicar a mesma alteração nos outros sites da esteira.
