@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { acceptTerms } from '@/app/actions/perfil';
+import { acceptTerms } from '@/app/actions/auth';
 import { toast } from 'sonner';
 import { ShieldCheck, Scale, Loader2, ArrowRight } from 'lucide-react';
 

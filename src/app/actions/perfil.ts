@@ -4,6 +4,11 @@ import { verifySession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { acceptTerms as acceptTermsAuth } from './auth';
+
+export async function acceptTerms() {
+  return acceptTermsAuth();
+}
 
 export async function getUserProfile() {
   const session = await verifySession();
