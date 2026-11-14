@@ -9,6 +9,7 @@ import { Search, Loader2, FlaskConical, HelpCircle, ChevronDown, Zap } from 'luc
 import { DataViewer } from '@/components/DataViewer';
 import { Tooltip } from '@/components/Tooltip';
 import { 
+  formatCandidateTitle,
   formatCandidateLocation, 
   formatCandidateMother, 
   formatCandidateTaxId 
@@ -306,54 +307,59 @@ export default function EnderecosPage() {
             return (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {paginatedCandidates.map((c) => (
-                    <div key={c.id} className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 transition-all">
-                      <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
-                        <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
-                        {(() => {
-                          const cpf = formatCandidateTaxId(c.taxIdNumber);
-                          const mother = formatCandidateMother(c.motherName);
-                          const loc = formatCandidateLocation(c.city, c.state);
+                  {paginatedCandidates.map((c, index) => {
+                    const isPhone = Boolean(c.isPhoneSearch || chaveTipo === 'telefone');
+                    const candidateTitle = formatCandidateTitle(c.name, isPhone, startIndex + index, candidates.length);
 
-                          return (
-                            <>
-                              <p>
-                                <span className="font-semibold text-slate-400">CPF:</span>{' '}
-                                {cpf.isPlaceholder ? (
-                                  <span className="text-primary font-medium">{cpf.text}</span>
-                                ) : (
-                                  cpf.text
-                                )}
-                              </p>
-                              <p>
-                                <span className="font-semibold text-slate-400">Mãe:</span>{' '}
-                                {mother.isPlaceholder ? (
-                                  <span className="text-primary font-medium">{mother.text}</span>
-                                ) : (
-                                  mother.text
-                                )}
-                              </p>
-                              <p>
-                                <span className="font-semibold text-slate-400">Localização:</span>{' '}
-                                {loc.isPlaceholder ? (
-                                  <span className="text-primary font-medium">{loc.text}</span>
-                                ) : (
-                                  loc.text
-                                )}
-                              </p>
-                            </>
-                          );
-                        })()}
+                    return (
+                      <div key={c.id} className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 transition-all">
+                        <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
+                          <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{candidateTitle.toLowerCase()}</p>
+                          {(() => {
+                            const cpf = formatCandidateTaxId(c.taxIdNumber);
+                            const mother = formatCandidateMother(c.motherName);
+                            const loc = formatCandidateLocation(c.city, c.state);
+
+                            return (
+                              <>
+                                <p>
+                                  <span className="font-semibold text-slate-400">CPF:</span>{' '}
+                                  {cpf.isPlaceholder ? (
+                                    <span className="text-primary font-medium">{cpf.text}</span>
+                                  ) : (
+                                    cpf.text
+                                  )}
+                                </p>
+                                <p>
+                                  <span className="font-semibold text-slate-400">Mãe:</span>{' '}
+                                  {mother.isPlaceholder ? (
+                                    <span className="text-primary font-medium">{mother.text}</span>
+                                  ) : (
+                                    mother.text
+                                  )}
+                                </p>
+                                <p>
+                                  <span className="font-semibold text-slate-400">Localização:</span>{' '}
+                                  {loc.isPlaceholder ? (
+                                    <span className="text-primary font-medium">{loc.text}</span>
+                                  ) : (
+                                    loc.text
+                                  )}
+                                </p>
+                              </>
+                            );
+                          })()}
+                        </div>
+                        <button
+                          onClick={() => handleSelectCandidate(c.id)}
+                          disabled={loading}
+                          className="mt-5 w-full bg-primary hover:bg-primary-hover text-white py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+                        >
+                          Selecionar e Consultar Endereços
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleSelectCandidate(c.id)}
-                        disabled={loading}
-                        className="mt-5 w-full bg-primary hover:bg-primary-hover text-white py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-                      >
-                        Selecionar e Consultar Endereços
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {totalCandidatePages > 1 && (

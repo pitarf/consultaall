@@ -11,6 +11,7 @@ import { Tooltip } from '@/components/Tooltip';
 import PromoModal from '@/components/PromoModal';
 import TermsModal from '@/components/TermsModal';
 import { 
+  formatCandidateTitle,
   formatCandidateLocation, 
   formatCandidateMother, 
   formatCandidateBirth, 
@@ -536,73 +537,78 @@ export default function DashboardPage() {
             return (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {paginatedCandidates.map((c) => (
-                    <div 
-                      key={c.id} 
-                      className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 dark:hover:border-primary/40 transition-all group"
-                    >
-                      <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
-                        <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{c.name.toLowerCase()}</p>
-                        {(() => {
-                          const cpf = formatCandidateTaxId(c.taxIdNumber);
-                          const birth = formatCandidateBirth(c.dateOfBirth);
-                          const mother = formatCandidateMother(c.motherName);
-                          const loc = formatCandidateLocation(c.city, c.state);
+                  {paginatedCandidates.map((c, index) => {
+                    const isPhone = Boolean(c.isPhoneSearch || chaveTipo === 'telefone');
+                    const candidateTitle = formatCandidateTitle(c.name, isPhone, startIndex + index, candidates.length);
 
-                          return (
-                            <>
-                              <p>
-                                <span className="font-semibold text-slate-400">CPF:</span>{' '}
-                                {cpf.isPlaceholder ? (
-                                  <span className="text-primary font-medium">{cpf.text}</span>
-                                ) : (
-                                  cpf.text
-                                )}
-                              </p>
-                              <p>
-                                <span className="font-semibold text-slate-400">Nascimento:</span>{' '}
-                                {birth.isPlaceholder ? (
-                                  <span className="text-primary font-medium">{birth.text}</span>
-                                ) : (
-                                  birth.text
-                                )}
-                              </p>
-                              <p>
-                                <span className="font-semibold text-slate-400">Mãe:</span>{' '}
-                                {mother.isPlaceholder ? (
-                                  <span className="text-primary font-medium">{mother.text}</span>
-                                ) : (
-                                  mother.text
-                                )}
-                              </p>
-                              <p>
-                                <span className="font-semibold text-slate-400">Localização:</span>{' '}
-                                {loc.isPlaceholder ? (
-                                  <span className="text-primary font-medium">{loc.text}</span>
-                                ) : (
-                                  loc.text
-                                )}
-                              </p>
-                            </>
-                          );
-                        })()}
-                      </div>
-                      <button
-                        onClick={() => handleSelectCandidate(c.id)}
-                        disabled={loading}
-                        className={`mt-5 w-full text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-2 ${loading ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover'}`}
+                    return (
+                      <div 
+                        key={c.id} 
+                        className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 dark:hover:border-primary/40 transition-all group"
                       >
-                        {loading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Consultando...
-                          </>
-                        ) : (
-                          `Confirmar e Consultar (R$ ${totalCost.toFixed(2).replace('.', ',')})`
-                        )}
-                      </button>
-                    </div>
-                  ))}
+                        <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
+                          <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{candidateTitle.toLowerCase()}</p>
+                          {(() => {
+                            const cpf = formatCandidateTaxId(c.taxIdNumber);
+                            const birth = formatCandidateBirth(c.dateOfBirth);
+                            const mother = formatCandidateMother(c.motherName);
+                            const loc = formatCandidateLocation(c.city, c.state);
+
+                            return (
+                              <>
+                                <p>
+                                  <span className="font-semibold text-slate-400">CPF:</span>{' '}
+                                  {cpf.isPlaceholder ? (
+                                    <span className="text-primary font-medium">{cpf.text}</span>
+                                  ) : (
+                                    cpf.text
+                                  )}
+                                </p>
+                                <p>
+                                  <span className="font-semibold text-slate-400">Nascimento:</span>{' '}
+                                  {birth.isPlaceholder ? (
+                                    <span className="text-primary font-medium">{birth.text}</span>
+                                  ) : (
+                                    birth.text
+                                  )}
+                                </p>
+                                <p>
+                                  <span className="font-semibold text-slate-400">Mãe:</span>{' '}
+                                  {mother.isPlaceholder ? (
+                                    <span className="text-primary font-medium">{mother.text}</span>
+                                  ) : (
+                                    mother.text
+                                  )}
+                                </p>
+                                <p>
+                                  <span className="font-semibold text-slate-400">Localização:</span>{' '}
+                                  {loc.isPlaceholder ? (
+                                    <span className="text-primary font-medium">{loc.text}</span>
+                                  ) : (
+                                    loc.text
+                                  )}
+                                </p>
+                              </>
+                            );
+                          })()}
+                        </div>
+                        <button
+                          onClick={() => handleSelectCandidate(c.id)}
+                          disabled={loading}
+                          className={`mt-5 w-full text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] flex items-center justify-center gap-2 ${loading ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary hover:bg-primary-hover'}`}
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Consultando...
+                            </>
+                          ) : (
+                            `Confirmar e Consultar (R$ ${totalCost.toFixed(2).replace('.', ',')})`
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {totalCandidatePages > 1 && (

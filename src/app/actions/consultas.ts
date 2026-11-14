@@ -132,8 +132,8 @@ export async function realizarConsulta(
           success: true,
           isMultiple: true,
           candidates: [
-            { id: "demo-1", name: target === 'telefone' ? `TITULAR DO TELEFONE ${cleanQuery}` : `${cleanQuery.toUpperCase()} CANDIDATO 1`, dateOfBirth: "1985-04-12T00:00:00", motherName: "MARIA DA SILVA DE SOUZA", taxIdNumber: "***.123.456-**", state: "SP", city: "São Paulo" },
-            { id: "demo-2", name: target === 'telefone' ? `VÍNCULO ADICIONAL ${cleanQuery}` : `${cleanQuery.toUpperCase()} CANDIDATO 2`, dateOfBirth: "1990-08-20T00:00:00", motherName: "JOSEFA ALVES DE OLIVEIRA", taxIdNumber: "***.789.012-**", state: "RJ", city: "Rio de Janeiro" }
+            { id: "demo-1", name: target === 'telefone' ? 'Titular do Telefone (Perfil 1)' : `${cleanQuery.toUpperCase()} (Perfil 1)`, dateOfBirth: null, motherName: null, taxIdNumber: "***.123.456-**", state: null, city: null, isPhoneSearch: target === 'telefone' },
+            { id: "demo-2", name: target === 'telefone' ? 'Titular Vinculado (Perfil 2)' : `${cleanQuery.toUpperCase()} (Perfil 2)`, dateOfBirth: null, motherName: null, taxIdNumber: "***.789.012-**", state: null, city: null, isPhoneSearch: target === 'telefone' }
           ]
         };
       }
@@ -212,6 +212,23 @@ export async function realizarConsulta(
               return { error: 'Este registro está indisponível para consulta por solicitação do titular (Direitos LGPD).' };
             }
           }
+        }
+
+        // Blindagem de segurança comercial: na busca por telefone, oculta o nome real e dados sensíveis antes do pagamento
+        if (Array.isArray(apiResult.candidates)) {
+          const totalCands = apiResult.candidates.length;
+          apiResult.candidates = apiResult.candidates.map((cand: any, idx: number) => ({
+            id: cand.id,
+            name: target === 'telefone'
+              ? (totalCands > 1 ? `Titular Vinculado (Perfil ${idx + 1})` : 'Titular do Telefone')
+              : cand.name,
+            taxIdNumber: cand.taxIdNumber, // Apenas os 3 dígitos do CPF com máscara
+            motherName: null,
+            dateOfBirth: null,
+            city: null,
+            state: null,
+            isPhoneSearch: target === 'telefone'
+          }));
         }
 
         try {
