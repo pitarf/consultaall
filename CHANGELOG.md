@@ -2,6 +2,14 @@
 
 Todas as mudanças notáveis para este projeto serão documentadas neste arquivo.
 
+## [1.0.11] - 2026-11-14
+### Segurança & Conversão
+- **Blindagem Completa de Dados na Prévia de Busca por Telefone e Candidatos:**
+  - **Ocultação de Nome Real em Buscas por Telefone:** O nome do titular agora é 100% ocultado tanto no frontend quanto no payload de resposta do backend (`consultas.ts` e `direct-data.ts`) na etapa gratuita de candidatos, exibindo no título do card: `"Titular do Telefone"` ou `"Titular Vinculado (Perfil 1, 2...)"`. Isso impede que o usuário obtenha o nome do titular sem pagar pela consulta.
+  - **Proteção Integral de Dados Complementares:** Os campos de Nome da Mãe, Data de Nascimento e Localização agora exibem estritamente `"Resultado após confirmar e consultar"`.
+  - **Exclusividade do CPF Parcial:** O campo de CPF com 3 dígitos visíveis centrais (`***.796.990-**`) passa a ser o único elemento identificador visível para conferência do cliente antes da confirmação.
+  - **Sanitização de Histórico e Auditoria:** Os logs de `telefone_candidatos` gravados no `SearchHistory` e exibidos no painel admin não armazenam nem vazam nomes em requisições de clientes sem pagamento.
+
 ## [1.0.10] - 2026-11-11
 ### Aprimorado
 - **Conversão de Consultas e Substituição de "Desconhecido" por "Resultado após confirmar e consultar":**

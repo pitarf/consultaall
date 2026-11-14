@@ -220,3 +220,11 @@
 - [x] **Aplicação nas Telas de Busca:** Atualizados os cards de seleção prévia em `/dashboard`, `/dashboard/enderecos` e `/dashboard/processos`.
 - [x] **Sanitização de Provedores na API (`direct-data.ts`):** Tratamento no mapeamento de candidatos para evitar propagação de valores brutos como `"DESCONHECIDO"` ou `"XX"`.
 - [x] **Guia para Clones (`documents/ATUALIZACAO_DESCONHECIDO_PARA_CONFIRMAR.md`):** Documento detalhado para aplicar a mesma alteração nos outros sites da esteira.
+
+## SPLIT 17: Blindagem de Dados Pré-Consulta por Telefone e Candidatos (✅ CONCLUÍDO)
+*Este split blinda os dados sensíveis em prévias gratuitas para impedir que usuários descubram nomes ou dados de familiares sem pagar.*
+- [x] **Ocultação de Nome na Busca por Telefone:** Título alterado para `"Titular do Telefone"` ou `"Titular Vinculado (Perfil X)"` antes do pagamento.
+- [x] **Blindagem no Backend e API (`consultas.ts` e `direct-data.ts`):** O nome real, filiação e nascimento não trafegam no payload HTTP de retorno da etapa 1.
+- [x] **Ocultação de Filiação Materna e Nascimento:** Substituição de dados parciais por `"Resultado após confirmar e consultar"`.
+- [x] **CPF Parcial como Único Indicador:** Preservação exclusiva da máscara de 3 dígitos centrais (`***.796.990-**`) para conferência.
+- [x] **Sanitização de Auditoria:** Bloqueio de vazamento de nomes no histórico de `telefone_candidatos`.

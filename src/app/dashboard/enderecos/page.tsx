@@ -12,7 +12,8 @@ import {
   formatCandidateTitle,
   formatCandidateLocation, 
   formatCandidateMother, 
-  formatCandidateTaxId 
+  formatCandidateTaxId,
+  MENSAGEM_LIBERACAO
 } from '@/utils/candidate-helpers';
 
 export default function EnderecosPage() {
@@ -314,7 +315,7 @@ export default function EnderecosPage() {
                     return (
                       <div key={c.id} className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/20 p-5 rounded-2xl flex flex-col justify-between hover:border-primary/40 transition-all">
                         <div className="space-y-2 text-sm text-slate-600 dark:text-gray-300">
-                          <p className="font-bold text-slate-800 dark:text-white text-base capitalize">{candidateTitle.toLowerCase()}</p>
+                          <p className="font-bold text-slate-800 dark:text-white text-base">{candidateTitle}</p>
                           {(() => {
                             const cpf = formatCandidateTaxId(c.taxIdNumber);
                             const mother = formatCandidateMother(c.motherName);
@@ -322,6 +323,12 @@ export default function EnderecosPage() {
 
                             return (
                               <>
+                                {isPhone && (
+                                  <p>
+                                    <span className="font-semibold text-slate-400">Nome:</span>{' '}
+                                    <span className="text-primary font-medium">{MENSAGEM_LIBERACAO}</span>
+                                  </p>
+                                )}
                                 <p>
                                   <span className="font-semibold text-slate-400">CPF:</span>{' '}
                                   {cpf.isPlaceholder ? (
@@ -332,19 +339,11 @@ export default function EnderecosPage() {
                                 </p>
                                 <p>
                                   <span className="font-semibold text-slate-400">Mãe:</span>{' '}
-                                  {mother.isPlaceholder ? (
-                                    <span className="text-primary font-medium">{mother.text}</span>
-                                  ) : (
-                                    mother.text
-                                  )}
+                                  <span className="text-primary font-medium">{mother.text}</span>
                                 </p>
                                 <p>
                                   <span className="font-semibold text-slate-400">Localização:</span>{' '}
-                                  {loc.isPlaceholder ? (
-                                    <span className="text-primary font-medium">{loc.text}</span>
-                                  ) : (
-                                    loc.text
-                                  )}
+                                  <span className="text-primary font-medium">{loc.text}</span>
                                 </p>
                               </>
                             );

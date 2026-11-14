@@ -244,3 +244,14 @@ Para garantir que nenhuma consulta trave o frontend em carregamento infinito:
 - **Sanitização de Provedores (`src/services/direct-data.ts`):**
   - A função `sanitizeCandidateStr` filtra strings brutas como `"DESCONHECIDO"` ou siglas de placeholders na montagem do array de `candidates`.
 - **Compatibilidade Inter-Páginas:** Aplicado de maneira uniforme em `/dashboard` (Pessoas), `/dashboard/enderecos` e `/dashboard/processos`.
+
+### 17. Blindagem de Dados Pré-Consulta (Busca por Telefone e Candidatos)
+- **Ocultação de Nome Real em Buscas por Telefone:**
+  - Na busca por telefone (`target === 'telefone'`), a etapa preliminar de candidatos nunca envia o nome real do titular no payload JSON (`apiResult.candidates`). O título é formatado como `"Titular do Telefone"` ou `"Titular Vinculado (Perfil X)"`.
+  - Essa blindagem ocorre no backend (`direct-data.ts` e `consultas.ts`), impedindo vazamento de dados mesmo via inspeção de rede (DevTools/Network).
+- **Proteção de Filiação, Nascimento e Endereço:**
+  - `formatCandidateMother`, `formatCandidateBirth` e `formatCandidateLocation` retornam invariavelmente `"Resultado após confirmar e consultar"` nos cartões de prévia.
+- **Exclusividade do CPF com Máscara:**
+  - O único dado com visualização parcial de conferência é o CPF (`***.796.990-**`), garantindo que o usuário identifique que o cadastro existe sem obter o dossiê gratuitamente.
+- **Sanitização de Histórico e Auditoria:**
+  - Registros de `target: 'telefone_candidatos'` gravados no banco (`SearchHistory`) são sanitizados para não armazenar nomes reais em consultas gratuitas não efetivadas.
